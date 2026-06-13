@@ -1,15 +1,9 @@
-# Tier 5: weekly automated dependency update
-# Runs nix flake update every Monday at 09:00 UTC.
-# If flake.lock changed, opens a PR with the build result,
-# vulnix findings, and nvd package diff in the body.
-# Acts as Dependabot for the full OS closure.
-
 name: Update
 
 on:
   schedule:
     - cron: "0 9 * * 1"   # Monday 09:00 UTC
-  workflow_dispatch:        # allow manual trigger
+  workflow_dispatch:
 
 jobs:
   update:
@@ -20,12 +14,12 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
         with:
           fetch-depth: 0
 
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f  # main
+      - uses: DeterminateSystems/magic-nix-cache-action@14645543c3b214bedad3b9b49775cb042f4c1fc7  # main
 
       - name: Update flake inputs
         run: nix flake update
@@ -51,53 +45,50 @@ jobs:
       - name: Restore previous closure for diff
         id: cache
         if: steps.changed.outputs.changed == 'true'
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
         with:
           path: .main-closure
           key: main-closure-latest
 
       - name: Generate nvd diff
-        id: nvd
         if: steps.changed.outputs.changed == 'true' && steps.cache.outputs.cache-hit == 'true'
         run: |
           PREV=$(cat .main-closure)
           CURR=${{ steps.build.outputs.closure }}
-          DIFF=$(nix run nixpkgs#nvd -- diff "$PREV" "$CURR" 2>&1)
-          echo "diff<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$DIFF" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          nix run nixpkgs#nvd -- diff "$PREV" "$CURR" > nvd-diff.txt 2>&1 || true
 
       - name: Run vulnix scan
-        id: vulnix
         if: steps.changed.outputs.changed == 'true'
         run: |
-          REPORT=$(nix run nixpkgs#vulnix -- --closure ${{ steps.build.outputs.closure }} 2>&1 || true)
-          echo "report<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$REPORT" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          nix run nixpkgs#vulnix -- --closure ${{ steps.build.outputs.closure }} \
+            > vulnix-report.txt 2>&1 || true
 
       - name: Open PR
         if: steps.changed.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c  # v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: chore/nixpkgs-update
           delete-branch: true
-          commit-message: "chore: update nixpkgs ${{ github.run_id }}"
+          commit-message: "chore: update nixpkgs"
           title: "chore: weekly nixpkgs update"
-          body: |
-            Automated weekly `nix flake update`.
+          body-path: .pr-body.md
 
-            ## 📦 Package changes
-
-            ```
-            ${{ steps.nvd.outputs.diff || 'nvd diff unavailable (no previous build cached)' }}
-            ```
-
-            ## 🔒 CVE findings (vulnix)
-
-            ```
-            ${{ steps.vulnix.outputs.report || 'No findings.' }}
-            ```
-
-            > New CVE findings block merge until triaged. Add accepted risks to `vulnix.toml`.
+      - name: Build PR body
+        if: steps.changed.outputs.changed == 'true'
+        run: |
+          {
+            echo "Automated weekly \`nix flake update\`."
+            echo ""
+            echo "## 📦 Package changes"
+            echo '```'
+            cat nvd-diff.txt 2>/dev/null || echo "No previous build cached — diff unavailable."
+            echo '```'
+            echo ""
+            echo "## 🔒 CVE findings (vulnix)"
+            echo '```'
+            cat vulnix-report.txt 2>/dev/null || echo "No findings."
+            echo '```'
+            echo ""
+            echo "> New CVE findings block merge until triaged. Add accepted risks to \`vulnix.toml\`."
+          } > .pr-body.md

@@ -20,8 +20,14 @@
   ];
 
   # ── SSH ──────────────────────────────────────────────────────────────────────
+  # Enabled for remote access, but NOT exposed through the firewall.
+  # openFirewall = false means port 22 is only reachable via a trusted network
+  # (Tailscale, home LAN) — not from public wifi.
+  # NixOS defaults openFirewall to true, which would silently override the
+  # empty allowedTCPPorts list in the firewall config above.
   services.openssh = {
     enable = true;
+    openFirewall = false;
     settings = {
       PasswordAuthentication = false;
       PermitRootLogin = "no";

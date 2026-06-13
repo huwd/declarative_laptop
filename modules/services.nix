@@ -26,11 +26,13 @@
       hplip       # HP printers; swap/remove if not applicable
     ];
   };
-  # Network printer discovery
+  # Network printer discovery — restricted to the local interface only.
+  # openFirewall = false avoids exposing mDNS on public wifi networks.
+  # If network printing stops working, check the firewall first.
   services.avahi = {
     enable = true;
     nssmdns4 = true;
-    openFirewall = true;
+    openFirewall = false;
   };
 
   # ── Firmware updates (LVFS) ──────────────────────────────────────────────────
