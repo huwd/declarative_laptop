@@ -18,7 +18,7 @@ jobs:
     outputs:
       closure: ${{ steps.build.outputs.closure }}
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
 
       - uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f  # main
       - uses: DeterminateSystems/magic-nix-cache-action@14645543c3b214bedad3b9b49775cb042f4c1fc7  # main
@@ -38,7 +38,7 @@ jobs:
 
       - name: Post vulnix findings as PR comment
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         env:
           VULNIX_REPORT_PATH: vulnix-report.txt
         with:
@@ -56,7 +56,7 @@ jobs:
       - name: Restore last main closure path
         id: cache
         if: github.event_name == 'pull_request'
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         with:
           path: .main-closure
           key: main-closure-latest
@@ -70,7 +70,7 @@ jobs:
 
       - name: Post diff as PR comment
         if: github.event_name == 'pull_request' && steps.cache.outputs.cache-hit == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         with:
           script: |
             const fs = require('fs');
@@ -107,7 +107,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: echo "${{ steps.build.outputs.closure }}" > .main-closure
 
-      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
+      - uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         if: github.ref == 'refs/heads/main'
         with:
           path: .main-closure
