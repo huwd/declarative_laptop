@@ -25,6 +25,7 @@
   outputs =
     {
       nixpkgs,
+      nixos-hardware,
       home-manager,
       agenix,
       nur,
@@ -45,6 +46,28 @@
           ./hosts/framework-13/configuration.nix
 
           # NUR overlay — provides pkgs.nur.repos.rycee.firefox-addons
+          { nixpkgs.overlays = [ nur.overlays.default ]; }
+
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.huw = import ./home/huw;
+            };
+          }
+
+          agenix.nixosModules.default
+        ];
+      };
+
+      nixosConfigurations.dell-xps-13-9343 = nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [
+          nixos-hardware.nixosModules.dell-xps-13-9343
+
+          ./hosts/dell-xps-13-9343/configuration.nix
+
           { nixpkgs.overlays = [ nur.overlays.default ]; }
 
           home-manager.nixosModules.home-manager

@@ -10,14 +10,15 @@ permissions:
 
 jobs:
   build:
-    name: Build system closure
+    name: Build system closure (${{ matrix.host }})
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
       id-token: write
-    outputs:
-      closure: ${{ steps.build.outputs.closure }}
+    strategy:
+      matrix:
+        host: [framework-13, dell-xps-13-9343]
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
 
@@ -28,7 +29,7 @@ jobs:
         id: build
         run: |
           CLOSURE=$(nix build \
-            .#nixosConfigurations.framework-13.config.system.build.toplevel \
+            .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel \
             --no-link --print-out-paths)
           echo "closure=$CLOSURE" >> "$GITHUB_OUTPUT"
 
@@ -42,6 +43,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         env:
           VULNIX_REPORT_PATH: vulnix-report.txt
+          HOST: ${{ matrix.host }}
         with:
           script: |
             const fs = require('fs');
@@ -51,7 +53,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🔒 vulnix CVE scan\n\`\`\`\n${report}\n\`\`\``,
+              body: `## 🔒 vulnix CVE scan (${process.env.HOST})\n\`\`\`\n${report}\n\`\`\``,
             });
 
       - name: Restore last main closure path
@@ -60,7 +62,7 @@ jobs:
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         with:
           path: .main-closure
-          key: main-closure-latest
+          key: main-closure-${{ matrix.host }}
 
       - name: Generate nvd diff
         if: github.event_name == 'pull_request' && steps.cache.outputs.cache-hit == 'true'
@@ -72,22 +74,25 @@ jobs:
       - name: Post diff as PR comment
         if: github.event_name == 'pull_request' && steps.cache.outputs.cache-hit == 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        env:
+          HOST: ${{ matrix.host }}
         with:
           script: |
             const fs = require('fs');
+            const host = process.env.HOST;
             const diff = fs.existsSync('nvd-diff.txt')
               ? fs.readFileSync('nvd-diff.txt', 'utf8').trim()
               : '';
             const body = diff
-              ? `## 📦 Package diff (nvd)\n\`\`\`\n${diff}\n\`\`\``
-              : `## 📦 Package diff (nvd)\nNo package changes.`;
+              ? `## 📦 Package diff (${host})\n\`\`\`\n${diff}\n\`\`\``
+              : `## 📦 Package diff (${host})\nNo package changes.`;
 
             const comments = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
-            const existing = comments.data.find(c => c.body.startsWith('## 📦 Package diff'));
+            const existing = comments.data.find(c => c.body.startsWith(`## 📦 Package diff (${host})`));
             if (existing) {
               github.rest.issues.updateComment({
                 comment_id: existing.id,
@@ -112,4 +117,4 @@ jobs:
         if: github.ref == 'refs/heads/main'
         with:
           path: .main-closure
-          key: main-closure-latest
+          key: main-closure-${{ matrix.host }}
