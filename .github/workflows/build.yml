@@ -53,45 +53,23 @@ jobs:
               body: `## 🔒 vulnix CVE scan\n\`\`\`\n${report}\n\`\`\``,
             });
 
-      - name: Cache closure path (main only)
-        if: github.ref == 'refs/heads/main'
-        run: echo "${{ steps.build.outputs.closure }}" > .main-closure
-
-      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
-        if: github.ref == 'refs/heads/main'
-        with:
-          path: .main-closure
-          key: main-closure-latest
-
-  diff:
-    name: Package diff (nvd)
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'pull_request'
-    permissions:
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
-
-      - uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f  # main
-      - uses: DeterminateSystems/magic-nix-cache-action@14645543c3b214bedad3b9b49775cb042f4c1fc7  # main
-
       - name: Restore last main closure path
         id: cache
+        if: github.event_name == 'pull_request'
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
         with:
           path: .main-closure
           key: main-closure-latest
 
       - name: Generate nvd diff
-        if: steps.cache.outputs.cache-hit == 'true'
+        if: github.event_name == 'pull_request' && steps.cache.outputs.cache-hit == 'true'
         run: |
           PREV=$(cat .main-closure)
-          CURR=${{ needs.build.outputs.closure }}
-          nix run nixpkgs#nvd -- diff "$PREV" "$CURR" > nvd-diff.txt 2>&1 || true
+          CURR=${{ steps.build.outputs.closure }}
+          nix run nixpkgs#nvd -- diff "$PREV" "$CURR" > nvd-diff.txt 2>/dev/null || true
 
       - name: Post diff as PR comment
-        if: steps.cache.outputs.cache-hit == 'true'
+        if: github.event_name == 'pull_request' && steps.cache.outputs.cache-hit == 'true'
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
         with:
           script: |
@@ -124,3 +102,13 @@ jobs:
                 body,
               });
             }
+
+      - name: Cache closure path (main only)
+        if: github.ref == 'refs/heads/main'
+        run: echo "${{ steps.build.outputs.closure }}" > .main-closure
+
+      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: .main-closure
+          key: main-closure-latest
