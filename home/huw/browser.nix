@@ -14,7 +14,7 @@
       extensions = with pkgs.nur.repos.rycee.firefox-addons; [
         bitwarden           # password manager — pairs with bitwarden-desktop
         ublock-origin       # ad and tracker blocking
-        vimium-ff           # vim keybindings in the browser
+        vimium # vim keybindings in the browser
         multi-account-containers  # isolate sites to separate cookie jars
         privacy-badger      # tracker blocking (complementary to uBlock)
       ];

@@ -2,22 +2,22 @@
 {
   home.packages = with pkgs; [
     # Modern CLI replacements
-    eza          # ls — declared in shell.nix aliases
-    bat          # cat/less — declared in shell.nix aliases
-    ripgrep      # grep
-    fd           # find
-    fzf          # fuzzy finder — shell integration in shell.nix
-    zoxide       # smart cd — init in shell.nix
+    eza # ls — declared in shell.nix aliases
+    bat # cat/less — declared in shell.nix aliases
+    ripgrep # grep
+    fd # find
+    fzf # fuzzy finder — shell integration in shell.nix
+    zoxide # smart cd — init in shell.nix
 
     # Nix-specific tooling
-    nvd          # diff between NixOS generations
-    nix-tree     # visual TUI of the nix dependency closure
-    vulnix       # CVE scanner for the nix store
+    nvd # diff between NixOS generations
+    nix-tree # visual TUI of the nix dependency closure
+    vulnix # CVE scanner for the nix store
 
     # General utils worth having
-    jq           # JSON
-    yq-go        # YAML
-    htop         # process monitor
+    jq # JSON
+    yq-go # YAML
+    htop # process monitor
     curl
     wget
     unzip

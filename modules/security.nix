@@ -4,8 +4,8 @@
 
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [];   # open ports explicitly as needed
-    allowedUDPPorts = [];
+    allowedTCPPorts = [ ]; # open ports explicitly as needed
+    allowedUDPPorts = [ ];
     # Example: allowedTCPPorts = [ 22 443 ];
   };
 
@@ -15,7 +15,7 @@
 
   # ── Password manager ─────────────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
-    bitwarden-cli   # `bw` — scripting and terminal access to your vault
+    bitwarden-cli # `bw` — scripting and terminal access to your vault
     # Bitwarden browser extension handles GUI access via Firefox/Chrome
   ];
 

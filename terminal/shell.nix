@@ -17,33 +17,33 @@
 
     shellAliases = {
       # File listing — eza replaces ls/ll from dotfiles
-      ls    = "eza --color=auto --group-directories-first";
-      ll    = "eza -alh --color=auto --group-directories-first --git";
-      lsg   = "ll | grep";
-      lh    = "eza -alh --sort=modified | head";
+      ls = "eza --color=auto --group-directories-first";
+      ll = "eza -alh --color=auto --group-directories-first --git";
+      lsg = "ll | grep";
+      lh = "eza -alh --sort=modified | head";
 
       # Core utils
-      df    = "df -h";
-      du    = "du -h -d 2";
-      l     = "bat --paging=auto";
-      less  = "bat --paging=always";
-      tf    = "tail -f";
-      cl    = "clear";
-      gz    = "tar -zcvf";
+      df = "df -h";
+      du = "du -h -d 2";
+      l = "bat --paging=auto";
+      less = "bat --paging=always";
+      tf = "tail -f";
+      cl = "clear";
+      gz = "tar -zcvf";
 
       # Vi muscle memory
-      ":q"  = "exit";
+      ":q" = "exit";
 
       # Git
-      gs    = "git status";
-      glg   = "git l";
-      gps   = "git push";
-      gpsh  = "git push -u origin HEAD";
+      gs = "git status";
+      glg = "git l";
+      gps = "git push";
+      gpsh = "git push -u origin HEAD";
 
       # Nix shortcuts
-      nrs   = "sudo nixos-rebuild switch --flake ~/.config/nixos-config#framework-13";
-      hms   = "home-manager switch --flake ~/.config/nixos-config#framework-13";
-      nfu   = "nix flake update";
+      nrs = "sudo nixos-rebuild switch --flake ~/.config/nixos-config#framework-13";
+      hms = "home-manager switch --flake ~/.config/nixos-config#framework-13";
+      nfu = "nix flake update";
     };
 
     initContent = ''
