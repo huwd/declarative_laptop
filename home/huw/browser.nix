@@ -42,10 +42,10 @@
   # Results land in the journal: journalctl --user -u firefox-extension-audit
 
   systemd.user.services.firefox-extension-audit = {
-    description = "Audit Firefox extensions for unmanaged installs";
-    serviceConfig = {
+    Unit.Description = "Audit Firefox extensions for unmanaged installs";
+    Service = {
       Type = "oneshot";
-      ExecStart = pkgs.writeShellScript "firefox-extension-audit" ''
+      ExecStart = "${pkgs.writeShellScript "firefox-extension-audit" ''
         set -euo pipefail
 
         FOUND=0
@@ -67,13 +67,13 @@
         else
           echo "All Firefox extensions are Nix-managed."
         fi
-      '';
+      ''}";
     };
   };
 
   systemd.user.timers.firefox-extension-audit = {
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
+    Install.WantedBy = [ "timers.target" ];
+    Timer = {
       OnCalendar = "weekly";
       Persistent = true;
     };

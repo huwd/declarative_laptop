@@ -11,7 +11,13 @@
 
   # ── Nixpkgs ──────────────────────────────────────────────────────────────────
 
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config = {
+    allowUnfree = true;
+    # electron-39 is past upstream EOL but still required by obsidian in nixpkgs.
+    # Track https://github.com/NixOS/nixpkgs/pull/XXXXXX for the version bump.
+    # Remove this entry once obsidian moves to a supported electron.
+    permittedInsecurePackages = [ "electron-39.8.10" ];
+  };
 
   # ── Boot ─────────────────────────────────────────────────────────────────────
 
