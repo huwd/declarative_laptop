@@ -55,10 +55,10 @@
     logind = {
       lidSwitch = "suspend";
       lidSwitchExternalPower = "suspend";
-      extraConfig = ''
-        IdleAction=suspend
-        IdleActionSec=20min
-      '';
+      settings.Login = {
+        IdleAction = "suspend";
+        IdleActionSec = "20min";
+      };
     };
 
     # ── Syncthing ─────────────────────────────────────────────────────────────
