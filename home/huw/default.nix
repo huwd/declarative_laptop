@@ -1,11 +1,11 @@
-{ ... }:
+_:
 {
   imports = [
     ../../terminal/default.nix
     ./browser.nix
   ];
 
-  home.username    = "huw";
+  home.username = "huw";
   home.homeDirectory = "/home/huw";
 
   # Set to the home-manager release at time of setup. Do not update this value.

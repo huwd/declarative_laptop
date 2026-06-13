@@ -22,7 +22,7 @@ while IFS= read -r secret; do
   else
     echo "OK: $path"
   fi
-done < <(grep -oP '"[^"]+\.age"' "$SECRETS_NIX" | tr -d '"')
+done < <(grep -v '^\s*#' "$SECRETS_NIX" | grep -oP '"[^"]+\.age"' | tr -d '"')
 
 if [[ $MISSING -gt 0 ]]; then
   echo ""

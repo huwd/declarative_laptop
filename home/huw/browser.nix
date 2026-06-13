@@ -22,15 +22,15 @@
       # Enforce sensible privacy defaults via user.js
       # These override Firefox preferences declaratively
       settings = {
-        "browser.startup.homepage"              = "about:blank";
-        "browser.newtabpage.enabled"            = false;
-        "privacy.trackingprotection.enabled"    = true;
+        "browser.startup.homepage" = "about:blank";
+        "browser.newtabpage.enabled" = false;
+        "privacy.trackingprotection.enabled" = true;
         "privacy.trackingprotection.socialtracking.enabled" = true;
-        "dom.security.https_only_mode"          = true;
-        "browser.download.useDownloadDir"       = false;  # always ask where to save
-        "signon.rememberSignons"                = false;  # bitwarden handles this
-        "browser.formfill.enable"               = false;
-        "extensions.pocket.enabled"             = false;
+        "dom.security.https_only_mode" = true;
+        "browser.download.useDownloadDir" = false; # always ask where to save
+        "signon.rememberSignons" = false; # bitwarden handles this
+        "browser.formfill.enable" = false;
+        "extensions.pocket.enabled" = false;
       };
     };
   };

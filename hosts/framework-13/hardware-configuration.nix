@@ -14,4 +14,4 @@
 #   - hardware.cpu.amd.updateMicrocode = true
 #   - nixpkgs.hostPlatform
 #
-{ ... }: { }
+_: { }

@@ -40,8 +40,8 @@ pkgs.mkShell {
     ]))
 
     # Useful alongside AI tools
-    jq      # parse API responses
-    httpie  # HTTP client for API testing
+    jq # parse API responses
+    httpie # HTTP client for API testing
   ];
 
   shellHook = ''

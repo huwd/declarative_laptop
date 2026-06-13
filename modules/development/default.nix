@@ -25,7 +25,7 @@
 
     # Containers
     docker-compose
-    lazydocker    # Docker TUI
+    lazydocker # Docker TUI
 
     # Rust — rustup manages stable/nightly/targets itself
     # Do not also install pkgs.rustc — they conflict
@@ -37,7 +37,7 @@
 
     # Python
     python3
-    uv            # fast package/project manager; replaces pip/venv
+    uv # fast package/project manager; replaces pip/venv
 
     # Editor fallback
     vscode
