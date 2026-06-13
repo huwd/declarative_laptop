@@ -1,4 +1,4 @@
-{ ... }:
+_:
 #
 # Zellij — primary multiplexer.
 # Swap this for tmux.nix in default.nix to revert.

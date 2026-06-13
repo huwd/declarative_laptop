@@ -19,7 +19,7 @@ pkgs.mkShell {
   name = "ai";
 
   packages = with pkgs; [
-    nodejs_22     # runtime for Node-based AI CLIs
+    nodejs_22 # runtime for Node-based AI CLIs
 
     # Claude Code — Anthropic's CLI (install via npm until in nixpkgs)
     # Run once to install: npm install -g @anthropic-ai/claude-code
@@ -33,15 +33,17 @@ pkgs.mkShell {
     # npm install -g @openai/codex
 
     # Python AI libraries (add as needed per project)
-    (python3.withPackages (ps: with ps; [
-      anthropic
-      openai
-      tiktoken
-    ]))
+    (python3.withPackages (
+      ps: with ps; [
+        anthropic
+        openai
+        tiktoken
+      ]
+    ))
 
     # Useful alongside AI tools
-    jq      # parse API responses
-    httpie  # HTTP client for API testing
+    jq # parse API responses
+    httpie # HTTP client for API testing
   ];
 
   shellHook = ''

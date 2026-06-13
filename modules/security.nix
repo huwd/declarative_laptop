@@ -4,8 +4,8 @@
 
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [];   # open ports explicitly as needed
-    allowedUDPPorts = [];
+    allowedTCPPorts = [ ]; # open ports explicitly as needed
+    allowedUDPPorts = [ ];
     # Example: allowedTCPPorts = [ 22 443 ];
   };
 
@@ -15,13 +15,19 @@
 
   # ── Password manager ─────────────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
-    bitwarden-cli   # `bw` — scripting and terminal access to your vault
+    bitwarden-cli # `bw` — scripting and terminal access to your vault
     # Bitwarden browser extension handles GUI access via Firefox/Chrome
   ];
 
   # ── SSH ──────────────────────────────────────────────────────────────────────
+  # Enabled for remote access, but NOT exposed through the firewall.
+  # openFirewall = false means port 22 is only reachable via a trusted network
+  # (Tailscale, home LAN) — not from public wifi.
+  # NixOS defaults openFirewall to true, which would silently override the
+  # empty allowedTCPPorts list in the firewall config above.
   services.openssh = {
     enable = true;
+    openFirewall = false;
     settings = {
       PasswordAuthentication = false;
       PermitRootLogin = "no";

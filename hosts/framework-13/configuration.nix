@@ -11,34 +11,42 @@
 
   # ── Nixpkgs ──────────────────────────────────────────────────────────────────
 
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config = {
+    allowUnfree = true;
+    # electron-39 is past upstream EOL but still required by obsidian in nixpkgs.
+    # Track https://github.com/NixOS/nixpkgs/pull/XXXXXX for the version bump.
+    # Remove this entry once obsidian moves to a supported electron.
+    permittedInsecurePackages = [ "electron-39.8.10" ];
+  };
 
   # ── Boot ─────────────────────────────────────────────────────────────────────
 
-  boot.loader.systemd-boot.enable      = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
-  # Latest kernel — required for Strix Point (AMD Ryzen AI 300) hardware support
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
-  # Force s2idle suspend (modern standby) — recommended for Framework on AMD
-  boot.kernelParams = [ "mem_sleep_default=s2idle" ];
+  boot = {
+    loader.systemd-boot.enable = true;
+    loader.efi.canTouchEfiVariables = true;
+    # Latest kernel — required for Strix Point (AMD Ryzen AI 300) hardware support
+    kernelPackages = pkgs.linuxPackages_latest;
+    # Force s2idle suspend (modern standby) — recommended for Framework on AMD
+    kernelParams = [ "mem_sleep_default=s2idle" ];
+  };
 
   # ── Network ──────────────────────────────────────────────────────────────────
 
-  networking.hostName = "framework-13";
-  networking.networkmanager.enable = true;
+  networking = {
+    hostName = "framework-13";
+    networkmanager.enable = true;
+  };
 
   # ── User ─────────────────────────────────────────────────────────────────────
 
   users.users.huw = {
     isNormalUser = true;
-    description  = "Huw";
-    shell        = pkgs.zsh;
-    extraGroups  = [
-      "wheel"           # sudo
-      "networkmanager"  # manage wifi without sudo
-      "docker"          # docker without sudo
+    description = "Huw";
+    shell = pkgs.zsh;
+    extraGroups = [
+      "wheel" # sudo
+      "networkmanager" # manage wifi without sudo
+      "docker" # docker without sudo
       "audio"
       "video"
     ];
@@ -49,15 +57,19 @@
 
   # ── Nix daemon ───────────────────────────────────────────────────────────────
 
-  nix.settings = {
-    experimental-features = [ "nix-command" "flakes" ];
-    auto-optimise-store   = true;
-  };
-
-  nix.gc = {
-    automatic = true;
-    dates     = "weekly";
-    options   = "--delete-older-than 30d";
+  nix = {
+    settings = {
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
+      auto-optimise-store = true;
+    };
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 30d";
+    };
   };
 
   # ── State version ────────────────────────────────────────────────────────────

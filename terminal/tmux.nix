@@ -14,8 +14,8 @@
 
     # Plugins — declared here; tmux-plugin-manager not needed on NixOS
     plugins = with pkgs.tmuxPlugins; [
-      vim-tmux-navigator   # C-h/j/k/l pane switching aware of nvim splits
-      sensible             # sane defaults
+      vim-tmux-navigator # C-h/j/k/l pane switching aware of nvim splits
+      sensible # sane defaults
     ];
 
     extraConfig = ''

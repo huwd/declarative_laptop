@@ -14,4 +14,18 @@
 #   - hardware.cpu.amd.updateMicrocode = true
 #   - nixpkgs.hostPlatform
 #
-{ ... }: { }
+{ lib, ... }:
+{
+  # Placeholder — replaced by nixos-generate-config output on install day.
+  # These stubs satisfy NixOS assertions so CI can build the full closure.
+  # The real values (UUIDs, LUKS config, microcode) come from the installer.
+  fileSystems."/" = lib.mkDefault {
+    device = "/dev/disk/by-label/nixos";
+    fsType = "ext4";
+  };
+
+  fileSystems."/boot" = lib.mkDefault {
+    device = "/dev/disk/by-label/boot";
+    fsType = "vfat";
+  };
+}

@@ -30,7 +30,10 @@
     settings = {
       gui = {
         theme = {
-          activeBorderColor = [ "blue" "bold" ];
+          activeBorderColor = [
+            "blue"
+            "bold"
+          ];
           inactiveBorderColor = [ "white" ];
           selectedLineBgColor = [ "default" ];
         };
@@ -48,7 +51,7 @@
   };
 
   home.packages = with pkgs; [
-    delta   # syntax-highlighted git diffs; used by lazygit and git itself
+    delta # syntax-highlighted git diffs; used by lazygit and git itself
   ];
 
   # delta config lives in ~/.gitconfig [delta] section — manage via git config
