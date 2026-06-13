@@ -11,7 +11,7 @@
     profiles.huw = {
       isDefault = true;
 
-      extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+      extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
         bitwarden # password manager — pairs with bitwarden-desktop
         ublock-origin # ad and tracker blocking
         vimium # vim keybindings in the browser
