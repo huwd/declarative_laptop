@@ -1,5 +1,4 @@
-_:
-{
+_: {
   # Alacritty — fast, GPU-accelerated, intentionally minimal.
   # No built-in tabs or splits; those are tmux/zellij's job.
   # Switch to programs.ghostty if you want a more featureful emulator.
@@ -7,7 +6,10 @@ _:
     enable = true;
     settings = {
       window = {
-        padding = { x = 8; y = 8; };
+        padding = {
+          x = 8;
+          y = 8;
+        };
         decorations = "full";
         opacity = 0.97;
         startup_mode = "Windowed";
@@ -62,7 +64,10 @@ _:
       };
 
       cursor = {
-        style = { shape = "Block"; blinking = "On"; };
+        style = {
+          shape = "Block";
+          blinking = "On";
+        };
         blink_interval = 500;
       };
 
@@ -73,7 +78,11 @@ _:
 
       keyboard.bindings = [
         # Pass Ctrl-h/j/k/l through to tmux/neovim
-        { key = "H"; mods = "Control"; chars = "\\u0008"; }
+        {
+          key = "H";
+          mods = "Control";
+          chars = "\\u0008";
+        }
       ];
     };
   };

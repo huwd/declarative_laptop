@@ -12,11 +12,11 @@
       isDefault = true;
 
       extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-        bitwarden           # password manager — pairs with bitwarden-desktop
-        ublock-origin       # ad and tracker blocking
+        bitwarden # password manager — pairs with bitwarden-desktop
+        ublock-origin # ad and tracker blocking
         vimium # vim keybindings in the browser
-        multi-account-containers  # isolate sites to separate cookie jars
-        privacy-badger      # tracker blocking (complementary to uBlock)
+        multi-account-containers # isolate sites to separate cookie jars
+        privacy-badger # tracker blocking (complementary to uBlock)
       ];
 
       # Enforce sensible privacy defaults via user.js

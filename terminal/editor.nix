@@ -30,7 +30,10 @@
     settings = {
       gui = {
         theme = {
-          activeBorderColor = [ "blue" "bold" ];
+          activeBorderColor = [
+            "blue"
+            "bold"
+          ];
           inactiveBorderColor = [ "white" ];
           selectedLineBgColor = [ "default" ];
         };

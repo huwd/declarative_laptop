@@ -24,9 +24,7 @@
 
   outputs =
     {
-      self,
       nixpkgs,
-      nixos-hardware,
       home-manager,
       agenix,
       nur,

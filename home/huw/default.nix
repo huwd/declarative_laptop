@@ -1,5 +1,4 @@
-_:
-{
+_: {
   imports = [
     ../../terminal/default.nix
     ./browser.nix
