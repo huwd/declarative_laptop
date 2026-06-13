@@ -1,0 +1,14 @@
+# Nix build outputs
+result
+result-*
+
+# direnv
+.direnv/
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# macOS (if ever editing on a Mac)
+.DS_Store
