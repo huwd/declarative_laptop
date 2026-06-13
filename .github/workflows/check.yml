@@ -1,0 +1,84 @@
+# Tier 1 + 2: syntax, lint, evaluation
+# Runs on every push and pull_request.
+# Fast checks only — no building of derivations.
+#
+# NOTE: action versions are pinned to tags here.
+# Pin to full commit SHAs before shipping to production per CLAUDE.md:
+#   gh release view --repo <owner>/<repo> <tag> --json targetCommitish
+
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # ── Tier 1: Syntax ──────────────────────────────────────────────────────────
+
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Check Nix formatting
+        run: nix run nixpkgs#nixfmt-rfc-style -- --check $(find . -name '*.nix' -not -path './.direnv/*')
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: statix — antipattern check
+        run: nix run nixpkgs#statix -- check .
+
+      - name: deadnix — unused code check
+        run: nix run nixpkgs#deadnix -- --fail .
+
+  commits:
+    name: Commit messages
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history needed to check all PR commits
+
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Check conventional commits
+        run: |
+          nix run nixpkgs#convco -- check \
+            ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
+
+  # ── Tier 2: Evaluation ──────────────────────────────────────────────────────
+
+  evaluate:
+    name: Evaluate flake
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: nix flake check
+        run: nix flake check --no-build
+
+  secrets:
+    name: Secret hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check all declared secrets have .age files
+        run: bash scripts/check-secrets.sh

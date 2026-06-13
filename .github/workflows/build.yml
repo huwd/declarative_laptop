@@ -1,0 +1,151 @@
+# Tier 3 + 4: full build, CVE scan, package diff
+# Runs on pull_request and push to main.
+#
+# On main: builds and saves the closure path for future PR diffs.
+# On PR:   builds, scans, diffs against last main closure, comments on PR.
+#
+# Cold build: ~30 min. Cached builds: ~5 min.
+# magic-nix-cache-action persists derivations between runs automatically.
+
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: Build system closure
+    runs-on: ubuntu-latest
+    outputs:
+      closure: ${{ steps.build.outputs.closure }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Build NixOS closure
+        id: build
+        run: |
+          CLOSURE=$(nix build \
+            .#nixosConfigurations.framework-13.config.system.build.toplevel \
+            --no-link --print-out-paths)
+          echo "closure=$CLOSURE" >> "$GITHUB_OUTPUT"
+
+      # Save closure path on main so PR builds can diff against it
+      - name: Cache closure path (main only)
+        if: github.ref == 'refs/heads/main'
+        run: echo "${{ steps.build.outputs.closure }}" > .main-closure
+      - uses: actions/cache/save@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: .main-closure
+          key: main-closure-${{ github.sha }}
+
+      # Always update the "latest main" pointer
+      - uses: actions/cache/save@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: .main-closure
+          key: main-closure-latest
+
+  scan:
+    name: CVE scan (vulnix)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Run vulnix against closure
+        id: vulnix
+        run: |
+          set +e
+          REPORT=$(nix run nixpkgs#vulnix -- --closure ${{ needs.build.outputs.closure }} 2>&1)
+          EXIT=$?
+          echo "report<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$REPORT" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          exit $EXIT
+        continue-on-error: true   # informational until whitelist is tuned
+
+      - name: Annotate PR with vulnix findings
+        if: github.event_name == 'pull_request' && steps.vulnix.outputs.report != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const report = `${{ steps.vulnix.outputs.report }}`;
+            if (report.trim()) {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🔒 vulnix CVE scan\n\`\`\`\n${report}\n\`\`\``
+              });
+            }
+
+  diff:
+    name: Package diff (nvd)
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Restore last main closure path
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .main-closure
+          key: main-closure-latest
+
+      - name: Generate nvd diff
+        id: nvd
+        if: steps.cache.outputs.cache-hit == 'true'
+        run: |
+          PREV=$(cat .main-closure)
+          CURR=${{ needs.build.outputs.closure }}
+          DIFF=$(nix run nixpkgs#nvd -- diff "$PREV" "$CURR" 2>&1)
+          echo "diff<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$DIFF" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Post diff as PR comment
+        if: steps.cache.outputs.cache-hit == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const diff = `${{ steps.nvd.outputs.diff }}`;
+            const body = diff.trim()
+              ? `## 📦 Package diff (nvd)\n\`\`\`\n${diff}\n\`\`\``
+              : `## 📦 Package diff (nvd)\nNo package changes.`;
+
+            // Update existing comment if present, otherwise create
+            const comments = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const existing = comments.data.find(c => c.body.startsWith('## 📦 Package diff'));
+            if (existing) {
+              github.rest.issues.updateComment({
+                comment_id: existing.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              });
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              });
+            }
