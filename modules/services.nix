@@ -86,6 +86,45 @@
   };
 
   # ── Flatpak ──────────────────────────────────────────────────────────────────
-  # Safety valve for apps not in nixpkgs and not worth packaging
+  # Safety valve for apps not in nixpkgs. Keep the footprint small.
+  # Flatpak apps are outside the Nix store and therefore outside vulnix —
+  # see OPSEC.md for the residual risk and mitigations.
   services.flatpak.enable = true;
+
+  # Automatic Flatpak updates — runs weekly, keeps runtimes and apps current
+  systemd.services.flatpak-update = {
+    description = "Update Flatpak runtimes and applications";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.flatpak}/bin/flatpak update --noninteractive";
+    };
+  };
+  systemd.timers.flatpak-update = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "weekly";
+      Persistent = true;     # catch up if the machine was off
+    };
+  };
+
+  # grype — CVE scan of Flatpak runtimes after each update
+  # Covers runtime-level vulnerabilities; individual app internals vary.
+  # Results land in the journal: journalctl -u flatpak-scan
+  systemd.services.flatpak-scan = {
+    description = "Scan Flatpak installation for CVEs (grype)";
+    after = [ "flatpak-update.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.grype}/bin/grype dir:/var/lib/flatpak --output table";
+    };
+  };
+  systemd.timers.flatpak-scan = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "weekly";
+      Persistent = true;
+    };
+  };
+
+  environment.systemPackages = [ pkgs.grype ];
 }
