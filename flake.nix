@@ -15,9 +15,14 @@
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nur = {
+      url = "github:nix-community/NUR";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nixos-hardware, home-manager, agenix, ... }:
+  outputs = { self, nixpkgs, nixos-hardware, home-manager, agenix, nur, ... }:
   let
     system = "x86_64-linux";
     pkgs   = nixpkgs.legacyPackages.${system};
@@ -31,10 +36,13 @@
 
         ./hosts/framework-13/configuration.nix
 
+        # NUR overlay — provides pkgs.nur.repos.rycee.firefox-addons
+        { nixpkgs.overlays = [ nur.overlay ]; }
+
         home-manager.nixosModules.home-manager
         {
-          home-manager.useGlobalPkgs    = true;   # share system nixpkgs; no duplication
-          home-manager.useUserPackages  = true;   # user pkgs land in system profile
+          home-manager.useGlobalPkgs    = true;
+          home-manager.useUserPackages  = true;
           home-manager.users.huw        = import ./home/huw;
         }
 

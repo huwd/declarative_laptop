@@ -2,6 +2,7 @@
 {
   imports = [
     ../../terminal/default.nix
+    ./browser.nix
   ];
 
   home.username    = "huw";
