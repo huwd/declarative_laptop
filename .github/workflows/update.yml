@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
 
       - uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f  # main
-      - uses: DeterminateSystems/magic-nix-cache-action@14645543c3b214bedad3b9b49775cb042f4c1fc7  # main
+      - uses: DeterminateSystems/magic-nix-cache-action@659e09b432ddb0b3d78bba7540ef6593c6cb181b  # main
 
       - name: Update flake inputs
         run: nix flake update
