@@ -20,10 +20,10 @@ jobs:
       matrix:
         host: [framework-13, dell-xps-13-9343]
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
 
       - uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f  # main
-      - uses: DeterminateSystems/magic-nix-cache-action@659e09b432ddb0b3d78bba7540ef6593c6cb181b  # main
+      - uses: DeterminateSystems/magic-nix-cache-action@76aaf8814cdb385b86597c32b8c51b66b69b0839  # main
 
       - name: Build NixOS closure
         id: build
