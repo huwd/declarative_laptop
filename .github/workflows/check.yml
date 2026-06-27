@@ -13,10 +13,10 @@ jobs:
     name: Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
 
       - uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f  # main
-      - uses: DeterminateSystems/magic-nix-cache-action@659e09b432ddb0b3d78bba7540ef6593c6cb181b  # main
+      - uses: DeterminateSystems/magic-nix-cache-action@76aaf8814cdb385b86597c32b8c51b66b69b0839  # main
 
       - name: Check Nix formatting
         run: nix run nixpkgs#nixfmt-rfc-style -- --check $(find . -name '*.nix' -not -path './.direnv/*')
@@ -25,10 +25,10 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
 
       - uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f  # main
-      - uses: DeterminateSystems/magic-nix-cache-action@659e09b432ddb0b3d78bba7540ef6593c6cb181b  # main
+      - uses: DeterminateSystems/magic-nix-cache-action@76aaf8814cdb385b86597c32b8c51b66b69b0839  # main
 
       - name: statix — antipattern check
         run: nix run nixpkgs#statix -- check .
@@ -41,12 +41,12 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           fetch-depth: 0
 
       - uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f  # main
-      - uses: DeterminateSystems/magic-nix-cache-action@659e09b432ddb0b3d78bba7540ef6593c6cb181b  # main
+      - uses: DeterminateSystems/magic-nix-cache-action@76aaf8814cdb385b86597c32b8c51b66b69b0839  # main
 
       - name: Check conventional commits
         run: |
@@ -57,10 +57,10 @@ jobs:
     name: Evaluate flake
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
 
       - uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f  # main
-      - uses: DeterminateSystems/magic-nix-cache-action@659e09b432ddb0b3d78bba7540ef6593c6cb181b  # main
+      - uses: DeterminateSystems/magic-nix-cache-action@76aaf8814cdb385b86597c32b8c51b66b69b0839  # main
 
       - name: nix flake check
         run: nix flake check --no-build
@@ -69,7 +69,7 @@ jobs:
     name: Secret hygiene
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
 
       - name: Check all declared secrets have .age files
         run: bash scripts/check-secrets.sh
