@@ -1,9 +1,6 @@
 { pkgs, ... }:
 {
   hardware = {
-    # ── Audio (PipeWire) ──────────────────────────────────────────────────────
-    pulseaudio.enable = false; # replaced by PipeWire
-
     # ── Bluetooth ─────────────────────────────────────────────────────────────
     bluetooth = {
       enable = true;
@@ -21,6 +18,7 @@
       pulse.enable = true; # PulseAudio compatibility
       jack.enable = false; # enable if you do pro audio work
     };
+    pulseaudio.enable = false; # replaced by PipeWire
 
     # ── Bluetooth ─────────────────────────────────────────────────────────────
     blueman.enable = true; # GUI Bluetooth manager
@@ -53,9 +51,9 @@
 
     # ── Suspend / lid ─────────────────────────────────────────────────────────
     logind = {
-      lidSwitch = "suspend";
-      lidSwitchExternalPower = "suspend";
       settings.Login = {
+        HandleLidSwitch = "suspend";
+        HandleLidSwitchExternalPower = "suspend";
         IdleAction = "suspend";
         IdleActionSec = "20min";
       };
