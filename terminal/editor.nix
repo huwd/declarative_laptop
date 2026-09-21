@@ -8,6 +8,9 @@
     viAlias = true;
     vimAlias = true;
     vimdiffAlias = true;
+    # Preserve the Home Manager 25.05 provider behaviour explicitly.
+    withPython3 = true;
+    withRuby = true;
   };
 
   # LazyVim config lives in ~/.config/nvim — track it in the nixos-config repo
