@@ -40,8 +40,9 @@ _: {
       gpsh = "git push -u origin HEAD";
 
       # Nix shortcuts
+      # home-manager is wired as a NixOS module (see flake.nix), not the
+      # standalone CLI — nrs applies both system and home-manager config.
       nrs = "sudo nixos-rebuild switch --flake ~/.config/nixos-config#framework-13";
-      hms = "home-manager switch --flake ~/.config/nixos-config#framework-13";
       nfu = "nix flake update";
     };
 
