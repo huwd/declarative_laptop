@@ -30,6 +30,9 @@
     git
     gh
 
+    # Task runner — see justfile (check, fix, build, apply)
+    just
+
     # Containers
     docker-compose
     lazydocker # Docker TUI
