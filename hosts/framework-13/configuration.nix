@@ -19,11 +19,19 @@
     permittedInsecurePackages = [ "electron-39.8.10" ];
   };
 
+  # Wi-Fi (AMD RZ717) and CPU microcode updates both need redistributable firmware.
+  hardware.enableRedistributableFirmware = true;
+
   # ── Boot ─────────────────────────────────────────────────────────────────────
 
   boot = {
-    loader.systemd-boot.enable = true;
-    loader.efi.canTouchEfiVariables = true;
+    loader = {
+      systemd-boot = {
+        enable = true;
+        configurationLimit = 20; # bound ESP usage across generations
+      };
+      efi.canTouchEfiVariables = true;
+    };
     # Latest kernel — required for Strix Point (AMD Ryzen AI 300) hardware support
     kernelPackages = pkgs.linuxPackages_latest;
     # Force s2idle suspend (modern standby) — recommended for Framework on AMD
