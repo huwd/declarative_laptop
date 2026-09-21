@@ -9,8 +9,54 @@ permissions:
   contents: read
 
 jobs:
+  # Work out which hosts a PR can affect so unrelated host builds are skipped.
+  # Pushes to main always build every host to keep the cached diff baseline fresh.
+  changes:
+    name: Detect affected hosts
+    runs-on: ubuntu-latest
+    outputs:
+      hosts: ${{ steps.hosts.outputs.hosts }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Select hosts
+        id: hosts
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT" != "pull_request" ]; then
+            echo 'hosts=["framework-13","dell-xps-13-9343"]' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          changed=$(git diff --name-only "$BASE_SHA...$HEAD_SHA")
+          echo "Changed files:"; echo "$changed"
+
+          # Files that cannot change any host's closure
+          ignore='^(docs/|scripts/)|\.md$|^(justfile|\.gitignore|\.github/dependabot\.yml)$'
+
+          # A host builds if any change is not ignorable and not confined to
+          # the *other* host's own directory. Unknown paths therefore build.
+          builds_unless_only_in() {
+            echo "$changed" | grep -v -E "$ignore" | grep -q -v -E "^hosts/$1/"
+          }
+
+          hosts=()
+          builds_unless_only_in dell-xps-13-9343 && hosts+=(framework-13)
+          builds_unless_only_in framework-13 && hosts+=(dell-xps-13-9343)
+
+          json=$(printf '%s\n' "${hosts[@]}" | jq -R . | jq -sc 'map(select(length>0))')
+          echo "Building: $json"
+          echo "hosts=$json" >> "$GITHUB_OUTPUT"
+
   build:
     name: Build system closure (${{ matrix.host }})
+    needs: changes
+    if: needs.changes.outputs.hosts != '[]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -18,7 +64,7 @@ jobs:
       id-token: write
     strategy:
       matrix:
-        host: [framework-13, dell-xps-13-9343]
+        host: ${{ fromJSON(needs.changes.outputs.hosts) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
