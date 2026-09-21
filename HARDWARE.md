@@ -1,4 +1,4 @@
-# Hardware: Framework Laptop 13 Pro (AMD Ryzen AI 300 Series)
+# Hardware: Framework Laptop 13 Pro (AMD Ryzen AI 9 HX 370)
 
 Product: https://frame.work/gb/en/products/laptop13pro-amd-ai300/configuration/new
 
@@ -6,17 +6,17 @@ Product: https://frame.work/gb/en/products/laptop13pro-amd-ai300/configuration/n
 
 | Component | Detail |
 |-----------|--------|
-| CPU | AMD Ryzen AI 300 Series (Strix Point, Zen 5 cores) |
+| CPU | AMD Ryzen AI 9 HX 370 (Strix Point, 12 cores / 24 threads) |
 | iGPU | AMD Radeon 890M (RDNA 3.5) |
 | NPU | AMD XDNA 2 (AI/ML accelerator) |
-| RAM | Up to 64 GB LPDDR5X (user-upgradeable) |
+| RAM | 64 GB DDR5-5600 (2 × 32 GB, user-upgradeable) |
 | Storage | NVMe M.2 2280 (user-replaceable) |
-| Display | 13.5" 2256×1504 (3:2), 120 Hz |
-| WiFi | Intel Wi-Fi 6E / BE200 (BE200 on newer configs) |
+| Display | 13.5" 2880×1920 touchscreen (3:2), 30–120 Hz |
+| WiFi | AMD RZ717 Wi-Fi 7 |
 | Bluetooth | 5.3+ |
 | Webcam | 1080p 60fps |
-| Battery | 61 Wh |
-| Ports | 2× USB4 (40Gbps), modular expansion bay (×2) |
+| Battery | 74 Wh |
+| Ports | 4× user-selectable expansion-card bays |
 | Audio | 2× speaker array, 3-mic beamforming array |
 | Biometrics | Fingerprint reader |
 
@@ -45,9 +45,9 @@ needed for the target use case and will improve over time.
 
 ### WiFi (Intel BE200 / AX210)
 
-**Excellent.** Intel WiFi has first-class Linux support. The `iwlwifi` driver
-ships in-kernel. BE200 requires firmware from `linux-firmware`; this is
-handled automatically on NixOS with `hardware.enableRedistributableFirmware`.
+**Expected to be good on a current kernel.** The ordered system uses the AMD
+RZ717 Wi-Fi 7 module rather than the Intel card assumed by the original plan.
+Confirm Wi-Fi and Bluetooth in the live installer before partitioning the disk.
 
 ### Suspend / Resume
 
@@ -66,9 +66,9 @@ this to work.
 
 ### Display / HiDPI
 
-**Good.** The 2256×1504 panel at 13.5" is ~201 PPI. Set fractional scaling to
-125% or 150% in GNOME. Wayland handles fractional scaling better than X11;
-use Wayland.
+**Good.** The 2880×1920 touchscreen is a high-density 3:2 panel with variable
+30–120 Hz refresh. Start with 150% or 175% fractional scaling in GNOME and
+verify touch, rotation behaviour, variable refresh rate and power use.
 
 ### Audio
 
@@ -107,9 +107,8 @@ before purchase: https://community.frame.work/c/framework-laptop/linux
 
 ### nixos-hardware module
 
-A dedicated `nixos-hardware` module for the Framework 13 AI 300 may not exist
-yet or may be recent. Start from the closest existing module (7040 series) and
-verify which settings apply:
+The pinned `nixos-hardware` input includes a dedicated Framework 13 AMD AI 300
+Series module, enabled in `flake.nix`:
 
 ```nix
 # flake.nix inputs
@@ -117,12 +116,12 @@ nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
 # configuration.nix
 imports = [
-  nixos-hardware.nixosModules.framework-13-7040-amd  # adjust when AI 300 module ships
+  nixos-hardware.nixosModules.framework-amd-ai-300-series
 ];
 ```
 
-Track this issue in the nixos-hardware repo:
-https://github.com/NixOS/nixos-hardware
+It supplies the shared Framework/AMD configuration, Framework EC integration,
+firmware updates, audio enhancement device and model-specific audio workarounds.
 
 ### Kernel pin
 

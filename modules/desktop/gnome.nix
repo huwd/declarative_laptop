@@ -28,7 +28,7 @@
 
     # HiDPI — fractional scaling support under Wayland
     # Set your preferred scale in GNOME Settings → Displays
-    # 125% or 150% suits the Framework 13 at 2256×1504
+    # Start with 150% or 175% on the Framework 13 Pro's 2880×1920 panel
     sessionVariables = {
       NIXOS_OZONE_WL = "1"; # hint Electron/Chrome apps to use Wayland
     };
