@@ -48,7 +48,7 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: .main-closure
-          key: main-closure-latest
+          key: main-closure-framework-13
 
       - name: Generate nvd diff
         if: steps.changed.outputs.changed == 'true' && steps.cache.outputs.cache-hit == 'true'
@@ -62,17 +62,6 @@ jobs:
         run: |
           nix run nixpkgs#vulnix -- --closure ${{ steps.build.outputs.closure }} \
             > vulnix-report.txt 2>&1 || true
-
-      - name: Open PR
-        if: steps.changed.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: chore/nixpkgs-update
-          delete-branch: true
-          commit-message: "chore: update nixpkgs"
-          title: "chore: weekly nixpkgs update"
-          body-path: .pr-body.md
 
       - name: Build PR body
         if: steps.changed.outputs.changed == 'true'
@@ -92,3 +81,14 @@ jobs:
             echo ""
             echo "> New CVE findings block merge until triaged. Add accepted risks to \`vulnix.toml\`."
           } > .pr-body.md
+
+      - name: Open PR
+        if: steps.changed.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/nixpkgs-update
+          delete-branch: true
+          commit-message: "chore: update nixpkgs"
+          title: "chore: weekly nixpkgs update"
+          body-path: .pr-body.md

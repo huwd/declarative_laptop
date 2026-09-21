@@ -36,7 +36,9 @@ jobs:
       - name: Run vulnix against closure
         id: vulnix
         run: |
-          nix run nixpkgs#vulnix -- --closure ${{ steps.build.outputs.closure }} > vulnix-report.txt 2>/dev/null || true
+          set +e
+          nix run nixpkgs#vulnix -- --closure ${{ steps.build.outputs.closure }} > vulnix-report.txt 2>&1
+          echo "exit-code=$?" >> "$GITHUB_OUTPUT"
 
       - name: Post vulnix findings as PR comment
         if: github.event_name == 'pull_request'
@@ -108,6 +110,14 @@ jobs:
                 body,
               });
             }
+
+      - name: Enforce vulnix result
+        if: steps.vulnix.outputs['exit-code'] != '0'
+        env:
+          VULNIX_EXIT_CODE: ${{ steps.vulnix.outputs['exit-code'] }}
+        run: |
+          echo "vulnix reported findings or failed with exit code ${VULNIX_EXIT_CODE}"
+          exit "${VULNIX_EXIT_CODE}"
 
       - name: Cache closure path (main only)
         if: github.ref == 'refs/heads/main'
