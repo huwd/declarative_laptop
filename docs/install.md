@@ -246,11 +246,12 @@ Log in as `root` using the password set during install, then set a password for 
 passwd <username>
 ```
 
-Log out, log back in as `<username>`, and push your `hardware-configuration.nix` commit if you haven't already:
+Log out and log back in as `<username>`. The installer's `/tmp/config` clone no
+longer exists after reboot, so clone the repository into its permanent location:
 
 ```bash
-cd /tmp/config   # or re-clone if the installer environment is gone
-git push
+mkdir -p ~/.config
+git clone <your-repo-url> ~/.config/nixos-config
 ```
 
 From here, continue with [docs/setup.md](setup.md) to complete post-install configuration.
