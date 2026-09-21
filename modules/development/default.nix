@@ -1,5 +1,12 @@
 { pkgs, ... }:
 {
+  # ── Generic Linux binary compat ──────────────────────────────────────────────
+  # NixOS has no standard dynamic loader path, so prebuilt binaries from npm
+  # global installs (e.g. Claude Code) fail with "cannot start dynamically
+  # linked executable". nix-ld provides that loader stub.
+  # https://nix.dev/permalink/stub-ld
+  programs.nix-ld.enable = true;
+
   # ── Container runtimes ───────────────────────────────────────────────────────
 
   virtualisation.docker = {
