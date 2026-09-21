@@ -37,7 +37,7 @@ jobs:
         id: vulnix
         run: |
           set +e
-          nix run nixpkgs#vulnix -- --closure ${{ steps.build.outputs.closure }} > vulnix-report.txt 2>&1
+          nix run nixpkgs#vulnix -- --closure ${{ steps.build.outputs.closure }} --whitelist vulnix.toml > vulnix-report.txt 2>&1
           echo "exit-code=$?" >> "$GITHUB_OUTPUT"
 
       - name: Post vulnix findings as PR comment

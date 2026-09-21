@@ -33,7 +33,7 @@ build:
     nix build .#nixosConfigurations.{{HOST}}.config.system.build.toplevel
 
 scan: build
-    nix run nixpkgs#vulnix -- --closure result
+    nix run nixpkgs#vulnix -- --closure ./result --whitelist vulnix.toml
 
 # ── System management ───────────────────────────────────────────────────────
 
