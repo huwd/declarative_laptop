@@ -7,6 +7,8 @@
 
   programs.firefox = {
     enable = true;
+    # Keep the profile where the extension audit service expects it.
+    configPath = ".mozilla/firefox";
 
     profiles.huw = {
       isDefault = true;
