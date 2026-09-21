@@ -44,24 +44,26 @@
     "net.ipv4.conf.default.rp_filter" = 1;
   };
 
-  # ── Polkit ───────────────────────────────────────────────────────────────────
-  security.polkit.enable = true;
+  # ── Polkit, PAM and sudo ─────────────────────────────────────────────────────
+  security = {
+    polkit.enable = true;
 
-  # ── Fingerprint ──────────────────────────────────────────────────────────────
-  # Goodix MOC sensor. Used by polkit (Bitwarden biometric unlock, GNOME prompts)
-  # and sudo. Deliberately not used for login: a fingerprint can't unlock the
-  # GNOME keyring, so the password is needed there anyway.
+    # Fingerprint (Goodix MOC sensor, via services.fprintd below) is used by
+    # polkit (Bitwarden biometric unlock, GNOME prompts) and sudo. Deliberately
+    # not used for login: a fingerprint can't unlock the GNOME keyring, so the
+    # password is needed there anyway.
+    pam.services = {
+      login.fprintAuth = false;
+      gdm-password.fprintAuth = false;
+      gdm-fingerprint.enable = false;
+      sudo.fprintAuth = true;
+    };
+
+    sudo = {
+      enable = true;
+      wheelNeedsPassword = true;
+    };
+  };
+
   services.fprintd.enable = true;
-  security.pam.services = {
-    login.fprintAuth = false;
-    gdm-password.fprintAuth = false;
-    gdm-fingerprint.enable = false;
-    sudo.fprintAuth = true;
-  };
-
-  # ── Sudo ─────────────────────────────────────────────────────────────────────
-  security.sudo = {
-    enable = true;
-    wheelNeedsPassword = true;
-  };
 }
