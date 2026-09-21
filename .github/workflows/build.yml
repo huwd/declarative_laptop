@@ -49,14 +49,34 @@ jobs:
         with:
           script: |
             const fs = require('fs');
+            const host = process.env.HOST;
             const report = fs.readFileSync(process.env.VULNIX_REPORT_PATH, 'utf8').trim();
-            if (!report) return;
-            github.rest.issues.createComment({
+            const heading = `## 🔒 vulnix CVE scan (${host})`;
+            const body = report
+              ? `${heading}\n\`\`\`\n${report}\n\`\`\``
+              : `${heading}\nNo findings.`;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🔒 vulnix CVE scan (${process.env.HOST})\n\`\`\`\n${report}\n\`\`\``,
             });
+            const existing = comments.find(c => c.body.startsWith(heading));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                comment_id: existing.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              });
+            } else if (report) {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              });
+            }
 
       - name: Restore last main closure path
         id: cache
@@ -89,21 +109,21 @@ jobs:
               ? `## 📦 Package diff (${host})\n\`\`\`\n${diff}\n\`\`\``
               : `## 📦 Package diff (${host})\nNo package changes.`;
 
-            const comments = await github.rest.issues.listComments({
+            const comments = await github.paginate(github.rest.issues.listComments, {
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
-            const existing = comments.data.find(c => c.body.startsWith(`## 📦 Package diff (${host})`));
+            const existing = comments.find(c => c.body.startsWith(`## 📦 Package diff (${host})`));
             if (existing) {
-              github.rest.issues.updateComment({
+              await github.rest.issues.updateComment({
                 comment_id: existing.id,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body,
               });
             } else {
-              github.rest.issues.createComment({
+              await github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
