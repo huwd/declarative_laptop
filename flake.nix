@@ -39,9 +39,8 @@
       nixosConfigurations.framework-13 = nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
-          # Hardware — swap for the AI 300 module once it lands in nixos-hardware
-          # nixos-hardware.nixosModules.framework-13-7040-amd
-          # Track: https://github.com/NixOS/nixos-hardware
+          # Framework Laptop 13 Pro, AMD Ryzen AI 300 Series (Strix Point)
+          nixos-hardware.nixosModules.framework-amd-ai-300-series
 
           ./hosts/framework-13/configuration.nix
 
