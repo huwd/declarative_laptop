@@ -47,6 +47,18 @@
   # ── Polkit ───────────────────────────────────────────────────────────────────
   security.polkit.enable = true;
 
+  # ── Fingerprint ──────────────────────────────────────────────────────────────
+  # Goodix MOC sensor. Used by polkit (Bitwarden biometric unlock, GNOME prompts)
+  # and sudo. Deliberately not used for login: a fingerprint can't unlock the
+  # GNOME keyring, so the password is needed there anyway.
+  services.fprintd.enable = true;
+  security.pam.services = {
+    login.fprintAuth = false;
+    gdm-password.fprintAuth = false;
+    gdm-fingerprint.enable = false;
+    sudo.fprintAuth = true;
+  };
+
   # ── Sudo ─────────────────────────────────────────────────────────────────────
   security.sudo = {
     enable = true;
