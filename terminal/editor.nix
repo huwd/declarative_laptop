@@ -1,4 +1,5 @@
-_: {
+{ config, pkgs, ... }:
+{
   # Neovim — binary only. LazyVim manages its own plugins via lazy.nvim.
   # Do not declare neovim plugins here; they will fight LazyVim.
   programs.neovim = {
@@ -10,21 +11,23 @@ _: {
     # Preserve the Home Manager 25.05 provider behaviour explicitly.
     withPython3 = true;
     withRuby = true;
+    # Load Home Manager's provider settings via the nvim wrapper instead of
+    # writing ~/.config/nvim/init.lua, which belongs to LazyVim.
+    sideloadInitLua = true;
   };
 
-  # LazyVim config lives in ~/.config/nvim — track it in the nixos-config repo
-  # by symlinking, or manage it separately in its own git repo.
-  #
-  # Option A: symlink from within this repo (add your nvim config at
-  #   home/huw/nvim/ and uncomment):
-  #
-  # xdg.configFile."nvim" = {
-  #   source = ../nvim;
-  #   recursive = true;
-  # };
-  #
-  # Option B: keep nvim config in a separate repo and clone it to
-  #   ~/.config/nvim on first boot (simpler; avoids Nix/LazyVim friction).
+  # LazyVim config lives in this repo at home/huw/nvim. Link it out-of-store
+  # (not a read-only copy) so edits apply on nvim restart without a rebuild,
+  # and so lazy.nvim can write lazy-lock.json / lazyvim.json back into git.
+  # Assumes the repo is checked out at ~/.config/nixos-config on every host.
+  xdg.configFile."nvim".source =
+    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/nixos-config/home/huw/nvim";
+
+  home.packages = with pkgs; [
+    # nvim-treesitter compiles parsers locally
+    gcc
+    tree-sitter
+  ];
 
   # LazyGit
   programs.lazygit = {
