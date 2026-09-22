@@ -4,6 +4,7 @@
     # Modern CLI replacements
     eza # ls — declared in shell.nix aliases
     bat # cat/less — declared in shell.nix aliases
+    btop # prettier process monitor
     ripgrep # grep
     fd # find
     fzf # fuzzy finder — shell integration in shell.nix
