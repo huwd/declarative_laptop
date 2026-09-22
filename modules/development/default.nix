@@ -35,6 +35,7 @@
 
     # Containers
     docker-compose
+    docker-sbx
     lazydocker # Docker TUI
 
     # Rust — rustup manages stable/nightly/targets itself
@@ -54,11 +55,6 @@
 
     # Terminal help
     tldr
-
-    # SBX (Docker Sandboxed Execution)
-    # Too new for nixpkgs — install via Docker:
-    #   docker run --rm docker/sbx <command>
-    # Or follow https://docs.docker.com/sbx once the CLI ships as a binary
   ];
 
   # docker group membership is declared in hosts/framework-13/configuration.nix
