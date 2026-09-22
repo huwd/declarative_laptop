@@ -22,7 +22,6 @@
       gnomeExtensions.appindicator # system tray (Spotify, Signal, etc.)
       gnomeExtensions.blur-my-shell
       gnomeExtensions.caffeine # inhibit suspend on demand
-      gnomeExtensions.clipboard-indicator
       gnomeExtensions.just-perfection # UI density / behaviour tweaks
     ];
 

@@ -22,6 +22,7 @@
     curl
     wget
     unzip
+    wl-clipboard # wl-copy / wl-paste — CLI clipboard for Wayland (used by gh)
   ];
 
   # bat — syntax-highlighted pager; configure theme to match terminal
