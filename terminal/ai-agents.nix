@@ -5,7 +5,9 @@ _: {
   # No `settings` here on purpose: each tool writes its own config files
   # (~/.claude/settings.json etc.), and a Home Manager-managed copy would be
   # read-only in the Nix store.
-  programs.claude-code.enable = true;
-  programs.opencode.enable = true;
-  programs.codex.enable = true;
+  programs = {
+    claude-code.enable = true;
+    opencode.enable = true;
+    codex.enable = true;
+  };
 }
