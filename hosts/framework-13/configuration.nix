@@ -5,6 +5,7 @@
     ../../modules/desktop/gnome.nix
     ../../modules/desktop/keyboard.nix
     ../../modules/apps.nix
+    ../../modules/gaming.nix
     ../../modules/development/default.nix
     ../../modules/security.nix
     ../../modules/services.nix
