@@ -8,5 +8,6 @@ _: {
     ./zellij.nix # ← swap for ./tmux.nix to switch multiplexers
     # ./tmux.nix
     ./git.nix
+    ./ai-agents.nix
   ];
 }
