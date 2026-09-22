@@ -42,12 +42,14 @@ _: {
         showFileTree = true;
         nerdFontsVersion = "3";
       };
-      git = {
-        paging = {
+      # lazygit ≥0.55 schema; the old git.paging key triggers a migration that
+      # fails because this file is read-only in the Nix store.
+      git.diffRenderers = [
+        {
           colorArg = "always";
-          pager = "delta --dark --paging=never";
-        };
-      };
+          command = "delta --dark --paging=never";
+        }
+      ];
       os.editPreset = "nvim";
     };
   };
