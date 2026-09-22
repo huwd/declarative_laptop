@@ -22,8 +22,9 @@
 
   # ── Language runtimes ────────────────────────────────────────────────────────
   #
-  # Per-project toolchains → devenv.nix
-  # System-wide only what's needed outside any project context
+  # System-wide defaults track the newest stable release of each language.
+  # Projects that need an older version pin it in their own devenv.nix,
+  # activated automatically on cd by direnv (`.envrc`: `use devenv`).
 
   environment.systemPackages = with pkgs; [
     # Version control
@@ -38,17 +39,22 @@
     docker-sbx
     lazydocker # Docker TUI
 
-    # Rust — rustup manages stable/nightly/targets itself
-    # Do not also install pkgs.rustc — they conflict
+    # Per-project dev environments (languages, versions, services)
+    devenv
+
+    # Rust — rustup manages stable/nightly/targets itself; pin per project
+    # with rust-toolchain.toml. Do not also install pkgs.rustc — they conflict
     rustup
 
-    # Node — system-wide for AI CLI tools and one-off scripts
-    # Per-project versions → devenv.nix
-    nodejs_22
+    # Node — newest release line (nodejs_latest follows it as nixpkgs updates)
+    nodejs_latest
 
-    # Python
+    # Python — python3 is nixpkgs' default, currently the newest stable (3.14)
     python3
     uv # fast package/project manager; replaces pip/venv
+
+    # Ruby — nixpkgs' plain `ruby` lags a major version, so name the newest
+    ruby_4_0
 
     # Editor fallback
     vscode
@@ -56,6 +62,16 @@
     # Terminal help
     tldr
   ];
+
+  # devenv's binary cache, so its tooling downloads prebuilt instead of
+  # compiling. Configured system-wide rather than making huw a trusted-user
+  # (trusted users can import arbitrary store paths — effectively root).
+  nix.settings = {
+    extra-substituters = [ "https://devenv.cachix.org" ];
+    extra-trusted-public-keys = [
+      "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
+    ];
+  };
 
   # NixOS defaults EDITOR to nano in /etc/set-environment, which every shell
   # re-reads; Home Manager's EDITOR=nvim is only sourced once per login, so
