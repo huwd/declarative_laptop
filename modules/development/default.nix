@@ -57,5 +57,10 @@
     tldr
   ];
 
+  # NixOS defaults EDITOR to nano in /etc/set-environment, which every shell
+  # re-reads; Home Manager's EDITOR=nvim is only sourced once per login, so
+  # nano wins in nested shells. Set it here to override the default.
+  environment.variables.EDITOR = "nvim";
+
   # docker group membership is declared in hosts/framework-13/configuration.nix
 }
