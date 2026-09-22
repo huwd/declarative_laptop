@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+_: {
   # Neovim — binary only. LazyVim manages its own plugins via lazy.nvim.
   # Do not declare neovim plugins here; they will fight LazyVim.
   programs.neovim = {
@@ -53,11 +52,5 @@
     };
   };
 
-  home.packages = with pkgs; [
-    delta # syntax-highlighted git diffs; used by lazygit and git itself
-  ];
-
-  # delta config lives in ~/.gitconfig [delta] section — manage via git config
-  # or add programs.git.enable = true here and declare it in Nix if you want
-  # home-manager to own your full git config.
+  # delta itself is installed and configured in git.nix (programs.git.delta)
 }
