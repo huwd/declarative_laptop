@@ -4,9 +4,11 @@
 # Fields per entry: cve, until (YYYY-MM-DD — rule expires and findings
 # reappear), comment, issue_url.
 #
-# Individually triaged entries carry a specific justification. Entries
-# marked "not yet individually triaged" were bulk-accepted to unblock CI
-# after the 2026-09-20 nix-inputs bump — see the tracking issue.
+# Every entry carries a specific justification. Permanent entries (no
+# `until`) are false positives or already fixed; entries with `until` are
+# real, unpatched and accepted as low risk — re-check them before expiry.
+# Keys with a version (pkg-1.2.3) stop matching when the package is bumped,
+# which forces a fresh look; version-less keys are for wrong-product matches.
 
 # ── Individually triaged ─────────────────────────────────────────────────────
 
@@ -43,140 +45,174 @@ comment = "NVD CPE false positives. CVE-2026-27820 is in the Ruby zlib gem (Zlib
 cve = [ "CVE-2021-4217", "CVE-2022-0529", "CVE-2022-0530" ]
 comment = "Already patched in nixpkgs: unzip.patches includes CVE-2021-4217.patch and 28-cve-2022-0529-and-cve-2022-0530.patch. Upstream Info-ZIP never released a fixed version (last release ~2009), so the version string still reads 6.0 and vulnix's version-based matching can't see the applied patches."
 
-# ── Not yet individually triaged — bulk-accepted to unblock install ─────────
-# See https://github.com/huwd/declarative_laptop/issues/17
+# ── Wrong product: NVD CPE matches an unrelated project with the same name ───
+# Triaged 2026-09-22 (#17). Version-less keys: these never apply.
 
-["ada-4.0.0"]
+["ada"]
 cve = "CVE-2024-9410"
-until = "2026-10-21"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Ada.cx's Sentry SSRF (a web service). nixpkgs ada is the WHATWG URL parser C++ library."
 
-["avahi-0.8"]
-cve = [ "CVE-2021-26720", "CVE-2025-59529" ]
-until = "2026-10-21"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-
-["bolt-0.9.8"]
+["bolt"]
 cve = [ "CVE-2021-27367", "CVE-2022-31321", "CVE-2023-5214", "CVE-2025-34086" ]
-until = "2026-10-21"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Bolt CMS (PHP) and Puppet Bolt. nixpkgs bolt is the Thunderbolt device manager daemon."
 
-["busybox-1.37.0"]
-cve = "CVE-2025-46394"
-until = "2026-10-21"
+["git"]
+cve = [ "CVE-2021-21684", "CVE-2022-30947", "CVE-2022-36882", "CVE-2022-36883", "CVE-2022-36884", "CVE-2022-38663" ]
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "All in the Jenkins Git Plugin, not git itself."
 
-["cjson-1.7.19"]
-cve = [ "CVE-2026-16554", "CVE-2026-67215", "CVE-2026-67216", "CVE-2026-67217" ]
-until = "2026-10-21"
+["malcontent"]
+cve = [ "CVE-2026-24845", "CVE-2026-28407" ]
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Chainguard's malcontent supply-chain scanner. nixpkgs malcontent is GNOME's parental-controls library."
 
-["coreutils-9.11"]
-cve = [ "CVE-2026-56391", "CVE-2026-56392" ]
-until = "2026-10-21"
+["obsidian"]
+cve = "CVE-2023-24044"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Plesk Obsidian (hosting control panel). nixpkgs obsidian is the Obsidian notes app."
+
+["orc"]
+cve = "CVE-2025-47436"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Apache ORC (columnar file format) LZO decompressor. nixpkgs orc is GStreamer's Oil Runtime Compiler."
+
+["libmpeg2"]
+cve = "CVE-2022-37416"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Ittiam libmpeg2 (Android's decoder). nixpkgs libmpeg2 is the unrelated VideoLAN/mpeg2dec library."
+
+
+# ── Already fixed in the version we run ─────────────────────────────────────
+
+["avahi"]
+cve = "CVE-2021-26720"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Only affects Debian's packaging (avahi-daemon-check-dns.sh run from /etc/network/if-up.d); NixOS doesn't ship that script."
 
 ["cups-2.4.19"]
 cve = "CVE-2022-26691"
-until = "2026-10-21"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-
-["cups-filters-2.0.1"]
-cve = "CVE-2025-64524"
-until = "2026-10-21"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Fixed in CUPS 2.4.2 (Apple's advisory for the same bug); we run 2.4.19."
 
 [dbus-1]
 cve = [ "CVE-2022-42010", "CVE-2022-42011", "CVE-2022-42012" ]
-until = "2026-10-21"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-
-["dhcpcd-10.3.2"]
-cve = [ "CVE-2026-56113", "CVE-2026-56114", "CVE-2026-56116", "CVE-2026-56117" ]
-until = "2026-10-21"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "vulnix parses the 'dbus-1' config derivation as dbus version 1. Real dbus is 1.16.2; these were fixed in 1.14.4."
 
 ["ffmpeg-9.0.1"]
 cve = [ "CVE-2025-25468", "CVE-2025-25469" ]
-until = "2026-10-21"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-
-["gcc-15.3.0"]
-cve = "CVE-2023-4039"
-until = "2026-10-21"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-
-["git-2.55.0"]
-cve = [ "CVE-2021-21684", "CVE-2022-30947", "CVE-2022-36882", "CVE-2022-36883", "CVE-2022-36884", "CVE-2022-38663" ]
-until = "2026-10-21"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-
-["glibc-2.42-84"]
-cve = [ "CVE-2025-15281", "CVE-2026-4046", "CVE-2026-4437", "CVE-2026-4438", "CVE-2026-5435", "CVE-2026-5450", "CVE-2026-5928", "CVE-2026-6238" ]
-until = "2026-10-21"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-
-["gstreamer-1.28.6"]
-cve = "CVE-2026-73433"
-until = "2026-10-21"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-
-["gzip-1.14"]
-cve = [ "CVE-2026-41991", "CVE-2026-41992" ]
-until = "2026-10-21"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-
-["jbig2dec-0.20"]
-cve = "CVE-2023-46361"
-until = "2026-10-21"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-
-["jq-1.8.2"]
-cve = [ "CVE-2026-33948", "CVE-2026-39979", "CVE-2026-44777" ]
-until = "2026-10-21"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Memory leaks fixed on FFmpeg master (commit d5873b) in early 2025; the 9.0.1 release (2026) includes the fix."
 
 ["libmicrohttpd-1.0.6"]
 cve = [ "CVE-2025-59777", "CVE-2025-62689" ]
-until = "2026-10-21"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Fixed in commit ff13abc after v1.0.2; we run 1.0.6."
 
-["libmpeg2-0.5.1"]
-cve = "CVE-2022-37416"
-until = "2026-10-21"
+["jq-1.8.2"]
+cve = [ "CVE-2026-33948", "CVE-2026-39979", "CVE-2026-44777" ]
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Fix commits 6374ae0 and 2f09060 are ancestors of the jq-1.8.2 tag (checked via GitHub compare); CVE-2026-44777 affects 1.8.2rc1 and earlier."
 
-["libsndfile-1.2.2"]
-cve = [ "CVE-2024-50612", "CVE-2024-50613", "CVE-2025-52194", "CVE-2025-56226", "CVE-2026-37555" ]
-until = "2026-10-21"
+
+# ── Patched in nixpkgs (version string unchanged, so vulnix can't tell) ─────
+
+["glibc-2.42-84"]
+cve = [ "CVE-2025-15281", "CVE-2026-4046", "CVE-2026-4437", "CVE-2026-4438", "CVE-2026-5435", "CVE-2026-5450", "CVE-2026-5928", "CVE-2026-6238" ]
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "All eight fixed by backports in nixpkgs' 2.42-master.patch (release branch): wordexp WRDE_REUSE, IBM1390/1399 iconv, resolv record count / hostname check / ns_sprintrrf x2, scanf %mc, ungetwc."
 
 ["libssh2-1.11.1"]
 cve = [ "CVE-2025-15661", "CVE-2026-55199", "CVE-2026-55200", "CVE-2026-58050", "CVE-2026-58051", "CVE-2026-66032", "CVE-2026-66033", "CVE-2026-66034", "CVE-2026-66035", "CVE-2026-7598" ]
-until = "2026-10-21"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "nixpkgs libssh2.patches carries a CVE patch for each of these ten."
 
-["malcontent-0.13.1"]
-cve = [ "CVE-2026-24845", "CVE-2026-28407" ]
-until = "2026-10-21"
+["gzip-1.14"]
+cve = [ "CVE-2026-41991", "CVE-2026-41992" ]
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "nixpkgs gzip.patches includes CVE-2026-41991.patch and CVE-2026-41992.patch."
+
+["coreutils-9.11"]
+cve = [ "CVE-2026-56391", "CVE-2026-56392" ]
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "nixpkgs coreutils.patches includes CVE-2026-56391.patch and CVE-2026-56392.patch."
+
+
+# ── Not applicable to this platform ─────────────────────────────────────────
+
+["gcc-15.3.0"]
+cve = "CVE-2023-4039"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Disputed; stack-protector bypass only on AArch64 targets. Both hosts are x86_64-linux."
+
+["cjson"]
+cve = "CVE-2026-16554"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Integer overflow only on 32-bit platforms (32-bit size_t). Both hosts are x86_64-linux."
+
+
+# ── Real, unpatched, accepted as low risk — re-check before `until` ─────────
+# No fixed release in nixpkgs yet. Each needs crafted local input or a
+# same-link attacker against a service that isn't running.
+
+["avahi-0.8"]
+cve = "CVE-2025-59529"
+until = "2026-11-22"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "avahi-daemon runs (GNOME service discovery). The simple-protocol server ignores its client limit, allowing a local user to exhaust connections: local DoS only, single-user machine."
+
+["busybox-1.37.0"]
+cve = "CVE-2025-46394"
+until = "2026-11-22"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "tar can hide filenames from a listing via terminal escapes: cosmetic, and busybox is only used in the initrd."
+
+["cjson-1.7.19"]
+cve = [ "CVE-2026-67215", "CVE-2026-67216", "CVE-2026-67217" ]
+until = "2026-11-22"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "All in cJSON_Utils (RFC 6902 JSON Patch / cJSON_Compare): stack exhaustion, exponential compare time, non-atomic patch. Needs an application applying an untrusted JSON Patch: DoS at worst."
+
+["cups-filters-2.0.1"]
+cve = "CVE-2025-64524"
+until = "2026-11-22"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "rastertopclx crashes on a crafted raster job. Printing is enabled but only local jobs are submitted: DoS of one filter process."
+
+["dhcpcd-10.3.2"]
+cve = [ "CVE-2026-56113", "CVE-2026-56114", "CVE-2026-56116", "CVE-2026-56117" ]
+until = "2026-11-22"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Fixes land after 10.3.2. dhcpcd is in the closure only as a NetworkManager dependency; the dhcpcd service is inactive and NetworkManager uses its internal DHCP client, so neither the same-link DHCPv6/RA bugs nor the control-socket bug are reachable."
+
+["gstreamer-1.28.6"]
+cve = "CVE-2026-73433"
+until = "2026-11-22"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Length underflow in gst-plugins-good avidemux on crafted FUJIFILM strd metadata in an AVI. Needs a malicious AVI opened in a GStreamer app (Totem is excluded). Watch for 1.28.7."
+
+["jbig2dec-0.20"]
+cve = "CVE-2023-46361"
+until = "2026-11-22"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "SEGV in jbig2_error on a crafted JBIG2 stream (e.g. inside a PDF): crash only."
+
+["libsndfile-1.2.2"]
+cve = [ "CVE-2024-50612", "CVE-2024-50613", "CVE-2025-52194", "CVE-2025-56226", "CVE-2026-37555" ]
+until = "2026-11-22"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "No release since 1.2.2; nixpkgs' only patch is a build fix. All need a crafted audio file opened by an app using libsndfile; CVE-2025-52194 (IRCAM header overflow) is the most serious. Don't open untrusted IRCAM/WAV/AIFF files; drop when a fixed libsndfile lands."
 
 ["mupdf-1.27.2"]
 cve = "CVE-2026-7233"
-until = "2026-10-21"
+until = "2026-11-22"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-
-["obsidian-1.13.7"]
-cve = "CVE-2023-24044"
-until = "2026-10-21"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-
-["orc-0.4.42"]
-cve = "CVE-2025-47436"
-until = "2026-10-21"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "Out-of-bounds read in CFF font subsetting, local only, CVSS 3.3. Needs a crafted document."
 
 ["patch-2.8"]
 cve = [ "CVE-2026-56288", "CVE-2026-56289" ]
-until = "2026-10-21"
+until = "2026-11-22"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
+comment = "NULL deref / infinite loop on a crafted unified diff: DoS only. patch is used by Nix builds on patches from nixpkgs itself."
