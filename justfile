@@ -1,6 +1,7 @@
 default: check
 
-HOST := "framework-13"
+# Defaults to this machine; hostnames match nixosConfigurations names
+HOST := `hostname`
 
 # ── Local checks (mirrors CI tiers 1 + 2) ───────────────────────────────────
 
