@@ -62,7 +62,8 @@ _: {
       # fzf shell integration — Ctrl-R for fuzzy history
       source <(fzf --zsh)
 
-      # npm global installs (e.g. Claude Code) — nix store and system
+      # npm global installs (ad-hoc CLIs; AI agents come from Nix via
+      # ai-agents.nix) — nix store and system
       # paths are read-only, so npm's global prefix points here instead.
       # One-time setup: npm config set prefix "$HOME/.npm-global"
       export PATH="$HOME/.npm-global/bin:$PATH"
