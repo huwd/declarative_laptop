@@ -4,8 +4,11 @@ _: {
     enableZshIntegration = true;
 
     settings = {
-      # Powerline-style left prompt — agnoster lineage
-      format = "$directory$git_branch$git_status$nix_shell$jobs$character";
+      # Powerline-style left prompt — agnoster lineage. Separators (Nerd Font
+      # glyphs) sit in this top-level format rather than in modules, so colours
+      # chain correctly; outside a git repo the empty git segment leaves a thin
+      # purple tip, as in starship's own powerline presets.
+      format = "$directory[](fg:blue bg:purple)$git_branch$git_status[](fg:purple) $nix_shell$jobs$character";
 
       directory = {
         style = "bg:blue fg:black bold";
@@ -17,12 +20,12 @@ _: {
       git_branch = {
         style = "bg:purple fg:white bold";
         format = "[ $symbol$branch ]($style)";
-        symbol = " ";
+        symbol = " ";
       };
 
       git_status = {
         style = "bg:purple fg:yellow bold";
-        format = "[$all_status$ahead_behind]($style)";
+        format = "[$all_status$ahead_behind ]($style)";
         conflicted = "!";
         ahead = "⇡\${count}";
         behind = "⇣\${count}";
@@ -36,7 +39,8 @@ _: {
 
       nix_shell = {
         style = "bg:teal fg:black bold";
-        format = "[ nix:$name ]($style)";
+        # Rounded pill, separate from the powerline chain
+        format = "[](fg:teal)[ nix:$name ]($style)[](fg:teal) ";
         # Only shows when inside a nix shell / devenv
         heuristic = true;
       };
