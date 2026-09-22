@@ -1,4 +1,8 @@
-_: {
+let
+  # Public half of the SSH key held in Bitwarden (no key files live in ~/.ssh)
+  signingKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINwayHfahI9FrcOSEYCp1WX6GcsLVEhTQojvlqqELSiA";
+in
+{
   programs.git = {
     enable = true;
 
@@ -21,7 +25,7 @@ _: {
     # Sign commits and tags with the SSH key held in Bitwarden
     signing = {
       format = "ssh";
-      key = "~/.ssh/id_ed25519.pub";
+      key = "key::${signingKey}";
       signByDefault = true;
     };
   };
@@ -40,6 +44,6 @@ _: {
 
   # Keys trusted to sign as me; used by `git log --show-signature`
   home.file.".ssh/allowed_signers".text = ''
-    mail@huwdiprose.co.uk ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINwayHfahI9FrcOSEYCp1WX6GcsLVEhTQojvlqqELSiA
+    mail@huwdiprose.co.uk ${signingKey}
   '';
 }
