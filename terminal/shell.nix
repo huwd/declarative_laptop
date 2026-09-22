@@ -42,13 +42,19 @@ _: {
       # Nix shortcuts
       # home-manager is wired as a NixOS module (see flake.nix), not the
       # standalone CLI — nrs applies both system and home-manager config.
-      nrs = "sudo nixos-rebuild switch --flake ~/.config/nixos-config#framework-13";
+      # nixos-rebuild picks nixosConfigurations.<hostname> when no #host is given
+      nrs = "sudo nixos-rebuild switch --flake ~/.config/nixos-config";
       nfu = "nix flake update";
+      # Run justfile recipes from anywhere: nx diff, nx apply, nx update
+      nx = "just --justfile ~/.config/nixos-config/justfile --working-directory ~/.config/nixos-config";
     };
 
     initContent = ''
       # (f)ind by (n)ame — ported from dotfiles
       function fn() { ls **/*$1* }
+
+      # ~nix — named directory for this repo: cd ~nix, nvim ~nix/modules/apps.nix
+      hash -d nix=~/.config/nixos-config
 
       # zoxide — smarter cd; use 'z' to jump, 'zi' for interactive
       eval "$(zoxide init zsh)"

@@ -54,7 +54,7 @@ Rebuild and switch to the current config on the running machine:
 sudo nixos-rebuild switch --flake .#<host>
 ```
 
-Or use the justfile shortcuts (default host is `framework-13`; override with `just build HOST=<host>`):
+Or use the justfile shortcuts (host defaults to this machine's hostname; override with `just HOST=<host> build`):
 
 ```
 just check       lint, evaluate, and check secrets

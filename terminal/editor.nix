@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+_: {
   # Neovim — binary only. LazyVim manages its own plugins via lazy.nvim.
   # Do not declare neovim plugins here; they will fight LazyVim.
   programs.neovim = {
@@ -43,21 +42,17 @@
         showFileTree = true;
         nerdFontsVersion = "3";
       };
-      git = {
-        paging = {
+      # lazygit ≥0.55 schema; the old git.paging key triggers a migration that
+      # fails because this file is read-only in the Nix store.
+      git.diffRenderers = [
+        {
           colorArg = "always";
-          pager = "delta --dark --paging=never";
-        };
-      };
+          command = "delta --dark --paging=never";
+        }
+      ];
       os.editPreset = "nvim";
     };
   };
 
-  home.packages = with pkgs; [
-    delta # syntax-highlighted git diffs; used by lazygit and git itself
-  ];
-
-  # delta config lives in ~/.gitconfig [delta] section — manage via git config
-  # or add programs.git.enable = true here and declare it in Nix if you want
-  # home-manager to own your full git config.
+  # delta itself is installed and configured in git.nix (programs.git.delta)
 }

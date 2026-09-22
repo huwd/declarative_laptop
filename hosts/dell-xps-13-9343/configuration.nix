@@ -3,6 +3,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/desktop/gnome.nix
+    ../../modules/desktop/keyboard.nix
     ../../modules/apps.nix
     ../../modules/development/default.nix
     ../../modules/security.nix
