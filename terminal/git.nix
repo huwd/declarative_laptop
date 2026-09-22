@@ -11,6 +11,7 @@ _: {
       alias = {
         l = "log --graph --date=short";
       };
+
       gpg.ssh.allowedSignersFile = "~/.ssh/allowed_signers";
     };
 
@@ -21,6 +22,7 @@ _: {
       signByDefault = true;
     };
   };
+
   # Keys trusted to sign as me; used by `git log --show-signature`
   home.file.".ssh/allowed_signers".text = ''
     mail@huwdiprose.co.uk ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINwayHfahI9FrcOSEYCp1WX6GcsLVEhTQojvlqqELSiA
