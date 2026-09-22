@@ -38,9 +38,9 @@ _: {
       };
 
       nix_shell = {
-        style = "bg:teal fg:black bold";
+        style = "bg:cyan fg:black bold";
         # Rounded pill, separate from the powerline chain
-        format = "[](fg:teal)[ nix:$name ]($style)[](fg:teal) ";
+        format = "[](fg:cyan)[ nix:$name ]($style)[](fg:cyan) ";
         # Only shows when inside a nix shell / devenv
         heuristic = true;
       };
