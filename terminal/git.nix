@@ -14,12 +14,22 @@ in
 
       alias = {
         l = "log --graph --date=short";
+        "recent-branches" =
+          "!git for-each-ref --count=15 --sort=-committerdate refs/heads/ --format='%(refname:short)'";
       };
 
       gpg.ssh.allowedSignersFile = "~/.ssh/allowed_signers";
 
       # Show base as well as ours/theirs in conflicts; delta renders it cleanly
       merge.conflictStyle = "zdiff3";
+
+      # Remember conflict resolutions so they auto-apply if the same conflict recurs
+      rerere.enabled = true;
+
+      init.defaultBranch = "main";
+
+      # Better diffs on moved/rearranged code than the default "myers" algorithm
+      diff.algorithm = "patience";
     };
 
     # Sign commits and tags with the SSH key held in Bitwarden
