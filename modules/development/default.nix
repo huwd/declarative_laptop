@@ -7,6 +7,14 @@
   # https://nix.dev/permalink/stub-ld
   programs.nix-ld.enable = true;
 
+  # NixOS also has no /usr/bin or /bin FHS tree, so tools that hard-code a
+  # binary's path there (rather than searching $PATH) can't find it even
+  # when it's installed and on PATH — e.g. `claude plugin eval` requires
+  # bubblewrap at a fixed path since it runs unattended with no one to
+  # approve a PATH-based lookup. envfs mounts a FUSE fs at /usr/bin that
+  # resolves any missing name against the calling process's own $PATH.
+  services.envfs.enable = true;
+
   # ── Container runtimes ───────────────────────────────────────────────────────
 
   virtualisation.docker = {
@@ -33,6 +41,11 @@
 
     # Task runner — see justfile (check, fix, build, apply)
     just
+
+    # Sandboxing — Claude Code (interactive Bash tool and `claude plugin eval`)
+    # requires this on Linux; declared explicitly rather than relying on it
+    # showing up transitively (e.g. via fwupd)
+    bubblewrap
 
     # Containers
     docker-compose
