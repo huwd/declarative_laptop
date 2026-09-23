@@ -9,5 +9,6 @@ _: {
     # ./tmux.nix
     ./git.nix
     ./ai-agents.nix
+    ./readline.nix
   ];
 }
