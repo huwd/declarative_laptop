@@ -18,6 +18,7 @@
 
     # GNOME extensions
     systemPackages = with pkgs; [
+      gnome-tweaks
       gnomeExtensions.appindicator # system tray (Spotify, Signal, etc.)
       gnomeExtensions.blur-my-shell
       gnomeExtensions.caffeine # inhibit suspend on demand
@@ -35,7 +36,7 @@
   # Required for extensions and dconf user settings
   programs.dconf.enable = true;
 
-  # Trialling alongside Thunderbird (see home/huw/mail.nix)
+  # Mail client
   programs.geary.enable = true;
 
   # Fonts

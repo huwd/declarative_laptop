@@ -2,7 +2,7 @@ _: {
   imports = [
     ../../terminal/default.nix
     ./browser.nix
-    ./mail.nix
+    ./desktop.nix
   ];
 
   home = {
