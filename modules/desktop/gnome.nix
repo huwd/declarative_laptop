@@ -35,6 +35,9 @@
   # Required for extensions and dconf user settings
   programs.dconf.enable = true;
 
+  # Trialling alongside Thunderbird (see home/huw/mail.nix)
+  programs.geary.enable = true;
+
   # Fonts
   fonts = {
     enableDefaultPackages = true;
