@@ -8,6 +8,9 @@
     # Communication
     signal-desktop
 
+    # Music
+    spotify
+
     # Notes
     obsidian
 

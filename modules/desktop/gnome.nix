@@ -11,7 +11,6 @@
     # Strip default GNOME apps we replace or don't use
     gnome.excludePackages = with pkgs; [
       epiphany # GNOME web — using Firefox/Chrome
-      geary # GNOME mail — using Thunderbird
       gnome-music # using Spotify
       gnome-tour
       totem # video player — using VLC
@@ -19,6 +18,7 @@
 
     # GNOME extensions
     systemPackages = with pkgs; [
+      gnome-tweaks
       gnomeExtensions.appindicator # system tray (Spotify, Signal, etc.)
       gnomeExtensions.blur-my-shell
       gnomeExtensions.caffeine # inhibit suspend on demand
@@ -35,6 +35,9 @@
 
   # Required for extensions and dconf user settings
   programs.dconf.enable = true;
+
+  # Mail client
+  programs.geary.enable = true;
 
   # Fonts
   fonts = {
