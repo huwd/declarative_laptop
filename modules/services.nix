@@ -142,5 +142,19 @@
   time.timeZone = "Europe/London";
   i18n.defaultLocale = "en_GB.UTF-8";
 
+  # ── Host aliases ─────────────────────────────────────────────────────────────
+  # Declarative /etc/hosts — NixOS regenerates this file on every rebuild, so
+  # hand edits get silently wiped. Add remote machines here instead.
+  networking.hosts = {
+    "192.168.178.43" = [
+      "pi4"
+      "pi4.local"
+    ];
+    "192.168.178.109" = [
+      "nas"
+      "nas.local"
+    ];
+  };
+
   environment.systemPackages = [ pkgs.grype ];
 }
