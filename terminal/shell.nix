@@ -36,6 +36,7 @@ _: {
       # Git
       gs = "git status";
       glg = "git l";
+      grb = "git recent-branches";
       gps = "git push";
       gpsh = "git push -u origin HEAD";
 
