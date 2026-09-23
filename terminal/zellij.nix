@@ -76,6 +76,7 @@ _:
     mouse_mode true
     copy_on_select false
     scroll_buffer_size 10000
+    show_startup_tips false
 
     keybinds {
         // Alt-hjkl — pane focus from anywhere, no prefix required
