@@ -7,6 +7,20 @@
   # https://nix.dev/permalink/stub-ld
   programs.nix-ld.enable = true;
 
+  # NixOS also has no /usr/bin or /bin FHS tree, so tools that hard-code a
+  # binary's path there (rather than searching $PATH) can't find it even
+  # when it's installed and on PATH — e.g. `claude plugin eval` requires
+  # bubblewrap at a fixed path since it runs unattended with no one to
+  # approve a PATH-based lookup. That fixed-path check exists precisely to
+  # avoid trusting $PATH (an untrusted plugin under eval could poison it
+  # with a no-op "bwrap"), so fix this with a static, immutable symlink
+  # rather than a system-wide $PATH-resolving overlay (e.g. envfs), which
+  # would reintroduce exactly that PATH-trust hole for every /usr/bin/*
+  # lookup on the system, not just this one.
+  systemd.tmpfiles.rules = [
+    "L+ /usr/bin/bwrap - - - - ${pkgs.bubblewrap}/bin/bwrap"
+  ];
+
   # ── Container runtimes ───────────────────────────────────────────────────────
 
   virtualisation.docker = {
@@ -33,6 +47,11 @@
 
     # Task runner — see justfile (check, fix, build, apply)
     just
+
+    # Sandboxing — Claude Code (interactive Bash tool and `claude plugin eval`)
+    # requires this on Linux; declared explicitly rather than relying on it
+    # showing up transitively (e.g. via fwupd)
+    bubblewrap
 
     # Containers
     docker-compose
