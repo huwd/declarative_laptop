@@ -2,6 +2,8 @@ _: {
   # ── Thunderbird ──────────────────────────────────────────────────────────────
   # Profile and privacy defaults are declared here. Accounts are added through
   # the UI, so no addresses or server details live in the repo.
+  # Trialling Geary alongside this (installed via GNOME defaults, see
+  # modules/desktop/gnome.nix) — remove this block if Geary wins out.
 
   programs.thunderbird = {
     enable = true;

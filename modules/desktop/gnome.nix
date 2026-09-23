@@ -11,7 +11,6 @@
     # Strip default GNOME apps we replace or don't use
     gnome.excludePackages = with pkgs; [
       epiphany # GNOME web — using Firefox/Chrome
-      geary # GNOME mail — using Thunderbird
       gnome-music # using Spotify
       gnome-tour
       totem # video player — using VLC
