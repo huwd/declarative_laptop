@@ -27,6 +27,14 @@
     # nvim-treesitter compiles parsers locally
     gcc
     tree-sitter
+
+    # Nix language support for LazyVim's lang.nix extra — nixd is the LSP
+    # (overridden in lua/plugins/nix.lua, replacing the extra's nil_ls
+    # default, which mason can't install into a read-only store), nixfmt is
+    # its formatter, statix its linter.
+    nixd
+    nixfmt
+    statix
   ];
 
   # LazyGit
