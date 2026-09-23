@@ -9,6 +9,7 @@
     ../../modules/development/default.nix
     ../../modules/security.nix
     ../../modules/services.nix
+    ../../modules/local-llm.nix
   ];
 
   # ── Nixpkgs ──────────────────────────────────────────────────────────────────
