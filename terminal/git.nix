@@ -53,6 +53,36 @@ in
       key = "key::${signingKey}";
       signByDefault = true;
     };
+
+    # Global ignores, ported from huwd/dotfiles (dropped macOS/Windows-only entries)
+    ignores = [
+      # Tags: ctags, etags, gtags (GNU global), cscope
+      "TAGS"
+      "!TAGS/"
+      "tags"
+      "!tags/"
+      ".tags"
+      ".tags1"
+      "gtags.files"
+      "GTAGS"
+      "GRTAGS"
+      "GPATH"
+      "cscope.files"
+      "cscope.out"
+      "cscope.in.out"
+      "cscope.po.out"
+
+      # Vim
+      "[._]*.s[a-w][a-z]"
+      "[._]s[a-w][a-z]"
+      "*.un~"
+      "Session.vim"
+      ".netrwhist"
+      "*~"
+
+      # VS Code
+      ".vscode/"
+    ];
   };
 
   # delta — syntax-highlighted pager for diff, show, log -p and add -p.
