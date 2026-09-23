@@ -13,13 +13,38 @@ in
       };
 
       alias = {
-        l = "log --graph --date=short";
+        l = "log --graph --date=short --pretty=format:'%C(blue)%ad%Creset %C(yellow)%h%C(green)%d%Creset %C(blue)%s %C(magenta) [%an]%Creset'";
+        "recent-branches" =
+          "!git for-each-ref --count=15 --sort=-committerdate refs/heads/ --format='%(refname:short)'";
       };
 
       gpg.ssh.allowedSignersFile = "~/.ssh/allowed_signers";
 
       # Show base as well as ours/theirs in conflicts; delta renders it cleanly
       merge.conflictStyle = "zdiff3";
+
+      # Remember conflict resolutions so they auto-apply if the same conflict recurs
+      rerere.enabled = true;
+
+      init.defaultBranch = "main";
+
+      # Better diffs on moved/rearranged code than the default "myers" algorithm
+      diff.algorithm = "patience";
+
+      color = {
+        ui = true;
+        branch = {
+          current = "yellow reverse";
+          local = "yellow";
+          remote = "green";
+        };
+        diff = {
+          meta = "yellow bold";
+          frag = "magenta bold";
+          old = "red";
+          new = "green";
+        };
+      };
     };
 
     # Sign commits and tags with the SSH key held in Bitwarden
@@ -28,6 +53,36 @@ in
       key = "key::${signingKey}";
       signByDefault = true;
     };
+
+    # Global ignores, ported from huwd/dotfiles (dropped macOS/Windows-only entries)
+    ignores = [
+      # Tags: ctags, etags, gtags (GNU global), cscope
+      "TAGS"
+      "!TAGS/"
+      "tags"
+      "!tags/"
+      ".tags"
+      ".tags1"
+      "gtags.files"
+      "GTAGS"
+      "GRTAGS"
+      "GPATH"
+      "cscope.files"
+      "cscope.out"
+      "cscope.in.out"
+      "cscope.po.out"
+
+      # Vim
+      "[._]*.s[a-w][a-z]"
+      "[._]s[a-w][a-z]"
+      "*.un~"
+      "Session.vim"
+      ".netrwhist"
+      "*~"
+
+      # VS Code
+      ".vscode/"
+    ];
   };
 
   # delta — syntax-highlighted pager for diff, show, log -p and add -p.
