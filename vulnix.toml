@@ -83,6 +83,11 @@ cve = "CVE-2022-37416"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
 comment = "Ittiam libmpeg2 (Android's decoder). nixpkgs libmpeg2 is the unrelated VideoLAN/mpeg2dec library."
 
+["codex"]
+cve = "CVE-2021-43635"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/45"
+comment = "CVE is for codexnotes' Codex notebook web app (XSS via Notebook/Page name field). nixpkgs codex is OpenAI's CLI coding agent — unrelated product, same name."
+
 
 # ── Already fixed in the version we run ─────────────────────────────────────
 
@@ -216,3 +221,9 @@ cve = [ "CVE-2026-56288", "CVE-2026-56289" ]
 until = "2026-11-22"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
 comment = "NULL deref / infinite loop on a crafted unified diff: DoS only. patch is used by Nix builds on patches from nixpkgs itself."
+
+["unbound-1.26.0"]
+cve = "CVE-2026-81642"
+until = "2026-10-07"
+issue_url = "https://github.com/huwd/declarative_laptop/issues/45"
+comment = "DNSSEC validator RCE via DNSKEY digest buffer overflow (CVSS 9.1-9.8), fixed upstream in 1.26.1, not yet in nixpkgs. Only present as unbound-lib, pulled in transitively via networkmanager -> gnutls for optional DANE (DNS-based TLS cert auth) support — no unbound daemon runs. Exploitable only if something actually triggers DNSSEC validation via gnutls's DANE path against a malicious zone, which isn't default behaviour. Short expiry given severity; re-check nixpkgs for a 1.26.1 bump."
