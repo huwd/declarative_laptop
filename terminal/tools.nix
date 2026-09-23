@@ -22,6 +22,7 @@
     curl
     wget
     unzip
+    openssl # used by the jwt() shell function in shell.nix
     wl-clipboard # wl-copy / wl-paste — CLI clipboard for Wayland (used by gh)
   ];
 

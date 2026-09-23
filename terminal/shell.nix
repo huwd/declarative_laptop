@@ -53,6 +53,26 @@ _: {
       # (f)ind by (n)ame — ported from dotfiles
       function fn() { ls **/*$1* }
 
+      # Decode a JWT's header and payload (pretty-printed) — ported from dotfiles
+      function jwt() {
+        for part in 1 2; do
+          b64="$(cut -f$part -d. <<< "$1" | tr '_-' '/+')"
+          len=''${#b64}
+          n=$((len % 4))
+          if [[ 2 -eq n ]]; then
+            b64="''${b64}=="
+          elif [[ 3 -eq n ]]; then
+            b64="''${b64}="
+          fi
+          d="$(openssl enc -base64 -d -A <<< "$b64")"
+          jq <<< "$d"
+          # don't decode further if this is an encrypted JWT (JWE)
+          if [[ 1 -eq part ]] && grep '"enc":' <<< "$d" >/dev/null ; then
+            return 0
+          fi
+        done
+      }
+
       # ~nix — named directory for this repo: cd ~nix, nvim ~nix/modules/apps.nix
       hash -d nix=~/.config/nixos-config
 
