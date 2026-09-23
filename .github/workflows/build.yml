@@ -83,6 +83,10 @@ jobs:
         id: vulnix
         run: |
           set +e
+          # Pre-fetch vulnix first so its own build/fetch noise (nix run's
+          # "copying path" chatter, Magic Nix Cache throttle warnings) lands
+          # in this job's log instead of the captured report / PR comment.
+          nix build nixpkgs#vulnix --no-link
           # NVD retired the legacy bulk feeds vulnix relies on; --mirror points
           # at a community-run re-host of the same nvdcve-2.0-<year>.json.gz
           # layout. See https://github.com/nix-community/vulnix/issues/171
