@@ -13,7 +13,7 @@ in
       };
 
       alias = {
-        l = "log --graph --date=short";
+        l = "log --graph --date=short --pretty=format:'%C(blue)%ad%Creset %C(yellow)%h%C(green)%d%Creset %C(blue)%s %C(magenta) [%an]%Creset'";
         "recent-branches" =
           "!git for-each-ref --count=15 --sort=-committerdate refs/heads/ --format='%(refname:short)'";
       };
@@ -30,6 +30,21 @@ in
 
       # Better diffs on moved/rearranged code than the default "myers" algorithm
       diff.algorithm = "patience";
+
+      color = {
+        ui = true;
+        branch = {
+          current = "yellow reverse";
+          local = "yellow";
+          remote = "green";
+        };
+        diff = {
+          meta = "yellow bold";
+          frag = "magenta bold";
+          old = "red";
+          new = "green";
+        };
+      };
     };
 
     # Sign commits and tags with the SSH key held in Bitwarden
