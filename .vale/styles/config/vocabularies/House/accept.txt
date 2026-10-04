@@ -55,6 +55,7 @@ GPUs
 (?i)nvim
 (?i)nvm
 NVMe
+Nygard
 (?i)observability
 (?i)ollama
 (?i)opencode
@@ -71,6 +72,7 @@ Radeon
 (?i)reconstructible
 (?i)reproducibility
 (?i)ripgrep
+ROCm
 (?i)runtimes
 Ryzen
 (?i)sandboxed
@@ -98,5 +100,6 @@ Vulkan
 Wayland
 Wh
 (?i)zellij
+Zimmermann
 (?i)zoxide
 (?i)zsh

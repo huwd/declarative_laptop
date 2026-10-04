@@ -62,6 +62,11 @@ Use these terms consistently and with these meanings.
 - Repeat a heading only under different parents, such as an "Experiments"
   section in each phase of a plan.
 
+## Decision records
+
+Significant decisions are recorded in [`docs/decisions/`](decisions/README.md).
+Its README covers when to write one and how, and includes a template.
+
 ## Checking your work
 
 ```bash
