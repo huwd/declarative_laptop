@@ -304,3 +304,22 @@ jobs:
         run: |
           echo "vulnix reported findings or failed with exit code ${VULNIX_EXIT_CODE}"
           exit "${VULNIX_EXIT_CODE}"
+
+  # One check that always reports, for the main ruleset to require. The
+  # per-host jobs only exist for hosts a PR affects, so requiring them
+  # directly would leave unaffected hosts' checks pending forever.
+  build-result:
+    name: Build result
+    needs: [changes, build]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Check host builds
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          BUILD: ${{ needs.build.result }}
+        run: |
+          echo "Detect affected hosts: $CHANGES, host builds: $BUILD"
+          # "skipped" means no host was affected, which is a pass.
+          [ "$CHANGES" = success ] && { [ "$BUILD" = success ] || [ "$BUILD" = skipped ]; }
