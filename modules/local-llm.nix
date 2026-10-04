@@ -23,7 +23,11 @@
           npm = "@ai-sdk/openai-compatible";
           name = "Ollama (local)";
           options.baseURL = "http://127.0.0.1:11434/v1";
-          models."qwen3-coder:30b".name = "Qwen3-Coder 30B-A3B";
+          models = {
+            "qwen3-coder:30b".name = "Qwen3-Coder 30B-A3B";
+            "granite4:small-h".name = "Granite 4.0 Small (32B-A9B)";
+            "granite4:tiny-h".name = "Granite 4.0 Tiny (7B-A1B)";
+          };
         };
       }
     )
