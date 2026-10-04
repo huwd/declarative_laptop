@@ -21,6 +21,10 @@ evaluate:
 secrets:
     bash scripts/check-secrets.sh
 
+# Advisory prose/spelling check (British English) — local only, not in CI or `check`
+docs-prose *FILES:
+    nix run .#vale -- {{ if FILES == "" { "$(git ls-files '*.md')" } else { FILES } }}
+
 # ── Auto-fix ────────────────────────────────────────────────────────────────
 
 fix:
