@@ -63,3 +63,4 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0002](0002-track-nixos-unstable.md) | Track nixos-unstable, and update pinned inputs through flake.lock | Accepted |
 | [0003](0003-home-manager-as-nixos-module.md) | Apply Home Manager settings with the NixOS configuration | Accepted |
 | [0004](0004-luks-btrfs-systemd-boot.md) | Encrypt system and user data with LUKS2, use btrfs, and boot with systemd-boot | Accepted |
+| [0005](0005-build-full-closure-on-every-pr.md) | Build each affected host's full system closure on every pull request | Accepted |
