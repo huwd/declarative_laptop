@@ -12,7 +12,7 @@ Product: <https://frame.work/gb/en/products/laptop13pro-amd-ai300/configuration/
 | RAM | 64 GB DDR5-5600 (2 × 32 GB, user-upgradeable) |
 | Storage | NVMe M.2 2280 (user-replaceable) |
 | Display | 13.5" 2880×1920 touchscreen (3:2), 30–120 Hz |
-| WiFi | AMD RZ717 Wi-Fi 7 |
+| Wi-Fi | AMD RZ717 Wi-Fi 7 |
 | Bluetooth | 5.3+ |
 | Webcam | 1080p 60fps |
 | Battery | 74 Wh |
@@ -21,7 +21,7 @@ Product: <https://frame.work/gb/en/products/laptop13pro-amd-ai300/configuration/
 | Biometrics | Fingerprint reader |
 
 > Verify exact component revisions at point of purchase — Framework iterates quietly
-> between batches (WiFi card in particular).
+> between batches (Wi-Fi card in particular).
 
 ## Linux Compatibility
 
@@ -43,7 +43,7 @@ GNOME on Wayland runs well on AMD iGPU.
 AMDXDNA driver is in early upstream stages. Ignore it for now — it is not
 needed for the target use case and will improve over time.
 
-### WiFi (Intel BE200 / AX210)
+### Wi-Fi (Intel BE200 / AX210)
 
 **Expected to be good on a current kernel.** The ordered system uses the AMD
 RZ717 Wi-Fi 7 module rather than the Intel card assumed by the original plan.

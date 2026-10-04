@@ -1,0 +1,9 @@
+# Terminology from docs/style-guide.md that the dictionary and vocabulary
+# can't catch (both spellings are "valid" words).
+extends: substitution
+message: "Use '%s' instead of '%s' (see docs/style-guide.md)."
+level: error
+ignorecase: false
+swap:
+  '\bWiFi\b|\bwifi\b': Wi-Fi
+  '\bGithub\b|\bgithub\b': GitHub
