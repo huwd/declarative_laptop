@@ -88,6 +88,11 @@ cve = "CVE-2021-43635"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/45"
 comment = "CVE is for codexnotes' Codex notebook web app (XSS via Notebook/Page name field). nixpkgs codex is OpenAI's CLI coding agent — unrelated product, same name."
 
+["thrift-0.24.0"]
+cve = "CVE-2021-24028"
+issue_url = "https://github.com/huwd/declarative_laptop/pull/60"
+comment = "Facebook Thrift (Meta's fbthrift, date-versioned YYYY.MM.DD.NN) SSL cert validation bug — unrelated codebase from Apache Thrift 0.x, same false positive already identified under thrift-0.22.0. framework-13 resolves thrift to 0.24.0 (dell-xps-13-9343 still resolves 0.22.0); the other 25 CVEs whitelisted under thrift-0.22.0 no longer apply here — 0.24.0 already contains those fixes, so vulnix doesn't flag them."
+
 
 # ── Already fixed in the version we run ─────────────────────────────────────
 
@@ -121,6 +126,11 @@ cve = [ "CVE-2025-59777", "CVE-2025-62689" ]
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
 comment = "Fixed in commit ff13abc after v1.0.2; we run 1.0.6."
 
+["libmicrohttpd-1.0.10"]
+cve = [ "CVE-2025-59777", "CVE-2025-62689" ]
+issue_url = "https://github.com/huwd/declarative_laptop/pull/60"
+comment = "Same as libmicrohttpd-1.0.6 — fixed in commit ff13abc after v1.0.2; we run 1.0.10."
+
 ["jq-1.8.2"]
 cve = [ "CVE-2026-33948", "CVE-2026-39979", "CVE-2026-44777" ]
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
@@ -133,6 +143,11 @@ comment = "Fix commits 6374ae0 and 2f09060 are ancestors of the jq-1.8.2 tag (ch
 cve = [ "CVE-2025-15281", "CVE-2026-4046", "CVE-2026-4437", "CVE-2026-4438", "CVE-2026-5435", "CVE-2026-5450", "CVE-2026-5928", "CVE-2026-6238" ]
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
 comment = "All eight fixed by backports in nixpkgs' 2.42-master.patch (release branch): wordexp WRDE_REUSE, IBM1390/1399 iconv, resolv record count / hostname check / ns_sprintrrf x2, scanf %mc, ungetwc."
+
+["glibc-2.44-25"]
+cve = [ "CVE-2026-5435", "CVE-2026-6238" ]
+issue_url = "https://github.com/huwd/declarative_laptop/pull/60"
+comment = "Same two CVEs as glibc-2.42-84 (GLIBC-SA-2026-0011/0012, the ns_sprintrrf TSIG buffer overflow pair) — see that entry. Confirmed both advisory commits are still carried in nixpkgs' 2.44-master.patch after the glibc 2.42 -> 2.44 bump."
 
 ["libssh2-1.11.1"]
 cve = [ "CVE-2025-15661", "CVE-2026-55199", "CVE-2026-55200", "CVE-2026-58050", "CVE-2026-58051", "CVE-2026-66032", "CVE-2026-66033", "CVE-2026-66034", "CVE-2026-66035", "CVE-2026-7598" ]
@@ -156,6 +171,11 @@ comment = "nixpkgs coreutils.patches includes CVE-2026-56391.patch and CVE-2026-
 cve = "CVE-2023-4039"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
 comment = "Disputed; stack-protector bypass only on AArch64 targets. Both hosts are x86_64-linux."
+
+["gcc-16.2.0"]
+cve = "CVE-2023-4039"
+issue_url = "https://github.com/huwd/declarative_laptop/pull/60"
+comment = "Same as gcc-15.3.0 — disputed, stack-protector bypass only on AArch64 targets. Both hosts are x86_64-linux."
 
 ["cjson"]
 cve = "CVE-2026-16554"
