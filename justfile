@@ -21,6 +21,10 @@ evaluate:
 secrets:
     bash scripts/check-secrets.sh
 
+# Markdown structure lint (config: .markdownlint-cli2.jsonc)
+docs-lint:
+    nix run --inputs-from . nixpkgs#markdownlint-cli2
+
 # Advisory prose/spelling check (British English) — local only, not in CI or `check`
 docs-prose *FILES:
     nix run .#vale -- {{ if FILES == "" { "$(git ls-files '*.md')" } else { FILES } }}
