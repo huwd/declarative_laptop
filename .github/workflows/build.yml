@@ -61,7 +61,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-      id-token: write
     strategy:
       matrix:
         host: ${{ fromJSON(needs.changes.outputs.hosts) }}
@@ -69,7 +68,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f  # main
+        with:
+          determinate: false
       - uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7  # main
+        with:
+          use-flakehub: false
 
       - name: Build NixOS closure
         id: build
