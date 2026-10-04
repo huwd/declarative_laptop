@@ -69,3 +69,4 @@ the rest of it as it was. Fixing typos and broken links is fine.
 | [0006](0006-enforce-vulnix-in-ci.md) | Fail CI on unreviewed CVE findings, with a justified, expiring whitelist | Accepted |
 | [0007](0007-dependabot-for-flake-inputs.md) | Use Dependabot for flake input updates, not a scheduled workflow | Accepted |
 | [0008](0008-ci-without-write-access.md) | Give CI no write access to the repository, and pin its tools | Accepted |
+| [0009](0009-signed-commits-and-merge-commits.md) | Sign every commit through the Bitwarden SSH agent, and merge pull requests with merge commits | Accepted |
