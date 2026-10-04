@@ -37,8 +37,10 @@ jobs:
           changed=$(git diff --name-only "$BASE_SHA...$HEAD_SHA")
           echo "Changed files:"; echo "$changed"
 
-          # Files that cannot change any host's closure
-          ignore='^(docs/|scripts/)|\.md$|^(justfile|\.gitignore|\.github/dependabot\.yml)$'
+          # Files that cannot change any host's closure. Docs tooling
+          # (Vale, markdownlint) and packages/vale.nix only feed the flake's
+          # `packages` output, which no host imports.
+          ignore='^(docs/|scripts/|\.vale/)|\.md$|^(justfile|\.gitignore|\.github/dependabot\.yml|\.github/workflows/check\.yml|\.vale\.ini|\.markdownlint-cli2\.jsonc|packages/vale\.nix)$'
 
           # A host builds if any change is not ignorable and not confined to
           # the *other* host's own directory. Unknown paths therefore build.
