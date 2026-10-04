@@ -79,6 +79,8 @@ jobs:
       - name: Check all declared secrets have .age files
         run: bash scripts/check-secrets.sh
 
+  # Skips its steps (rather than using `on: paths`) when a PR touches no
+  # Markdown, so the job still reports success and can be a required check.
   markdown:
     name: Markdown lint
     runs-on: ubuntu-latest
@@ -86,8 +88,26 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
+
+      - name: Detect Markdown changes
+        id: changes
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT" != "pull_request" ] ||
+            git diff --name-only "$BASE_SHA...$HEAD_SHA" |
+              grep -q -E '\.md$|^\.markdownlint-cli2\.jsonc$|^\.github/workflows/check\.yml$'; then
+            echo "lint=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No Markdown changes; skipping"
+          fi
 
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24  # v31.11.1
+        if: steps.changes.outputs.lint == 'true'
 
       - name: markdownlint-cli2 — Markdown structure check
+        if: steps.changes.outputs.lint == 'true'
         run: nix run --inputs-from . nixpkgs#markdownlint-cli2
