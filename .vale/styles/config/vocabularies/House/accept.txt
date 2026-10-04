@@ -1,3 +1,4 @@
+ADRs
 (?i)agenix
 agnoster
 (?i)alacritty
@@ -20,10 +21,10 @@ CVEs
 (?i)declaratively
 Dependabot
 (?i)deployable
-(?i)devenv
 (?i)dev
-(?i)direnv
+(?i)devenv
 (?i)dir
+(?i)direnv
 (?i)dotfiles?
 (?i)env
 (?i)eval
@@ -52,8 +53,8 @@ GPUs
 (?i)nixpkgs
 (?i)nvd
 (?i)nvim
-NVMe
 (?i)nvm
+NVMe
 (?i)observability
 (?i)ollama
 (?i)opencode
@@ -84,8 +85,8 @@ Strix
 Syncthing
 (?i)systemd
 (?i)tmpfs
-(?i)tmuxinator
 (?i)tmux
+(?i)tmuxinator
 (?i)toolchains?
 (?i)unformatted
 (?i)unscanned

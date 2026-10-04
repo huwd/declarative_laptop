@@ -86,3 +86,7 @@ See [docs/install.md](docs/install.md) for how `hardware-configuration.nix` is g
 ## CI
 
 Every pull request builds all host closures, runs a CVE scan with vulnix, and posts a package diff with nvd as PR comments.
+
+## Writing docs
+
+Markdown follows [docs/style-guide.md](docs/style-guide.md): GOV.UK style, British English. Check with `just docs-lint` (also in CI) and `just docs-prose`.
