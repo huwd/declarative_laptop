@@ -1,6 +1,6 @@
 # Hardware: Framework Laptop 13 Pro (AMD Ryzen AI 9 HX 370)
 
-Product: https://frame.work/gb/en/products/laptop13pro-amd-ai300/configuration/new
+Product: <https://frame.work/gb/en/products/laptop13pro-amd-ai300/configuration/new>
 
 ## Specification
 
@@ -99,7 +99,7 @@ suspend/resume reliability on Strix Point and NPU support. Both will improve
 with kernel updates. Everything else is first-class.
 
 Check the Framework Linux community subforum for your specific BIOS version
-before purchase: https://community.frame.work/c/framework-laptop/linux
+before purchase: <https://community.frame.work/c/framework-laptop/linux>
 
 ---
 

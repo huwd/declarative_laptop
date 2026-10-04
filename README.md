@@ -11,7 +11,7 @@ A reproducible NixOS configuration for x86_64 laptops, managed as a Nix flake. S
 
 ## Repository structure
 
-```
+```text
 hosts/          per-machine configuration and hardware-configuration.nix
 modules/        shared NixOS modules (desktop, apps, development, security, services)
 home/           Home Manager user configuration
@@ -56,8 +56,8 @@ sudo nixos-rebuild switch --flake .#<host>
 
 Or use the justfile shortcuts (host defaults to this machine's hostname; override with `just HOST=<host> build`):
 
-```
-just check       lint, evaluate, and check secrets
+```text
+just check       lint Nix and Markdown, evaluate, and check secrets
 just build       build the system closure without applying
 just apply       nixos-rebuild switch
 just diff        compare built closure against running system

@@ -59,6 +59,7 @@ mutation, no loops) rather than what is present.
 - **Nix Pills** — longer, builds from first principles; useful for internalising
   the derivation model
 - `nix repl` — interactive REPL; invaluable for exploration:
+
   ```bash
   nix repl
   :l <nixpkgs>           # load nixpkgs into scope
@@ -375,12 +376,12 @@ aligned with the NixOS ethos.
 
 | Resource | URL |
 |----------|-----|
-| Nix language basics | https://nix.dev/tutorials/nix-language |
-| NixOS option search | https://search.nixos.org/options |
-| Nixpkgs package search | https://search.nixos.org/packages |
-| Home Manager options | https://nix-community.github.io/home-manager/options.xhtml |
-| nixos-hardware | https://github.com/NixOS/nixos-hardware |
-| devenv docs | https://devenv.sh |
-| agenix | https://github.com/ryantm/agenix |
-| Framework Linux community | https://community.frame.work/c/framework-laptop/linux |
-| NixOS Discourse | https://discourse.nixos.org |
+| Nix language basics | <https://nix.dev/tutorials/nix-language> |
+| NixOS option search | <https://search.nixos.org/options> |
+| Nixpkgs package search | <https://search.nixos.org/packages> |
+| Home Manager options | <https://nix-community.github.io/home-manager/options.xhtml> |
+| nixos-hardware | <https://github.com/NixOS/nixos-hardware> |
+| devenv docs | <https://devenv.sh> |
+| agenix | <https://github.com/ryantm/agenix> |
+| Framework Linux community | <https://community.frame.work/c/framework-laptop/linux> |
+| NixOS Discourse | <https://discourse.nixos.org> |

@@ -6,19 +6,19 @@ for this).
 
 ## Start / stop
 
-```
+```bash
 sudo systemctl start ollama
 sudo systemctl start open-webui   # optional — only if you want the chat UI
 ```
 
-```
+```bash
 sudo systemctl stop open-webui
 sudo systemctl stop ollama
 ```
 
 Check status / logs:
 
-```
+```bash
 systemctl status ollama
 journalctl -u ollama -f
 ```
@@ -32,7 +32,7 @@ Both are localhost-only — nothing here is reachable from the network.
 Ollama 0.34.2 drops integrated GPUs by default. Confirm it's actually using
 the GPU (not falling back to CPU) via:
 
-```
+```bash
 journalctl -u ollama -n 30 | grep -i vulkan
 ```
 
@@ -46,14 +46,14 @@ GPU-usable GTT memory is raised to 48 GiB via kernel params
 (`ttm.pages_limit` / `ttm.page_pool_size`) — this needs a **reboot** to take
 effect after changing it, unlike the rest of this module. Verify:
 
-```
+```bash
 cat /sys/module/ttm/parameters/pages_limit   # expect 12582912 (48 GiB / 4 KiB pages)
 cat /sys/class/drm/card1/device/mem_info_gtt_total   # expect 51539607552 (48 GiB)
 ```
 
 ## Pulling models
 
-```
+```bash
 ollama pull qwen3-coder:30b
 ollama pull granite4:small-h
 ollama pull granite4:tiny-h
@@ -84,7 +84,7 @@ would make home-manager own `~/.config/opencode/opencode.json` as a
 read-only store symlink — `OPENCODE_CONFIG` merges in as an extra layer
 instead, leaving opencode's own config file alone.
 
-```
+```bash
 opencode run --model ollama/qwen3-coder:30b "your prompt"
 ```
 
@@ -96,7 +96,7 @@ login session: NixOS sources `/etc/set-environment` once per login and sets
 `__NIXOS_SET_ENVIRONMENT_DONE=1`, so new terminals inherit the old
 `OPENCODE_CONFIG` store path. Either log out and back in, or:
 
-```
+```bash
 source /etc/set-environment
 ```
 

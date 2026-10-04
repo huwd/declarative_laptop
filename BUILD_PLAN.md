@@ -130,7 +130,7 @@ later with `lanzaboote` — see Learning Plan).
 
 Partition layout (adjust sizes to taste):
 
-```
+```text
 /dev/nvme0n1p1   512M    EFI System Partition    vfat
 /dev/nvme0n1p2   100%    Linux filesystem         (LUKS container)
   └─ /dev/mapper/cryptroot

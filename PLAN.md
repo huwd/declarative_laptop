@@ -104,7 +104,7 @@ Automated `nix flake update` that opens a PR if `flake.lock` changed. The PR
 runs tiers 3 and 4 and includes the `nvd` diff and `vulnix` findings in the
 PR body. Acts as Dependabot for the full OS.
 
-```
+```text
 Monday 09:00 → nix flake update → if flake.lock changed → open PR
                                                           → tier 3 build
                                                           → tier 4 nvd diff
