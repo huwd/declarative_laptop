@@ -9,11 +9,11 @@ check: format-check lint evaluate secrets
     @echo "All checks passed"
 
 format-check:
-    nix run nixpkgs#nixfmt-rfc-style -- --check $(find . -name '*.nix' -not -path './.direnv/*')
+    nix run --inputs-from . nixpkgs#nixfmt -- --check $(find . -name '*.nix' -not -path './.direnv/*')
 
 lint:
-    nix run nixpkgs#statix -- check .
-    nix run nixpkgs#deadnix -- --fail .
+    nix run --inputs-from . nixpkgs#statix -- check .
+    nix run --inputs-from . nixpkgs#deadnix -- --fail .
 
 evaluate:
     nix flake check --no-build
@@ -24,9 +24,9 @@ secrets:
 # ── Auto-fix ────────────────────────────────────────────────────────────────
 
 fix:
-    nix run nixpkgs#nixfmt-rfc-style -- $(find . -name '*.nix' -not -path './.direnv/*')
-    nix run nixpkgs#statix -- fix .
-    nix run nixpkgs#deadnix -- --edit .
+    nix run --inputs-from . nixpkgs#nixfmt -- $(find . -name '*.nix' -not -path './.direnv/*')
+    nix run --inputs-from . nixpkgs#statix -- fix .
+    nix run --inputs-from . nixpkgs#deadnix -- --edit .
 
 # ── Build (mirrors CI tier 3) ───────────────────────────────────────────────
 
@@ -34,7 +34,7 @@ build:
     nix build .#nixosConfigurations.{{HOST}}.config.system.build.toplevel
 
 scan: build
-    nix run nixpkgs#vulnix -- --closure ./result --whitelist vulnix.toml
+    nix run --inputs-from . nixpkgs#vulnix -- --closure ./result --whitelist vulnix.toml
 
 # ── System management ───────────────────────────────────────────────────────
 
@@ -51,4 +51,4 @@ update:
     @echo "Run 'just build' then 'just diff' to review changes before applying"
 
 diff: build
-    nix run nixpkgs#nvd -- diff /run/current-system result
+    nix run --inputs-from . nixpkgs#nvd -- diff /run/current-system result

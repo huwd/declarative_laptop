@@ -23,7 +23,7 @@ jobs:
           use-flakehub: false
 
       - name: Check Nix formatting
-        run: nix run nixpkgs#nixfmt-rfc-style -- --check $(find . -name '*.nix' -not -path './.direnv/*')
+        run: nix run --inputs-from . nixpkgs#nixfmt -- --check $(find . -name '*.nix' -not -path './.direnv/*')
 
   lint:
     name: Lint
@@ -39,10 +39,10 @@ jobs:
           use-flakehub: false
 
       - name: statix — antipattern check
-        run: nix run nixpkgs#statix -- check .
+        run: nix run --inputs-from . nixpkgs#statix -- check .
 
       - name: deadnix — unused code check
-        run: nix run nixpkgs#deadnix -- --fail .
+        run: nix run --inputs-from . nixpkgs#deadnix -- --fail .
 
   commits:
     name: Commit messages
@@ -61,7 +61,7 @@ jobs:
 
       - name: Check conventional commits
         run: |
-          nix run nixpkgs#convco -- check \
+          nix run --inputs-from . nixpkgs#convco -- check \
             ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
 
   evaluate:

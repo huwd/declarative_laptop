@@ -90,11 +90,11 @@ jobs:
           # Pre-fetch vulnix first so its own build/fetch noise (nix run's
           # "copying path" chatter, Magic Nix Cache throttle warnings) lands
           # in this job's log instead of the captured report / PR comment.
-          nix build nixpkgs#vulnix --no-link
+          nix build --inputs-from . nixpkgs#vulnix --no-link
           # NVD retired the legacy bulk feeds vulnix relies on; --mirror points
           # at a community-run re-host of the same nvdcve-2.0-<year>.json.gz
           # layout. See https://github.com/nix-community/vulnix/issues/171
-          nix run nixpkgs#vulnix -- --mirror https://vig-os.github.io/nvd-mirror/ --closure ${{ steps.build.outputs.closure }} --whitelist vulnix.toml > vulnix-report.txt 2>&1
+          nix run --inputs-from . nixpkgs#vulnix -- --mirror https://vig-os.github.io/nvd-mirror/ --closure ${{ steps.build.outputs.closure }} --whitelist vulnix.toml > vulnix-report.txt 2>&1
           echo "exit-code=$?" >> "$GITHUB_OUTPUT"
 
       - name: Post vulnix findings as PR comment
@@ -148,7 +148,7 @@ jobs:
         run: |
           PREV=$(cat .main-closure)
           CURR=${{ steps.build.outputs.closure }}
-          nix run nixpkgs#nvd -- diff "$PREV" "$CURR" > nvd-diff.txt 2>/dev/null || true
+          nix run --inputs-from . nixpkgs#nvd -- diff "$PREV" "$CURR" > nvd-diff.txt 2>/dev/null || true
 
       - name: Post diff as PR comment
         if: github.event_name == 'pull_request' && steps.cache.outputs.cache-hit == 'true'
