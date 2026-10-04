@@ -5,7 +5,7 @@ HOST := `hostname`
 
 # ── Local checks (mirrors CI tiers 1 + 2) ───────────────────────────────────
 
-check: format-check lint evaluate secrets
+check: format-check lint evaluate secrets docs-lint
     @echo "All checks passed"
 
 format-check:
