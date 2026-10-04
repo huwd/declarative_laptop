@@ -42,9 +42,9 @@ The ISO choice only affects the installer environment — `nixos-install` is the
 
 ## 2. Boot and connect to the network
 
-Boot the target machine from the USB. Ethernet via a USB adapter is recommended; wifi firmware may not be available in the installer environment.
+Boot the target machine from the USB. Ethernet via a USB adapter is recommended; Wi-Fi firmware may not be available in the installer environment.
 
-If wifi is the only option:
+If Wi-Fi is the only option:
 
 ```bash
 nmcli device wifi connect "<SSID>" password "<password>"

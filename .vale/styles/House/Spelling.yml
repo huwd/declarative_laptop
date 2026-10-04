@@ -1,0 +1,7 @@
+# British English (-ise) spelling. Replaces Vale.Spelling, which is en_US.
+# Project terms Hunspell doesn't know go in config/vocabularies/House/accept.txt.
+extends: spelling
+message: "'%s' isn't in the British English dictionary or the House vocabulary."
+level: error
+dictionaries:
+  - en_GB

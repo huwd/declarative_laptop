@@ -27,7 +27,7 @@ Moving from Ubuntu to NixOS to gain:
 
 ## Configuration Structure
 
-```
+```text
 nixos-config/
 ├── flake.nix                    # entry point; pins nixpkgs and all inputs
 ├── flake.lock                   # committed; source of truth for package versions

@@ -5,7 +5,7 @@ HOST := `hostname`
 
 # ── Local checks (mirrors CI tiers 1 + 2) ───────────────────────────────────
 
-check: format-check lint evaluate secrets
+check: format-check lint evaluate secrets docs-lint
     @echo "All checks passed"
 
 format-check:
@@ -20,6 +20,14 @@ evaluate:
 
 secrets:
     bash scripts/check-secrets.sh
+
+# Markdown structure lint (config: .markdownlint-cli2.jsonc)
+docs-lint:
+    nix run --inputs-from . nixpkgs#markdownlint-cli2
+
+# Advisory prose/spelling check (British English) — local only, not in CI or `check`
+docs-prose *FILES:
+    nix run .#vale -- {{ if FILES == "" { "$(git ls-files '*.md')" } else { FILES } }}
 
 # ── Auto-fix ────────────────────────────────────────────────────────────────
 

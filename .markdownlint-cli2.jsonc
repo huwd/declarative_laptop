@@ -1,0 +1,15 @@
+// Markdown structure checks — `just docs-lint` locally, "Markdown lint" in CI.
+// Prose and spelling are Vale's job (`just docs-prose`), not this.
+{
+  "config": {
+    "default": true,
+    // Line length: prose isn't hard-wrapped to a limit; rewrapping just churns diffs
+    "MD013": false,
+    // Table pipe alignment: fiddly to maintain, adds nothing structurally
+    "MD060": false,
+    // Repeated headings are fine under different parents (e.g. per-phase "Experiments")
+    "MD024": { "siblings_only": true }
+  },
+  "globs": ["**/*.md"],
+  "gitignore": true
+}

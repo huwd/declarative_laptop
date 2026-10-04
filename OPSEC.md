@@ -170,6 +170,7 @@ this system — they are installed by the user, updated silently, and run with
 access to all page content and often storage.
 
 Mitigate by:
+
 - Installing only extensions from established publishers
 - Auditing the installed extension list periodically
 - Preferring extensions with open-source codebases
