@@ -142,17 +142,31 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: .main-closure
-          key: main-closure-${{ matrix.host }}
+          # Cache keys are immutable, so main saves one entry per commit.
+          # Prefer the PR's exact base; fall back to the newest main build.
+          key: main-closure-${{ matrix.host }}-${{ github.event.pull_request.base.sha }}
+          restore-keys: main-closure-${{ matrix.host }}-
 
       - name: Generate nvd diff
-        if: github.event_name == 'pull_request' && steps.cache.outputs.cache-hit == 'true'
+        if: github.event_name == 'pull_request' && steps.cache.outputs.cache-matched-key != ''
+        env:
+          CURR: ${{ steps.build.outputs.closure }}
         run: |
           PREV=$(cat .main-closure)
-          CURR=${{ steps.build.outputs.closure }}
-          nix run --inputs-from . nixpkgs#nvd -- diff "$PREV" "$CURR" > nvd-diff.txt 2>/dev/null || true
+          # The baseline was built on another runner. If it contains paths
+          # cache.nixos.org can't provide (unfree packages built in CI), it
+          # can't be realised here -- say so rather than report "no changes".
+          # Dry-run first so an unfetchable baseline fails fast instead of
+          # after downloading the rest of it.
+          if ! nix-store --realise --dry-run "$PREV" 2>&1 | grep -q "don't know how to build" \
+             && nix-store --realise "$PREV" > /dev/null 2>&1; then
+            nix run --inputs-from . nixpkgs#nvd -- diff "$PREV" "$CURR" > nvd-diff.txt
+          else
+            echo "Diff unavailable: baseline $PREV could not be fetched on this runner." > nvd-diff.txt
+          fi
 
       - name: Post diff as PR comment
-        if: github.event_name == 'pull_request' && steps.cache.outputs.cache-hit == 'true'
+        if: github.event_name == 'pull_request' && steps.cache.outputs.cache-matched-key != ''
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         env:
           HOST: ${{ matrix.host }}
@@ -189,14 +203,8 @@ jobs:
               });
             }
 
-      - name: Enforce vulnix result
-        if: steps.vulnix.outputs['exit-code'] != '0'
-        env:
-          VULNIX_EXIT_CODE: ${{ steps.vulnix.outputs['exit-code'] }}
-        run: |
-          echo "vulnix reported findings or failed with exit code ${VULNIX_EXIT_CODE}"
-          exit "${VULNIX_EXIT_CODE}"
-
+      # Saved before vulnix is enforced, so a CVE finding on main doesn't
+      # also leave PRs diffing against a stale baseline.
       - name: Cache closure path (main only)
         if: github.ref == 'refs/heads/main'
         run: echo "${{ steps.build.outputs.closure }}" > .main-closure
@@ -205,4 +213,12 @@ jobs:
         if: github.ref == 'refs/heads/main'
         with:
           path: .main-closure
-          key: main-closure-${{ matrix.host }}
+          key: main-closure-${{ matrix.host }}-${{ github.sha }}
+
+      - name: Enforce vulnix result
+        if: steps.vulnix.outputs['exit-code'] != '0'
+        env:
+          VULNIX_EXIT_CODE: ${{ steps.vulnix.outputs['exit-code'] }}
+        run: |
+          echo "vulnix reported findings or failed with exit code ${VULNIX_EXIT_CODE}"
+          exit "${VULNIX_EXIT_CODE}"
