@@ -64,3 +64,4 @@ the rest of it as it was. Fixing typos and broken links is fine.
 | [0001](0001-why-this-project.md) | Build the laptops declaratively with NixOS, in public, as a way to learn | Accepted |
 | [0002](0002-track-nixos-unstable.md) | Track nixos-unstable, and move versions only through flake.lock | Accepted |
 | [0003](0003-home-manager-as-nixos-module.md) | Run Home Manager as a NixOS module, not standalone | Accepted |
+| [0004](0004-luks-btrfs-systemd-boot.md) | Encrypt the whole disk with LUKS2, use btrfs subvolumes, and boot with systemd-boot | Accepted |
