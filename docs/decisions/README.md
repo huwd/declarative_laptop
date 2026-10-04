@@ -66,3 +66,4 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0005](0005-build-full-closure-on-every-pr.md) | Build each affected host's full system closure on every pull request | Accepted |
 | [0006](0006-enforce-vulnix-in-ci.md) | Fail CI on vulnerability findings unless a justified exception applies | Accepted |
 | [0007](0007-dependabot-for-flake-inputs.md) | Use Dependabot for flake input updates, not a scheduled workflow | Accepted |
+| [0008](0008-ci-without-write-access.md) | Keep repository-content write access out of CI and pin its tools | Accepted |
