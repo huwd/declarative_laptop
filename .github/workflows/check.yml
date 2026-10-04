@@ -18,10 +18,6 @@ jobs:
           persist-credentials: false
 
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24  # v31.11.1
-      - uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7  # main
-        with:
-          use-flakehub: false
-          diagnostic-endpoint: ""
 
       - name: Check Nix formatting
         run: nix run --inputs-from . nixpkgs#nixfmt -- --check $(find . -name '*.nix' -not -path './.direnv/*')
@@ -35,10 +31,6 @@ jobs:
           persist-credentials: false
 
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24  # v31.11.1
-      - uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7  # main
-        with:
-          use-flakehub: false
-          diagnostic-endpoint: ""
 
       - name: statix — antipattern check
         run: nix run --inputs-from . nixpkgs#statix -- check .
@@ -57,10 +49,6 @@ jobs:
           fetch-depth: 0
 
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24  # v31.11.1
-      - uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7  # main
-        with:
-          use-flakehub: false
-          diagnostic-endpoint: ""
 
       - name: Check conventional commits
         run: |
@@ -76,10 +64,6 @@ jobs:
           persist-credentials: false
 
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24  # v31.11.1
-      - uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7  # main
-        with:
-          use-flakehub: false
-          diagnostic-endpoint: ""
 
       - name: nix flake check
         run: nix flake check --no-build
