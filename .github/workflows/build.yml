@@ -19,6 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Select hosts
@@ -61,15 +62,19 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-      id-token: write
     strategy:
       matrix:
         host: ${{ fromJSON(needs.changes.outputs.hosts) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: DeterminateSystems/nix-installer-action@1d87d45818068401a10cf16bdc5f00b24994a83f  # main
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24  # v31.11.1
       - uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7  # main
+        with:
+          use-flakehub: false
+          diagnostic-endpoint: ""
 
       - name: Build NixOS closure
         id: build
@@ -86,11 +91,11 @@ jobs:
           # Pre-fetch vulnix first so its own build/fetch noise (nix run's
           # "copying path" chatter, Magic Nix Cache throttle warnings) lands
           # in this job's log instead of the captured report / PR comment.
-          nix build nixpkgs#vulnix --no-link
+          nix build --inputs-from . nixpkgs#vulnix --no-link
           # NVD retired the legacy bulk feeds vulnix relies on; --mirror points
           # at a community-run re-host of the same nvdcve-2.0-<year>.json.gz
           # layout. See https://github.com/nix-community/vulnix/issues/171
-          nix run nixpkgs#vulnix -- --mirror https://vig-os.github.io/nvd-mirror/ --closure ${{ steps.build.outputs.closure }} --whitelist vulnix.toml > vulnix-report.txt 2>&1
+          nix run --inputs-from . nixpkgs#vulnix -- --mirror https://vig-os.github.io/nvd-mirror/ --closure ${{ steps.build.outputs.closure }} --whitelist vulnix.toml > vulnix-report.txt 2>&1
           echo "exit-code=$?" >> "$GITHUB_OUTPUT"
 
       - name: Post vulnix findings as PR comment
@@ -144,7 +149,7 @@ jobs:
         run: |
           PREV=$(cat .main-closure)
           CURR=${{ steps.build.outputs.closure }}
-          nix run nixpkgs#nvd -- diff "$PREV" "$CURR" > nvd-diff.txt 2>/dev/null || true
+          nix run --inputs-from . nixpkgs#nvd -- diff "$PREV" "$CURR" > nvd-diff.txt 2>/dev/null || true
 
       - name: Post diff as PR comment
         if: github.event_name == 'pull_request' && steps.cache.outputs.cache-hit == 'true'
