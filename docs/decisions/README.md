@@ -61,3 +61,4 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0000](0000-record-decisions.md) | Record decisions in lightweight decision records | Accepted |
 | [0001](0001-why-this-project.md) | Build the laptops declaratively with NixOS, in public, as a way to learn | Accepted |
 | [0002](0002-track-nixos-unstable.md) | Track nixos-unstable, and update pinned inputs through flake.lock | Accepted |
+| [0003](0003-home-manager-as-nixos-module.md) | Apply Home Manager settings with the NixOS configuration | Accepted |
