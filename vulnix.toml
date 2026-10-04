@@ -88,6 +88,11 @@ cve = "CVE-2021-43635"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/45"
 comment = "CVE is for codexnotes' Codex notebook web app (XSS via Notebook/Page name field). nixpkgs codex is OpenAI's CLI coding agent — unrelated product, same name."
 
+["thrift-0.24.0"]
+cve = "CVE-2021-24028"
+issue_url = "https://github.com/huwd/declarative_laptop/pull/60"
+comment = "Facebook Thrift (Meta's fbthrift, date-versioned YYYY.MM.DD.NN) SSL cert validation bug — unrelated codebase from Apache Thrift 0.x, same false positive already identified under thrift-0.22.0. framework-13 resolves thrift to 0.24.0 (dell-xps-13-9343 still resolves 0.22.0); the other 25 CVEs whitelisted under thrift-0.22.0 no longer apply here — 0.24.0 already contains those fixes, so vulnix doesn't flag them."
+
 
 # ── Already fixed in the version we run ─────────────────────────────────────
 
