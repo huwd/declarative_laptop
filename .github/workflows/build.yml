@@ -71,10 +71,55 @@ jobs:
           persist-credentials: false
 
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24  # v31.11.1
-      - uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7  # main
+
+      # Packages that are slow to build and never on cache.nixos.org
+      # (unfree, so Hydra skips them) are cached as one Actions cache
+      # entry, keyed by their exact output paths. Only those in this
+      # host's system closure are considered.
+      - name: Find cacheable packages
+        id: pkgs
+        env:
+          HOST: ${{ matrix.host }}
+          # Option paths under the host's `config`, space-separated.
+          CACHED_PACKAGES: services.open-webui.package
+        run: |
+          cfg=".#nixosConfigurations.$HOST.config"
+          nix-store -qR "$(nix path-info --derivation "$cfg.system.build.toplevel")" > "$RUNNER_TEMP/system-drvs"
+          drvs=()
+          for attr in $CACHED_PACKAGES; do
+            drv=$(nix eval --raw "$cfg.$attr.drvPath")
+            if grep -Fxq "$drv" "$RUNNER_TEMP/system-drvs"; then
+              echo "Caching $attr"
+              drvs+=("$drv")
+            else
+              echo "Skipping $attr: not in $HOST's system closure"
+            fi
+          done
+          if [ "${#drvs[@]}" -eq 0 ]; then
+            exit 0
+          fi
+          nix-store -q --outputs "${drvs[@]}" | sort > "$RUNNER_TEMP/cached-outputs"
+          echo "key=nix-pkgs-$(sha256sum < "$RUNNER_TEMP/cached-outputs" | cut -c1-32)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore cached packages
+        id: pkgs-restore
+        if: steps.pkgs.outputs.key != ''
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
-          use-flakehub: false
-          diagnostic-endpoint: ""
+          path: ${{ runner.temp }}/nix-pkgs
+          key: ${{ steps.pkgs.outputs.key }}
+
+      - name: Import cached packages
+        if: steps.pkgs-restore.outputs.cache-hit == 'true'
+        env:
+          DIR: ${{ runner.temp }}/nix-pkgs
+        run: |
+          # An import needs every reference already in the store, so fetch
+          # the cache.nixos.org dependencies first (the build needs them
+          # anyway), then import the paths CI had to build itself.
+          xargs -r -a "$DIR/deps" nix-store --realise > /dev/null
+          nix-store --import < "$DIR/pkgs.export" > /dev/null
+          echo "Imported $(wc -l < "$DIR/export-list") cached paths"
 
       - name: Build NixOS closure
         id: build
@@ -84,13 +129,50 @@ jobs:
             --no-link --print-out-paths)
           echo "closure=$CLOSURE" >> "$GITHUB_OUTPUT"
 
+      # Only main writes the package cache: PR-scoped entries are invisible
+      # to other branches anyway, and main is the only writer PRs trust.
+      - name: Export cached packages (main only)
+        id: pkgs-export
+        if: >-
+          github.ref == 'refs/heads/main'
+          && steps.pkgs.outputs.key != ''
+          && steps.pkgs-restore.outputs.cache-hit != 'true'
+        env:
+          DIR: ${{ runner.temp }}/nix-pkgs
+        run: |
+          mkdir -p "$DIR"
+          # Runtime closure of the cached packages, dependencies first.
+          xargs -a "$RUNNER_TEMP/cached-outputs" nix-store -qR > "$DIR/closure"
+          # Paths this run built itself are "ultimate"; the rest came from
+          # cache.nixos.org and are refetched on import rather than stored.
+          xargs -a "$DIR/closure" nix path-info --json --json-format 1 \
+            | jq -r 'to_entries[] | select(.value.ultimate) | .key' > "$RUNNER_TEMP/ultimate"
+          grep -Fxf "$RUNNER_TEMP/ultimate" "$DIR/closure" > "$DIR/export-list" || true
+          grep -vFxf "$RUNNER_TEMP/ultimate" "$DIR/closure" > "$DIR/deps" || true
+          if [ ! -s "$DIR/export-list" ]; then
+            echo "Nothing built locally; skipping cache save"
+            exit 0
+          fi
+          # One call: concatenated export streams don't import cleanly.
+          # shellcheck disable=SC2046
+          nix-store --export $(cat "$DIR/export-list") > "$DIR/pkgs.export"
+          echo "Exporting $(wc -l < "$DIR/export-list") paths ($(du -h "$DIR/pkgs.export" | cut -f1)), $(wc -l < "$DIR/deps") dependencies left to cache.nixos.org"
+          echo "save=true" >> "$GITHUB_OUTPUT"
+
+      - name: Save cached packages (main only)
+        if: steps.pkgs-export.outputs.save == 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ runner.temp }}/nix-pkgs
+          key: ${{ steps.pkgs.outputs.key }}
+
       - name: Run vulnix against closure
         id: vulnix
         run: |
           set +e
           # Pre-fetch vulnix first so its own build/fetch noise (nix run's
-          # "copying path" chatter, Magic Nix Cache throttle warnings) lands
-          # in this job's log instead of the captured report / PR comment.
+          # "copying path" chatter) lands in this job's log instead of the
+          # captured report / PR comment.
           nix build --inputs-from . nixpkgs#vulnix --no-link
           # NVD retired the legacy bulk feeds vulnix relies on; --mirror points
           # at a community-run re-host of the same nvdcve-2.0-<year>.json.gz
@@ -142,17 +224,31 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: .main-closure
-          key: main-closure-${{ matrix.host }}
+          # Cache keys are immutable, so main saves one entry per commit.
+          # Prefer the PR's exact base; fall back to the newest main build.
+          key: main-closure-${{ matrix.host }}-${{ github.event.pull_request.base.sha }}
+          restore-keys: main-closure-${{ matrix.host }}-
 
       - name: Generate nvd diff
-        if: github.event_name == 'pull_request' && steps.cache.outputs.cache-hit == 'true'
+        if: github.event_name == 'pull_request' && steps.cache.outputs.cache-matched-key != ''
+        env:
+          CURR: ${{ steps.build.outputs.closure }}
         run: |
           PREV=$(cat .main-closure)
-          CURR=${{ steps.build.outputs.closure }}
-          nix run --inputs-from . nixpkgs#nvd -- diff "$PREV" "$CURR" > nvd-diff.txt 2>/dev/null || true
+          # The baseline was built on another runner. If it contains paths
+          # cache.nixos.org can't provide (unfree packages built in CI), it
+          # can't be realised here -- say so rather than report "no changes".
+          # Dry-run first so an unfetchable baseline fails fast instead of
+          # after downloading the rest of it.
+          if ! nix-store --realise --dry-run "$PREV" 2>&1 | grep -q "don't know how to build" \
+             && nix-store --realise "$PREV" > /dev/null 2>&1; then
+            nix run --inputs-from . nixpkgs#nvd -- diff "$PREV" "$CURR" > nvd-diff.txt
+          else
+            echo "Diff unavailable: baseline $PREV could not be fetched on this runner." > nvd-diff.txt
+          fi
 
       - name: Post diff as PR comment
-        if: github.event_name == 'pull_request' && steps.cache.outputs.cache-hit == 'true'
+        if: github.event_name == 'pull_request' && steps.cache.outputs.cache-matched-key != ''
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         env:
           HOST: ${{ matrix.host }}
@@ -189,14 +285,8 @@ jobs:
               });
             }
 
-      - name: Enforce vulnix result
-        if: steps.vulnix.outputs['exit-code'] != '0'
-        env:
-          VULNIX_EXIT_CODE: ${{ steps.vulnix.outputs['exit-code'] }}
-        run: |
-          echo "vulnix reported findings or failed with exit code ${VULNIX_EXIT_CODE}"
-          exit "${VULNIX_EXIT_CODE}"
-
+      # Saved before vulnix is enforced, so a CVE finding on main doesn't
+      # also leave PRs diffing against a stale baseline.
       - name: Cache closure path (main only)
         if: github.ref == 'refs/heads/main'
         run: echo "${{ steps.build.outputs.closure }}" > .main-closure
@@ -205,4 +295,31 @@ jobs:
         if: github.ref == 'refs/heads/main'
         with:
           path: .main-closure
-          key: main-closure-${{ matrix.host }}
+          key: main-closure-${{ matrix.host }}-${{ github.sha }}
+
+      - name: Enforce vulnix result
+        if: steps.vulnix.outputs['exit-code'] != '0'
+        env:
+          VULNIX_EXIT_CODE: ${{ steps.vulnix.outputs['exit-code'] }}
+        run: |
+          echo "vulnix reported findings or failed with exit code ${VULNIX_EXIT_CODE}"
+          exit "${VULNIX_EXIT_CODE}"
+
+  # One check that always reports, for the main ruleset to require. The
+  # per-host jobs only exist for hosts a PR affects, so requiring them
+  # directly would leave unaffected hosts' checks pending forever.
+  build-result:
+    name: Build result
+    needs: [changes, build]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Check host builds
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          BUILD: ${{ needs.build.result }}
+        run: |
+          echo "Detect affected hosts: $CHANGES, host builds: $BUILD"
+          # "skipped" means no host was affected, which is a pass.
+          [ "$CHANGES" = success ] && { [ "$BUILD" = success ] || [ "$BUILD" = skipped ]; }
