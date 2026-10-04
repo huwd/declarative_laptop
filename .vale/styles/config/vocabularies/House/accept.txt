@@ -87,6 +87,7 @@ Ryzen
 (?i)sandboxed
 (?i)sandboxing
 (?i)sbomnix
+SBOMs
 SHAs
 Silverblue
 (?i)snapshotted
@@ -102,6 +103,7 @@ Syncthing
 (?i)tmux
 (?i)tmuxinator
 (?i)toolchains?
+Trivy
 (?i)unencrypted
 (?i)unformatted
 (?i)unfree
