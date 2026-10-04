@@ -55,6 +55,8 @@ cat /sys/class/drm/card1/device/mem_info_gtt_total   # expect 51539607552 (48 Gi
 
 ```
 ollama pull qwen3-coder:30b
+ollama pull granite4:small-h
+ollama pull granite4:tiny-h
 ollama list
 ```
 
@@ -62,6 +64,11 @@ ollama list
 token) is the reference model for this hardware — check
 [ollama.com/library](https://ollama.com/library) for anything newer in the
 same MoE/~3-5B-active class before assuming it's still the best option.
+
+The two Granite 4.0 hybrid (Mamba/transformer) MoE models are configured
+alongside it for comparison (issue #58): `granite4:small-h` (32B total, ~9B
+active) and `granite4:tiny-h` (7B total, ~1B active). Models are pulled by
+hand, not declaratively — the opencode config below only lists them.
 
 ## Using it
 
@@ -84,6 +91,15 @@ opencode run --model ollama/qwen3-coder:30b "your prompt"
 or select `Ollama (local)` / `qwen3-coder:30b` from opencode's `/models` menu
 in an interactive session.
 
+**After changing the model list**, opencode won't see it in an existing
+login session: NixOS sources `/etc/set-environment` once per login and sets
+`__NIXOS_SET_ENVIRONMENT_DONE=1`, so new terminals inherit the old
+`OPENCODE_CONFIG` store path. Either log out and back in, or:
+
+```
+source /etc/set-environment
+```
+
 **Known quirk**: tool-calling works (verified directly against Ollama's
 `/v1/chat/completions` endpoint — it returns proper structured `tool_calls`),
 but opencode's full multi-tool schema occasionally causes this model to emit
@@ -93,6 +109,20 @@ seems to "describe" an action instead of doing it, re-running the same
 prompt usually works.
 
 ## Measured performance
+
+Comparison across all three models, same `/api/generate` prompt with
+`num_predict: 756`, all layers offloaded to the GPU (Vulkan):
+
+| Model | Active params | Generation | Cold load |
+|---|---|---|---|
+| `qwen3-coder:30b` | ~3B | ~31.9 tok/s | ~9.8s |
+| `granite4:small-h` | ~9B | ~11.9 tok/s | ~4.2s |
+| `granite4:tiny-h` | ~1B | ~50.6 tok/s | ~1.7s |
+
+Generation speed tracks active params per token, since memory bandwidth is
+the bottleneck — except `tiny-h`, where per-token fixed overhead dominates
+and it's only ~1.6x faster than Qwen rather than ~3x. (`tiny-h` stopped
+early at 435 tokens; tok/s is still comparable.)
 
 `qwen3-coder:30b`, direct API test (`/api/generate`, 22-token prompt,
 756-token response), post-warm-up:
