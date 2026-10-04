@@ -72,6 +72,55 @@ jobs:
 
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24  # v31.11.1
 
+      # Packages that are slow to build and never on cache.nixos.org
+      # (unfree, so Hydra skips them) are cached as one Actions cache
+      # entry, keyed by their exact output paths. Only those in this
+      # host's system closure are considered.
+      - name: Find cacheable packages
+        id: pkgs
+        env:
+          HOST: ${{ matrix.host }}
+          # Option paths under the host's `config`, space-separated.
+          CACHED_PACKAGES: services.open-webui.package
+        run: |
+          cfg=".#nixosConfigurations.$HOST.config"
+          nix-store -qR "$(nix path-info --derivation "$cfg.system.build.toplevel")" > "$RUNNER_TEMP/system-drvs"
+          drvs=()
+          for attr in $CACHED_PACKAGES; do
+            drv=$(nix eval --raw "$cfg.$attr.drvPath")
+            if grep -Fxq "$drv" "$RUNNER_TEMP/system-drvs"; then
+              echo "Caching $attr"
+              drvs+=("$drv")
+            else
+              echo "Skipping $attr: not in $HOST's system closure"
+            fi
+          done
+          if [ "${#drvs[@]}" -eq 0 ]; then
+            exit 0
+          fi
+          nix-store -q --outputs "${drvs[@]}" | sort > "$RUNNER_TEMP/cached-outputs"
+          echo "key=nix-pkgs-$(sha256sum < "$RUNNER_TEMP/cached-outputs" | cut -c1-32)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore cached packages
+        id: pkgs-restore
+        if: steps.pkgs.outputs.key != ''
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ runner.temp }}/nix-pkgs
+          key: ${{ steps.pkgs.outputs.key }}
+
+      - name: Import cached packages
+        if: steps.pkgs-restore.outputs.cache-hit == 'true'
+        env:
+          DIR: ${{ runner.temp }}/nix-pkgs
+        run: |
+          # An import needs every reference already in the store, so fetch
+          # the cache.nixos.org dependencies first (the build needs them
+          # anyway), then import the paths CI had to build itself.
+          xargs -r -a "$DIR/deps" nix-store --realise > /dev/null
+          nix-store --import < "$DIR/pkgs.export" > /dev/null
+          echo "Imported $(wc -l < "$DIR/export-list") cached paths"
+
       - name: Build NixOS closure
         id: build
         run: |
@@ -79,6 +128,43 @@ jobs:
             .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel \
             --no-link --print-out-paths)
           echo "closure=$CLOSURE" >> "$GITHUB_OUTPUT"
+
+      # Only main writes the package cache: PR-scoped entries are invisible
+      # to other branches anyway, and main is the only writer PRs trust.
+      - name: Export cached packages (main only)
+        id: pkgs-export
+        if: >-
+          github.ref == 'refs/heads/main'
+          && steps.pkgs.outputs.key != ''
+          && steps.pkgs-restore.outputs.cache-hit != 'true'
+        env:
+          DIR: ${{ runner.temp }}/nix-pkgs
+        run: |
+          mkdir -p "$DIR"
+          # Runtime closure of the cached packages, dependencies first.
+          xargs -a "$RUNNER_TEMP/cached-outputs" nix-store -qR > "$DIR/closure"
+          # Paths this run built itself are "ultimate"; the rest came from
+          # cache.nixos.org and are refetched on import rather than stored.
+          xargs -a "$DIR/closure" nix path-info --json --json-format 1 \
+            | jq -r 'to_entries[] | select(.value.ultimate) | .key' > "$RUNNER_TEMP/ultimate"
+          grep -Fxf "$RUNNER_TEMP/ultimate" "$DIR/closure" > "$DIR/export-list" || true
+          grep -vFxf "$RUNNER_TEMP/ultimate" "$DIR/closure" > "$DIR/deps" || true
+          if [ ! -s "$DIR/export-list" ]; then
+            echo "Nothing built locally; skipping cache save"
+            exit 0
+          fi
+          # One call: concatenated export streams don't import cleanly.
+          # shellcheck disable=SC2046
+          nix-store --export $(cat "$DIR/export-list") > "$DIR/pkgs.export"
+          echo "Exporting $(wc -l < "$DIR/export-list") paths ($(du -h "$DIR/pkgs.export" | cut -f1)), $(wc -l < "$DIR/deps") dependencies left to cache.nixos.org"
+          echo "save=true" >> "$GITHUB_OUTPUT"
+
+      - name: Save cached packages (main only)
+        if: steps.pkgs-export.outputs.save == 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ runner.temp }}/nix-pkgs
+          key: ${{ steps.pkgs.outputs.key }}
 
       - name: Run vulnix against closure
         id: vulnix
