@@ -61,3 +61,4 @@ the rest of it as it was. Fixing typos and broken links is fine.
 | Number | Decision | Status |
 | ------ | -------- | ------ |
 | [0000](0000-record-decisions.md) | Record decisions in lightweight decision records | Accepted |
+| [0001](0001-why-this-project.md) | Build the laptops declaratively with NixOS, in public, as a way to learn | Accepted |
