@@ -65,3 +65,4 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0004](0004-luks-btrfs-systemd-boot.md) | Encrypt system and user data with LUKS2, use btrfs, and boot with systemd-boot | Accepted |
 | [0005](0005-build-full-closure-on-every-pr.md) | Build each affected host's full system closure on every pull request | Accepted |
 | [0006](0006-enforce-vulnix-in-ci.md) | Fail CI on vulnerability findings unless a justified exception applies | Accepted |
+| [0007](0007-dependabot-for-flake-inputs.md) | Use Dependabot for flake input updates, not a scheduled workflow | Accepted |
