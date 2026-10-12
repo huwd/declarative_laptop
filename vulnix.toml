@@ -253,6 +253,18 @@ until = "2026-11-22"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
 comment = "NULL deref / infinite loop on a crafted unified diff: DoS only. patch is used by Nix builds on patches from nixpkgs itself."
 
+["openssl-3.5.8"]
+cve = [ "CVE-2026-84782", "CVE-2026-54873", "CVE-2026-72897", "CVE-2026-84784", "CVE-2026-35189", "CVE-2026-42772", "CVE-2026-75804", "CVE-2026-75805", "CVE-2026-75806", "CVE-2026-35191", "CVE-2026-54872", "CVE-2026-54875", "CVE-2026-77696" ]
+until = "2026-11-02"
+issue_url = "https://github.com/huwd/declarative_laptop/pull/69"
+comment = "All thirteen fixed in OpenSSL 3.5.9; nixpkgs (including unstable) still ships 3.5.8. Each needs OpenSSL acting as a server or a specific protocol this laptop doesn't serve: CVE-2026-84782 (DTLS retransmission over-read), CVE-2026-75806 (DTLS 1.2 teardown), CVE-2026-54873/84784/42772/75804/35191 (QUIC stack: memory retention, connection-ID flood, reassembly, flow control, amplification) and CVE-2026-72897 (servers calling SSL_set_SSL_CTX) have no DTLS/QUIC/TLS server running here. CVE-2026-75805 is a CMP client NULL deref (CMP is not used). CVE-2026-35189 is heap growth from a certificate with many CRL distribution points: DoS only. CVE-2026-54872/54875/77696 are timing side-channels in SM2 and generic-curve ECDSA signing (54875 is ARM64/RISC-V only; both hosts are x86_64) and need an attacker timing many local signatures. Short expiry given the 8.2 CVSS; re-check for an openssl 3.5.9 bump."
+
+["openssh-10.5p1"]
+cve = "CVE-2026-106587"
+until = "2026-11-02"
+issue_url = "https://github.com/huwd/declarative_laptop/pull/69"
+comment = "Fixed in OpenSSH 10.6, not yet in nixpkgs. The bug is in sshd, which treats the config value \"none\" as a filename in some options instead of 'disabled'. sshd is disabled (services.openssh.enable = false in modules/security.nix); the openssh package stays in the closure only for the ssh client, ssh-keygen and git, none of which run sshd. CVSS 3.6. Re-check for an openssh 10.6 bump."
+
 ["unbound-1.26.0"]
 cve = [ "CVE-2026-81642", "CVE-2026-82717", "CVE-2026-81634", "CVE-2026-82720", "CVE-2026-80225", "CVE-2026-85501" ]
 until = "2026-10-07"

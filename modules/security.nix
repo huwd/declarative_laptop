@@ -20,13 +20,17 @@
   ];
 
   # ── SSH ──────────────────────────────────────────────────────────────────────
-  # The daemon is enabled, but the firewall currently blocks port 22 on every
-  # interface. Add a trusted-interface or source-specific rule before expecting
-  # remote SSH access; do not open it globally on a roaming laptop.
-  # NixOS defaults openFirewall to true, which would silently override the
-  # empty allowedTCPPorts list in the firewall config above.
+  # The daemon is disabled: nothing needs inbound SSH, and it removes the
+  # sshd exposure behind the openssh finding in vulnix.toml. The openssh package
+  # stays in the closure for the ssh client, ssh-keygen and git.
+  # To enable it, add a trusted-interface or source-specific firewall rule
+  # first; do not open it globally on a roaming laptop. NixOS defaults
+  # openFirewall to true, which would silently override the empty
+  # allowedTCPPorts list in the firewall config above.
+  # Without the daemon nothing generates the host key agenix decrypts with;
+  # see "Bootstrap agenix" in docs/setup.md.
   services.openssh = {
-    enable = true;
+    enable = false;
     openFirewall = false;
     settings = {
       PasswordAuthentication = false;
