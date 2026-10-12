@@ -66,12 +66,15 @@ Generate or restore the personal SSH key used for Git hosting, configure Git
 identity and verify repository access. Private keys should come from your
 password manager or offline backup, never from this repository.
 
-The SSH daemon is installed but port 22 is blocked by the firewall until a
-trusted-interface or source-specific rule is deliberately added.
+The SSH daemon is disabled (`services.openssh.enable = false`). To enable it,
+first add a trusted-interface or source-specific firewall rule for port 22.
 
 ## 6. Bootstrap agenix when needed
 
 The repository does not currently declare any secrets. Once the host is stable,
+make sure the host key exists. The SSH daemon is disabled, so nothing generates
+it on a fresh install; create it with
+`sudo ssh-keygen -t ed25519 -N "" -f /etc/ssh/ssh_host_ed25519_key`. Then
 copy `/etc/ssh/ssh_host_ed25519_key.pub` into `secrets/secrets.nix` alongside
 your personal public key, declare the required secret files, and encrypt them
 with `agenix`. Commit only the resulting `.age` files.
