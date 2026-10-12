@@ -1,40 +1,39 @@
 # CI/CD Plan
 
+This document records the original project plan.
+See [the decision records](docs/decisions/README.md) for the current choices and [the setup guide](docs/setup.md) for the current setup workflow.
+
 ## Objectives
 
-Every change to this config repo must satisfy two guarantees before it reaches
-the machine:
+Every change to this config repo must pass two checks before it reaches the machine:
 
-1. **No regressions** — the system still evaluates, builds, and is deployable
-2. **No silent security drift** — new or updated packages are checked against
-   known CVEs
+1. **Build checks** — the system configuration evaluates and builds
+2. **CVE review** — CI checks new or updated packages against known CVEs
 
-Changes that pass CI can be applied with confidence. Changes that fail CI are
-never shipped.
+Apply changes only after they pass CI.
+Build success does not prove runtime behaviour or hardware compatibility.
 
 ## On "Only the Changes"
 
-A NixOS system is a single closure — you cannot build "just the part that
-changed" in isolation. The unit of deployment is the full system.
+A NixOS system is a single closure — you cannot build "just the part that changed" in isolation.
+The unit of deployment is the full system.
 
-What you *can* do is lean on Nix's content-addressed store: unchanged
-derivations are never rebuilt, they are fetched from the binary cache. A
-one-line change to `modules/apps.nix` triggers a rebuild of only the affected
-packages. The kernel, GNOME, and everything else come from cache.
+Nix can reuse available store paths and fetch outputs from binary caches rather than rebuild unchanged dependencies.
+A one-line change to `modules/apps.nix` triggers a rebuild of only the affected packages.
+The kernel, GNOME, and everything else come from cache.
 
 In practice this means:
 
 - **Syntax and lint checks** are genuinely scoped to changed `.nix` files
-- **Evaluation and build** always cover the full config, but the cache makes
-  this cheap after the first cold run
-- `magic-nix-cache-action` on GitHub Actions maintains the cache between runs
-  automatically
+- **Evaluation and build** always cover the full config, but the cache makes this cheap after the first cold run
+- `magic-nix-cache-action` on GitHub Actions maintains the cache between runs automatically
 
 ## Tier Structure
 
 ### Tier 1 — Syntax (every push, < 1 min)
 
-Fast, file-scoped checks. Run on the diff of changed `.nix` files only.
+Fast, file-scoped checks.
+Run on the diff of changed `.nix` files only.
 
 | Check | Tool | What it catches |
 |-------|------|----------------|
@@ -53,16 +52,15 @@ deadnix --edit         # remove dead code in place
 
 ### Tier 2 — Evaluation (every push, 1–3 min)
 
-Evaluates all flake outputs without building derivations. Catches structural
-errors: missing imports, conflicting option definitions, type mismatches.
+Evaluates all flake outputs without building derivations.
+Catches structural errors: missing imports, conflicting option definitions, type mismatches.
 
 | Check | Tool | What it catches |
 |-------|------|----------------|
 | Flake validity | `nix flake check` | Invalid outputs, eval errors |
 | Secret hygiene | custom script | Declared secrets without a `.age` file |
 
-The secret hygiene check is a shell script that diffs `secrets/secrets.nix`
-declarations against committed `.age` files:
+The secret hygiene check is a shell script that diffs `secrets/secrets.nix` declarations against committed `.age` files:
 
 ```bash
 # scripts/check-secrets.sh
@@ -71,38 +69,36 @@ declarations against committed `.age` files:
 
 ### Tier 3 — Build and Security (every PR, ~5 min cached / 30 min cold)
 
-Actually realises the full system closure. This is the ground truth: if this
-passes, the config is deployable.
+Actually realises the full system closure.
+This is the ground truth: if this passes, the config is deployable.
 
 | Check | Tool | What it catches |
 |-------|------|----------------|
 | Full build | `nix build .#nixosConfigurations.framework-13...` | Build failures |
 | CVE scan | `vulnix --closure result` | Known vulnerabilities in closure |
 
-`vulnix` findings are reported as annotations on the PR. A whitelist
-(`vulnix.toml`) can suppress known false positives or accepted risks, but any
-new finding blocks merge until triaged.
+CI reports `vulnix` findings in PR comments.
+A whitelist (`vulnix.toml`) can suppress known false positives or accepted risks, but any new finding blocks merge until triaged.
 
 ### Tier 4 — Informational (every PR, alongside Tier 3)
 
-Not a pass/fail gate. Produces output that informs the reviewer.
+Not a pass/fail gate.
+Produces output that informs the reviewer.
 
 | Output | Tool | What it shows |
 |--------|------|--------------|
 | Package diff | `nvd diff <prev> <new>` | What packages changed and by how much |
 
-The `nvd` diff is posted as a PR comment. On a routine `nix flake update` PR
-this shows the full set of package version bumps — the equivalent of a
-Dependabot summary.
+CI posts the `nvd` diff as a PR comment.
+On a routine `nix flake update` PR this shows the full set of package version bumps — a summary of package updates.
 
-To diff against the previous build, the CI job stores the closure path of the
-last successful build on `main` as a GitHub Actions cache key.
+To diff against the previous build, the CI job stores the closure path of the last successful build on `main` as a GitHub Actions cache key.
 
 ### Tier 5 — Dependency Updates (weekly scheduled)
 
-Automated `nix flake update` that opens a PR if `flake.lock` changed. The PR
-runs tiers 3 and 4 and includes the `nvd` diff and `vulnix` findings in the
-PR body. Acts as Dependabot for the full OS.
+Automated `nix flake update` that opens a PR if `flake.lock` changed.
+The PR runs tiers 3 and 4 and includes the `nvd` diff and `vulnix` findings in the PR body.
+Acts as Dependabot for the full OS.
 
 ```text
 Monday 09:00 → nix flake update → if flake.lock changed → open PR
@@ -114,9 +110,9 @@ Monday 09:00 → nix flake update → if flake.lock changed → open PR
 
 ## Historic CVE Analysis
 
-Because `flake.lock` is committed on every change, the git history is a
-timestamped record of every package version ever installed. To query historic
-exposure:
+The Git history of `flake.lock` records dependency revisions for earlier declared configurations.
+It does not prove what ran on the laptop at any particular time.
+To scan an earlier configuration:
 
 ```bash
 git checkout <past-commit>
@@ -126,15 +122,15 @@ vulnix --closure /tmp/old-closure
 git checkout main
 ```
 
-This answers: "Was my system affected by CVE-YYYY-XXXXX, and if so, between
-which dates?"
+This answers: "Was my system affected by CVE-YYYY-XXXXX, and if so, between which dates?"
 
 ## Future: VM Smoke Tests
 
-Not implemented in the initial setup. Worth adding when the config stabilises.
+Not implemented in the initial setup.
+Worth adding when the config stabilises.
 
-`nixos-rebuild build-vm` builds a QEMU VM from the config. A test script can
-then boot it and assert:
+`nixos-rebuild build-vm` builds a QEMU VM from the config.
+A test script can then boot it and assert:
 
 - GNOME session starts
 - User `huw` exists and can log in
@@ -142,8 +138,8 @@ then boot it and assert:
 - Key services are running (Syncthing, fwupd, etc.)
 
 NixOS's `nixos-test` framework provides a Python-based assertion API for this.
-Cost: ~10 min per run. Gate: PR merge (or nightly only, to avoid slowing the
-PR loop).
+Cost: ~10 min per run.
+Gate: PR merge (or nightly only, to avoid slowing the PR loop).
 
 ## Local Workflow
 

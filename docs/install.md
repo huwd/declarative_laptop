@@ -1,6 +1,7 @@
 # Installation guide
 
-This guide covers getting a bootable NixOS installer onto a USB drive, partitioning a target machine with full-disk encryption, and installing from this flake. It assumes a Linux machine for writing the USB.
+This guide covers getting a bootable NixOS installer onto a USB drive, partitioning a target machine with full-disk encryption, and installing from this flake.
+It assumes a Linux machine for writing the USB.
 
 Throughout this guide, replace `<host>` with the name of the host you are installing (e.g. `framework-13` or `dell-xps-13-9343`), and `<username>` with the username you have configured in `hosts/<host>/configuration.nix`.
 
@@ -26,7 +27,8 @@ The official installer includes git, nix, and all partitioning tools needed for 
 
 ### Option B — custom ISO from this flake
 
-Builds a live environment that reflects your config. Useful for air-gapped installs or verifying hardware support before committing to install.
+Builds a live environment that reflects your config.
+Useful for air-gapped installs or verifying hardware support before committing to install.
 
 ```bash
 nix run github:nix-community/nixos-generators -- \
@@ -42,7 +44,8 @@ The ISO choice only affects the installer environment — `nixos-install` is the
 
 ## 2. Boot and connect to the network
 
-Boot the target machine from the USB. Ethernet via a USB adapter is recommended; Wi-Fi firmware may not be available in the installer environment.
+Boot the target machine from the USB.
+Use Ethernet via a USB adapter if available; Wi-Fi firmware may not be available in the installer environment.
 
 If Wi-Fi is the only option:
 
@@ -64,7 +67,8 @@ ping -c 3 nixos.org
 lsblk
 ```
 
-The rest of this guide uses `/dev/nvme0n1` as the target disk. Substitute your actual device — most modern laptops use NVMe (`nvme0n1`); SATA drives appear as `sda`.
+The rest of this guide uses `/dev/nvme0n1` as the target disk.
+Substitute your actual device — most modern laptops use NVMe (`nvme0n1`); SATA drives appear as `sda`.
 
 > **Warning:** the next steps will erase all data on the target disk.
 
@@ -107,7 +111,8 @@ mkfs.fat -F32 -n boot /dev/nvme0n1p1
 cryptsetup luksFormat --type luks2 /dev/nvme0n1p2
 ```
 
-Type `YES` (uppercase) to confirm, then choose a strong passphrase. This passphrase is the only protection for your data — store it securely somewhere offline.
+Type `YES` (uppercase) to confirm, then choose a strong passphrase.
+This passphrase is the only protection for your data — store it securely somewhere offline.
 
 Open the encrypted container:
 
@@ -142,8 +147,8 @@ The three subvolumes serve different purposes:
 | Subvolume | Mountpoint | Purpose |
 |-----------|-----------|---------|
 | `@` | `/` | Root filesystem |
-| `@home` | `/home` | User data — snapshotted independently |
-| `@nix` | `/nix` | Nix store — large, fully reproducible, excluded from snapshots |
+| `@home` | `/home` | User data — supports independent snapshots |
+| `@nix` | `/nix` | Nix store — separate from root and home snapshots |
 
 ---
 
@@ -174,7 +179,8 @@ findmnt /mnt
 nixos-generate-config --root /mnt
 ```
 
-This writes `/mnt/etc/nixos/hardware-configuration.nix` containing your disk UUIDs, LUKS device, CPU microcode flag, and required kernel modules. You need this file in the repo before running `nixos-install`.
+This writes `/mnt/etc/nixos/hardware-configuration.nix` containing your disk UUIDs, LUKS device, CPU microcode flag, and required kernel modules.
+You need this file in the repo before running `nixos-install`.
 
 ---
 
@@ -226,7 +232,8 @@ You can push now or after first boot — `nixos-install` only needs the local cl
 nixos-install --flake /tmp/config#<host>
 ```
 
-This builds the full system closure, installs the bootloader (systemd-boot), and copies everything to `/mnt`. When prompted, set a root password.
+This builds the full system closure, installs the bootloader (systemd-boot), and copies everything to `/mnt`.
+When prompted, set a root password.
 
 When the install completes:
 
@@ -246,8 +253,8 @@ Log in as `root` using the password set during install, then set a password for 
 passwd <username>
 ```
 
-Log out and log back in as `<username>`. The installer's `/tmp/config` clone no
-longer exists after reboot, so clone the repository into its permanent location:
+Log out and log back in as `<username>`.
+The installer's `/tmp/config` clone no longer exists after reboot, so clone the repository into its permanent location:
 
 ```bash
 mkdir -p ~/.config

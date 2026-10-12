@@ -1,11 +1,14 @@
 # Learning Plan: NixOS for an Experienced Ubuntu User
 
-You know Linux well. The shell, systemd, networking, filesystems — none of that
-needs re-learning. What's new is the Nix ecosystem: a different way of thinking
-about packages, configuration, and reproducibility.
+This document records the original project plan.
+See [the decision records](docs/decisions/README.md) for the current choices and [the setup guide](docs/setup.md) for the current setup workflow.
 
-Expect a 2–4 week adjustment period before things feel fluent. The rough edges
-are real but finite.
+You know Linux well.
+The shell, systemd, networking, filesystems — none of that needs re-learning.
+What's new is the Nix ecosystem: a different way of thinking about packages, configuration, and reproducibility.
+
+Expect 2–4 weeks of practice before things feel fluent.
+The rough edges are real but finite.
 
 ---
 
@@ -13,51 +16,46 @@ are real but finite.
 
 The core thing to internalise before anything else:
 
-> **Nix is not a package manager. It is a build system that happens to manage
-> packages.**
+> **Think of Nix as a build system that also manages packages.**
 
-Every package, every config file, every system service is the output of a
-*derivation* — a pure function from inputs to outputs. The same inputs always
-produce the same output. This is why builds are reproducible.
+Every package, every config file, every system service is the output of a *derivation* — a pure function from inputs to outputs.
+The same inputs always produce the same output.
+This is why builds are reproducible.
 
 Consequences you will keep bumping into:
 
-- You cannot install a `.deb` or run `./configure && make install` and have
-  it work — FHS assumptions break. Use `nix-ld` for pre-compiled binaries.
-- `which python` may return nothing even if Python is "installed" — it may
-  live in a dev shell, not your PATH.
-- Editing a file under `/nix/store` is not possible — the store is read-only.
+- You cannot install a `.deb` or run `./configure && make install` and have it work — FHS assumptions break.
+  Use `nix-ld` for pre-compiled binaries.
+- `which python` may return nothing even if Python is "installed" — it may live in a dev shell, not your PATH.
+- Nix treats store paths under `/nix/store` as immutable.
   To change something, change its derivation and rebuild.
 
 ---
 
 ## Stage 1: The Nix Language
 
-**Goal:** read and write basic `.nix` files without reaching for docs every
-five minutes.
+**Goal:** read and write basic `.nix` files without reaching for docs every five minutes.
 
-Nix is a pure, lazy, dynamically typed functional language. It has a small
-surface area. The weirdness comes from what is absent (no statements, no
-mutation, no loops) rather than what is present.
+Nix is a pure, lazy, dynamically typed functional language.
+It has a small surface area.
+The weirdness comes from what is absent (no statements, no mutation, no loops) rather than what is present.
 
 ### Key concepts
 
-| Concept | What it is |
+| Concept | Meaning |
 |---------|-----------|
 | Attribute set | `{ key = value; }` — the fundamental data structure |
 | `let ... in` | local bindings |
 | `with pkgs;` | bring an attrset's keys into scope (use sparingly) |
 | String interpolation | `"hello ${name}"` |
-| `import ./file.nix` | evaluate a .nix file and return its value |
+| `import ./file.nix` | compute the value of a .nix file and return its value |
 | `pkgs.lib.*` | standard library functions (map, filter, strings, etc.) |
 | `rec { }` | recursive attrset — keys can reference each other |
 
 ### Resources
 
-- **nix.dev** — the canonical learning resource; start with "Nix language
-  basics"
-- **Nix Pills** — longer, builds from first principles; useful for internalising
-  the derivation model
+- **nix.dev** — the canonical learning resource; start with "Nix language basics"
+- **Nix Pills** — longer, builds from first principles; useful for internalising the derivation model
 - `nix repl` — interactive REPL; invaluable for exploration:
 
   ```bash
@@ -70,22 +68,21 @@ mutation, no loops) rather than what is present.
 ### Experiments
 
 - Write a derivation that produces a simple shell script
-- Use `nix-instantiate --eval` to evaluate expressions from the command line
+- Use `nix-instantiate --eval` to compute the values of expressions from the command line
 - Explore `pkgs.lib` in `nix repl` — `pkgs.lib.strings.toUpper "hello"`
 
 ---
 
 ## Stage 2: Flakes
 
-**Goal:** understand what a flake is, what `flake.nix` and `flake.lock` do,
-and be comfortable updating inputs.
+**Goal:** understand what a flake is, what `flake.nix` and `flake.lock` do, and be comfortable updating inputs.
 
-Flakes are the modern (and correct) way to structure Nix projects. They solve
-hermetic inputs: every dependency is pinned in `flake.lock`.
+Flakes structure Nix projects with explicit inputs.
+`flake.lock` pins the dependency revisions.
 
 ### Key concepts
 
-| Concept | What it is |
+| Concept | Meaning |
 |---------|-----------|
 | `inputs` | external dependencies (nixpkgs, home-manager, etc.) |
 | `outputs` | what this flake produces (NixOS configs, packages, shells) |
@@ -115,28 +112,28 @@ outputs = { self, nixpkgs, ... }: {
 
 ## Stage 3: NixOS Modules
 
-**Goal:** understand how NixOS configuration composes, and be able to write
-your own modules.
+**Goal:** understand how NixOS configuration composes, and be able to write your own modules.
 
-The NixOS module system is how configuration is structured. Every `.nix` file
-in your config is a module. Modules declare *options* and set *config* values.
+The NixOS module system structures configuration.
+Every `.nix` file in your config is a module.
+Modules declare *options* and set *config* values.
 The system merges them all into one final evaluated config.
 
 ### Key concepts
 
-| Concept | What it is |
+| Concept | Meaning |
 |---------|-----------|
 | `options` | declare what configuration keys a module accepts |
 | `config` | set values — what actually configures the system |
 | `imports` | pull in other modules |
 | `mkIf` | conditional config |
-| `mkMerge` | merge multiple config attrsets |
+| `mkMerge` | merge config attrsets |
 | `mkOption` | declare a new option with type and default |
 
 ### Reading existing modules
 
-The NixOS source is your best reference. When you see `services.nginx.enable`,
-find its definition:
+The NixOS source is your best reference.
+When you see `services.nginx.enable`, find its definition:
 
 ```bash
 nix-instantiate --eval -E '(import <nixpkgs/nixos> {}).options.services.nginx' \
@@ -145,8 +142,7 @@ nix-instantiate --eval -E '(import <nixpkgs/nixos> {}).options.services.nginx' \
 # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/web-servers/nginx/
 ```
 
-NixOS search (search.nixos.org) shows all options with descriptions — use it
-constantly.
+NixOS search (search.nixos.org) shows all options with descriptions — use it constantly.
 
 ### Experiments
 
@@ -161,8 +157,7 @@ constantly.
 **Goal:** manage your entire user environment declaratively.
 
 Home Manager is home-manager — it does for your `~` what NixOS does for `/`.
-Shell config, dotfiles, editor config, user packages, `~/.config/*` — all
-declared in Nix.
+Shell config, dotfiles, editor config, user packages, `~/.config/*` — all declared in Nix.
 
 ### What it replaces
 
@@ -175,12 +170,9 @@ declared in Nix.
 
 ### Key programs with dedicated modules
 
-`programs.git`, `programs.zsh`, `programs.fish`, `programs.neovim`,
-`programs.tmux`, `programs.alacritty`, `programs.kitty`, `programs.direnv`,
-`programs.starship`, `programs.ssh`.
+`programs.git`, `programs.zsh`, `programs.fish`, `programs.neovim`, `programs.tmux`, `programs.alacritty`, `programs.kitty`, `programs.direnv`, `programs.starship`, `programs.ssh`.
 
-Each module accepts structured config rather than raw dotfile content — the
-module generates the correct dotfile format.
+Each module accepts structured config rather than raw dotfile content — the module generates the correct dotfile format.
 
 ### Experiments
 
@@ -209,8 +201,8 @@ ruby --version # command not found
 
 ### `devenv`
 
-A higher-level wrapper for dev shells. Recommended for projects with services
-(databases, queues) as well as language toolchains:
+A higher-level wrapper for dev shells.
+Recommended for projects with services (databases, queues) as well as language toolchains:
 
 ```nix
 # devenv.nix
@@ -238,7 +230,8 @@ With `programs.direnv.enable = true` in Home Manager:
 use flake      # or: use devenv
 ```
 
-Now `cd project` activates the shell automatically. No manual `nix develop`.
+Now `cd project` activates the shell automatically.
+No manual `nix develop`.
 
 ### Experiments
 
@@ -252,9 +245,8 @@ Now `cd project` activates the shell automatically. No manual `nix develop`.
 
 **Goal:** store encrypted secrets in the config repo safely.
 
-agenix encrypts secrets with `age` public keys (your SSH public key or a
-dedicated age key). Decryption happens at system activation using the host's
-SSH host key.
+agenix encrypts secrets with `age` public keys (your SSH public key or a dedicated age key).
+Decryption happens at system activation using the host's SSH host key.
 
 ### How it works
 
@@ -274,7 +266,7 @@ in {
 agenix -e github-token.age -i ~/.ssh/id_ed25519
 ```
 
-The `.age` file is committed. The private key never is.
+Commit the `.age` file, never the private key.
 
 ### Experiments
 
@@ -308,9 +300,10 @@ nix-locate bin/rg                  # find package providing a binary (needs nix-
 
 ### Understanding build failures
 
-Nix error messages are verbose and often point to the wrong line. Strategies:
+Nix error messages are verbose and often point to the wrong line.
+Strategies:
 
-1. Read the last 20 lines of the error — the actual failure is usually there
+1. Read the last 20 lines of the error — start there to look for the actual failure
 2. `nix build --keep-failed` — preserves the failed build directory for inspection
 3. `nix log /nix/store/...-foo.drv` — view full build log
 4. Reduce: comment out parts of your config until it builds, then add back
@@ -323,9 +316,8 @@ Once the above feels natural, these are worth exploring:
 
 ### Secure Boot with lanzaboote
 
-Replace the standard NixOS bootloader with one that participates in UEFI
-Secure Boot, with keys you control. Intermediate difficulty; good for a
-security-focused setup.
+Replace the standard NixOS bootloader with one that participates in UEFI Secure Boot, with keys you control.
+Intermediate difficulty; good for a security-focused setup.
 
 ### Overlays and overrides
 
@@ -341,22 +333,20 @@ nixpkgs.overlays = [(final: prev: {
 
 ### NixOS containers and VMs
 
-`nixos-container` for lightweight system containers. `nixos-rebuild build-vm`
-to spin up a VM of your config for testing — invaluable before applying
-risky changes.
+`nixos-container` for lightweight system containers.
+`nixos-rebuild build-vm` to spin up a VM of your config for testing — invaluable before applying risky changes.
 
 ### Cross-machine deployment with deploy-rs or nixos-anywhere
 
-If you ever add a second machine (home server, VPS), `deploy-rs` lets you
-push NixOS configs to remote hosts from your laptop. `nixos-anywhere` installs
-NixOS on a remote machine over SSH.
+If you ever add a second machine (home server, VPS), `deploy-rs` lets you push NixOS configs to remote hosts from your laptop.
+`nixos-anywhere` installs NixOS on a remote machine over SSH.
 
 ### Impermanence
 
-A pattern where `/` is a tmpfs that is wiped on each boot. Only explicitly
-declared paths (home dir, secrets, state) persist. Forces you to be honest
-about what state your system actually needs. Advanced but philosophically
-aligned with the NixOS ethos.
+A pattern where `/` lives on `tmpfs` and each boot starts with an empty root filesystem.
+Only explicitly declared paths (home dir, secrets, state) persist.
+Forces you to be honest about what state your system actually needs.
+Advanced but philosophically aligned with the NixOS ethos.
 
 ---
 
