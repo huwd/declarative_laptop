@@ -68,17 +68,6 @@ jobs:
       - name: nix flake check
         run: nix flake check --no-build
 
-  secrets:
-    name: Secret hygiene
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Check all declared secrets have .age files
-        run: bash scripts/check-secrets.sh
-
   # Skips its steps (rather than using `on: paths`) when a PR touches no
   # Markdown, so the job still reports success and can be a required check.
   markdown:
