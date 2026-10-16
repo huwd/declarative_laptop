@@ -14,11 +14,13 @@ Shared behaviour lives in reusable modules; each machine gets its own host direc
 
 ```text
 hosts/          per-machine configuration and hardware-configuration.nix
-modules/        shared NixOS modules (desktop, apps, development, security, services)
+modules/        shared NixOS modules (desktop, apps, gaming, development, security, services, local LLMs)
 home/           Home Manager user configuration
 terminal/       terminal environment (shell, prompt, editor, multiplexer)
+packages/       packages built by this flake (the Vale prose linter)
+scripts/        helper scripts used by the checks
 secrets/        agenix secret declarations
-docs/           guides and reference
+docs/           guides, reference and decision records
 ```
 
 ## Personalising this config
@@ -47,6 +49,7 @@ Set hostnames (`framework-13`, `dell-xps-13-9343`) in each host's `hosts/<host>/
 ## Installation
 
 See [docs/install.md](docs/install.md) for a full walkthrough: building a bootable USB, full-disk encryption setup, and running the installer.
+Then follow [docs/setup.md](docs/setup.md) for the checks to run after the first boot.
 
 ## Day-to-day usage
 
@@ -59,12 +62,14 @@ sudo nixos-rebuild switch --flake .#<host>
 Or use the justfile shortcuts (host defaults to this machine's hostname; override with `just HOST=<host> build`):
 
 ```text
-just check       lint Nix and Markdown, evaluate, and check secrets
+just check       check Nix formatting and lint, evaluate, check secrets, and lint Markdown
 just build       build the system closure without applying
+just scan        build, then scan the closure for known vulnerabilities (vulnix)
 just apply       nixos-rebuild switch
 just diff        compare built closure against running system
 just update      update all flake inputs
 just fix         auto-format and lint-fix .nix files
+just docs-prose  check Markdown spelling and style (local only)
 ```
 
 ## Updating inputs
@@ -81,7 +86,7 @@ just apply        # apply if happy
 1. Create `hosts/<name>/configuration.nix` — copy an existing host and adjust hostname, kernel, and CPU microcode
 2. Create `hosts/<name>/hardware-configuration.nix` — use the placeholder from an existing host, then replace it with the output of `nixos-generate-config` on install day
 3. Add a `nixosConfigurations.<name>` entry in `flake.nix`
-4. Add the host to the matrix in `.github/workflows/build.yml`
+4. Add the host to the `changes` job in `.github/workflows/build.yml`, which decides the hosts to build
 
 See [docs/install.md](docs/install.md) for how to generate `hardware-configuration.nix` on the target machine.
 
@@ -90,7 +95,14 @@ See [docs/install.md](docs/install.md) for how to generate `hardware-configurati
 Every pull request builds affected host closures and runs a CVE scan with vulnix.
 CI also attempts an nvd package diff when it can fetch the baseline closure, with reports in PR comments when permissions allow.
 
+## Guides
+
+- [docs/install.md](docs/install.md): install a host from a USB drive
+- [docs/setup.md](docs/setup.md): first-boot checklist
+- [docs/local-llm.md](docs/local-llm.md): run local language models on `framework-13`
+
 ## Writing docs
 
 Markdown follows [docs/style-guide.md](docs/style-guide.md): GOV.UK style, British English.
+Record significant decisions in [docs/decisions/](docs/decisions/README.md).
 Check with `just docs-lint` (also in CI) and `just docs-prose`.
