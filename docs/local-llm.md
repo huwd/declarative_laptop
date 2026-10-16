@@ -27,7 +27,8 @@ Both are localhost-only — nothing here is reachable from the network.
 
 ## GPU acceleration
 
-Set `services.ollama.environmentVariables.OLLAMA_IGPU_ENABLE = "1"` — Ollama 0.34.2 drops integrated GPUs by default.
+Set `services.ollama.environmentVariables.OLLAMA_IGPU_ENABLE = "1"` — Ollama drops integrated GPUs by default.
+Checked on 0.34.2 and again on 0.40.3 (2026-10-16): without the variable, Ollama logs "dropping integrated GPU" and runs on the CPU.
 Confirm it's actually using the GPU (not falling back to CPU) via:
 
 ```bash
