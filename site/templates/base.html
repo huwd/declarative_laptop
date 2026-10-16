@@ -10,6 +10,13 @@
 <body>
   <header class="site-header">
     <a class="site-title" href="{{ config.base_url }}">{{ config.title }}</a>
+    <form class="search" role="search" onsubmit="return false">
+      <label class="visually-hidden" for="search-input">Search the site</label>
+      <input id="search-input" type="search" placeholder="Search" autocomplete="off"
+             data-index="{{ get_url(path='search_index.en.js') }}"
+             data-lib="{{ get_url(path='elasticlunr.min.js') }}">
+      <ul id="search-results" class="search-results" hidden></ul>
+    </form>
     <a class="repo-link" href="{{ config.extra.repo_url }}">Source on GitHub</a>
   </header>
   <div class="layout">
@@ -34,5 +41,6 @@
       {% block content %}{% endblock content %}
     </main>
   </div>
+  <script src="{{ get_url(path='search.js') }}" defer></script>
 </body>
 </html>

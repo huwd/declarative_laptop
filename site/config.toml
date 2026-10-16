@@ -7,6 +7,7 @@ description = "A reproducible NixOS configuration for laptops, with the guides a
 default_language = "en"
 
 compile_sass = false
+build_search_index = true
 generate_feeds = false
 minify_html = false
 
@@ -16,3 +17,9 @@ bottom_footnotes = false
 
 [extra]
 repo_url = "https://github.com/huwd/declarative_laptop"
+
+[search]
+index_format = "elasticlunr_javascript"
+include_title = true
+include_description = true
+include_content = true
