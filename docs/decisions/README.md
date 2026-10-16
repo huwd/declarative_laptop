@@ -68,3 +68,4 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0007](0007-dependabot-for-flake-inputs.md) | Use Dependabot for flake input updates, not a scheduled workflow | Accepted |
 | [0008](0008-ci-without-write-access.md) | Keep repository-content write access out of CI and pin its tools | Accepted |
 | [0009](0009-signed-commits-and-merge-commits.md) | Approve local signing through Bitwarden and preserve signed commits when merging | Accepted |
+| [0010](0010-zellij-as-primary-multiplexer.md) | Use zellij as the primary terminal multiplexer | Accepted |
