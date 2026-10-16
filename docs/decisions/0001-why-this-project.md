@@ -4,7 +4,7 @@
 - **Decided by:** @huwd
 - **Decided:** 2026-06
 - **Recorded:** 2026-10-04
-- **Discussion:** no separate discussion; the original rationale is in [OS.md](../../OS.md) and [LEARNING_PLAN.md](../../LEARNING_PLAN.md).
+- **Discussion:** no separate discussion; the original rationale is in [OS.md](https://github.com/huwd/declarative_laptop/blob/eda4907a0533899ebb033fcd5b49d802f60214dc/OS.md) and [LEARNING_PLAN.md](https://github.com/huwd/declarative_laptop/blob/eda4907a0533899ebb033fcd5b49d802f60214dc/LEARNING_PLAN.md).
   [#50](https://github.com/huwd/declarative_laptop/issues/50) proposed recording these decisions.
 
 ## Summary

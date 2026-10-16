@@ -17,7 +17,7 @@ Automated boot tests are outside the current CI scope to keep it fast and inexpe
 
 ## Context
 
-[PLAN.md](../../PLAN.md) set the CI goal in June 2026: check changes before applying them to the laptops.
+[PLAN.md](https://github.com/huwd/declarative_laptop/blob/eda4907a0533899ebb033fcd5b49d802f60214dc/PLAN.md) set the CI goal in June 2026: check changes before applying them to the laptops.
 
 A change in one file can affect dependencies elsewhere in a host's system closure.
 Building the full system checks how those dependencies fit together.
