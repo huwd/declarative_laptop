@@ -1,7 +1,7 @@
 # Terminal Environment
 
-A terminal-first setup managed entirely via Home Manager. All components are
-declared in `home/huw/terminal/` and imported from `home/huw/default.nix`.
+Home Manager manages the terminal setup.
+The modules in `terminal/` declare its components, and `home/huw/default.nix` imports them.
 
 ## Stack
 
@@ -22,7 +22,7 @@ declared in `home/huw/terminal/` and imported from `home/huw/default.nix`.
 
 ## Switching Multiplexers
 
-Open `home/huw/terminal/default.nix` and swap one line:
+Open `terminal/default.nix` and swap one line:
 
 ```nix
 # tmux (default — strong vi/vim-navigator muscle memory)
@@ -32,8 +32,7 @@ Open `home/huw/terminal/default.nix` and swap one line:
 # ./zellij.nix
 ```
 
-See `terminal/tmux.nix` and `terminal/zellij.nix` for full documentation of
-the key binding differences.
+See `terminal/tmux.nix` and `terminal/zellij.nix` for full documentation of the key binding differences.
 
 ## Key Aliases Carried Forward
 
@@ -53,22 +52,20 @@ From `~/.dotfiles/zsh/aliases.zsh` and `git.zsh`, adapted for NixOS:
 
 ## What's Dropped
 
-- **prezto** — plugin loading, themes, and completions are handled natively by
-  Home Manager's `programs.zsh`
+- **prezto** — Home Manager's `programs.zsh` handles plugin loading, themes and completions
 - **nvm** — replaced by per-project `devenv.nix` / `nix shell`
 - **rbenv** — same; see `OS.md` dev environment philosophy
-- **tmuxinator** — zellij has native layouts; tmux sessions can use plain
-  scripts if needed
-- **macOS-specific tmux hacks** — `reattach-to-user-namespace` removed;
-  irrelevant on Linux
+- **tmuxinator** — zellij has native layouts; tmux sessions can use plain scripts if needed
+- **macOS-specific tmux hacks** — `reattach-to-user-namespace` removed; irrelevant on Linux
 
-## How Dotfiles Are Applied
+## How Home Manager applies dotfiles
 
-Home Manager writes all config files on `home-manager switch`. You do not need
-to manually symlink, stow, or copy anything. Running:
+Home Manager applies the user configuration during `nixos-rebuild switch`.
+You do not need to manually symlink, stow, or copy anything.
+Running:
 
 ```bash
 nixos-rebuild switch --flake ~/.config/nixos-config#framework-13
 ```
 
-applies both system and home config atomically.
+applies both system and Home Manager configuration in one step.

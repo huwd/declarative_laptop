@@ -1,6 +1,7 @@
 # declarative-laptop
 
-A reproducible NixOS configuration for x86_64 laptops, managed as a Nix flake. Shared behaviour lives in reusable modules; each machine gets its own host directory with hardware-specific config.
+A reproducible NixOS configuration for x86_64 laptops, managed as a Nix flake.
+Shared behaviour lives in reusable modules; each machine gets its own host directory with hardware-specific config.
 
 ## Supported machines
 
@@ -22,7 +23,8 @@ docs/           guides and reference
 
 ## Personalising this config
 
-This repo is designed to be forked. The username `huw` is used throughout — replace it with your own before use:
+Fork this repository to adapt it for your own machines.
+Replace the username `huw` with your own before use:
 
 ```bash
 # find every reference
@@ -40,7 +42,7 @@ users.huw = import ./home/huw;
 users.<username> = import ./home/<username>;
 ```
 
-Hostnames (`framework-13`, `dell-xps-13-9343`) are set per-host in `hosts/<host>/configuration.nix`.
+Set hostnames (`framework-13`, `dell-xps-13-9343`) in each host's `hosts/<host>/configuration.nix`.
 
 ## Installation
 
@@ -77,16 +79,18 @@ just apply        # apply if happy
 ## Adding a new machine
 
 1. Create `hosts/<name>/configuration.nix` — copy an existing host and adjust hostname, kernel, and CPU microcode
-2. Create `hosts/<name>/hardware-configuration.nix` — use the placeholder from an existing host; it is replaced by `nixos-generate-config` on install day
+2. Create `hosts/<name>/hardware-configuration.nix` — use the placeholder from an existing host, then replace it with the output of `nixos-generate-config` on install day
 3. Add a `nixosConfigurations.<name>` entry in `flake.nix`
 4. Add the host to the matrix in `.github/workflows/build.yml`
 
-See [docs/install.md](docs/install.md) for how `hardware-configuration.nix` is generated on the target machine.
+See [docs/install.md](docs/install.md) for how to generate `hardware-configuration.nix` on the target machine.
 
 ## CI
 
-Every pull request builds all host closures, runs a CVE scan with vulnix, and posts a package diff with nvd as PR comments.
+Every pull request builds affected host closures and runs a CVE scan with vulnix.
+CI also attempts an nvd package diff when it can fetch the baseline closure, with reports in PR comments when permissions allow.
 
 ## Writing docs
 
-Markdown follows [docs/style-guide.md](docs/style-guide.md): GOV.UK style, British English. Check with `just docs-lint` (also in CI) and `just docs-prose`.
+Markdown follows [docs/style-guide.md](docs/style-guide.md): GOV.UK style, British English.
+Check with `just docs-lint` (also in CI) and `just docs-prose`.

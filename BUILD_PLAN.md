@@ -1,7 +1,9 @@
 # Build Plan
 
-End-to-end provisioning guide: from blank hardware to a fully managed NixOS
-system with ongoing automated dependency and security management.
+This document records the original project plan.
+See [the decision records](docs/decisions/README.md) for the current choices and [the setup guide](docs/setup.md) for the current setup workflow.
+
+End-to-end provisioning guide: from blank hardware to a fully managed NixOS system with ongoing automated dependency and security management.
 
 ---
 
@@ -62,8 +64,8 @@ touch secrets/secrets.nix
 
 ### 0.4 Write a minimal `configuration.nix`
 
-Leave `hardware-configuration.nix` absent for now — it gets generated on the
-target machine. Reference it with an import that you'll add after install.
+Leave `hardware-configuration.nix` absent for now — it gets generated on the target machine.
+Reference it with an import that you'll add after install.
 
 ### 0.5 Commit and push
 
@@ -78,24 +80,21 @@ git push -u origin main
 
 ## Phase 1: Build the System Image ("The ROM")
 
-In NixOS terms, "building the ROM" means producing a bootable installer and
-validating that your configuration builds successfully before touching real
-hardware.
+In NixOS terms, "building the ROM" means producing a bootable installer and validating that your configuration builds successfully before touching real hardware.
 
-### 1.1 Validate the flake builds
+### 1.1 Check the flake builds
 
 ```bash
 nix flake check
 nix build .#nixosConfigurations.framework-13.config.system.build.toplevel
 ```
 
-This builds the full system closure locally without installing anything. Fix
-any errors before proceeding.
+This builds the full system closure locally without installing anything.
+Fix any errors before proceeding.
 
 ### 1.2 Generate a custom installer ISO (optional but useful)
 
-A custom ISO bakes your SSH keys in so you can access the machine immediately
-after booting, without needing a monitor or keyboard to complete setup:
+A custom ISO bakes your SSH keys in so you can access the machine immediately after booting, without needing a display or keyboard to complete setup:
 
 ```nix
 # hosts/installer/default.nix
@@ -110,8 +109,7 @@ after booting, without needing a monitor or keyboard to complete setup:
 nix build .#nixosConfigurations.installer.config.system.build.isoImage
 ```
 
-Alternatively, download the official GNOME installer ISO from nixos.org —
-acceptable for a local hands-on install.
+You can also download the official GNOME installer ISO from nixos.org — acceptable for a local hands-on install.
 
 ### 1.3 Write the installer to USB
 
@@ -125,8 +123,8 @@ sudo dd if=result/iso/*.iso of=/dev/sdX bs=4M status=progress conv=fsync
 
 ### 2.1 Boot and partition
 
-Boot the USB. Use a UEFI boot with secure boot disabled (you can re-enable
-later with `lanzaboote` — see Learning Plan).
+Boot the USB.
+Use a UEFI boot with secure boot disabled (you can re-enable later with `lanzaboote` — see Learning Plan).
 
 Partition layout (adjust sizes to taste):
 
@@ -137,8 +135,8 @@ Partition layout (adjust sizes to taste):
        └─ LVM or btrfs subvolumes
 ```
 
-Recommended filesystem: **btrfs** with subvolumes for `/` and `/home`, enabling
-snapshotting. NixOS generations + btrfs snapshots = belt and braces rollback.
+Recommended filesystem: **btrfs** with subvolumes for `/` and `/home`, enabling snapshotting.
+NixOS generations + btrfs snapshots = belt and braces rollback.
 
 ```bash
 # Example (adapt to your partition layout)
@@ -156,7 +154,8 @@ mount /dev/nvme0n1p1 /mnt/boot
 nixos-generate-config --root /mnt
 ```
 
-This produces `/mnt/etc/nixos/hardware-configuration.nix`. Copy it out:
+This produces `/mnt/etc/nixos/hardware-configuration.nix`.
+Copy it out:
 
 ```bash
 cat /mnt/etc/nixos/hardware-configuration.nix
@@ -171,8 +170,7 @@ cp /mnt/etc/nixos/hardware-configuration.nix \
    /mnt/etc/nixos-config/hosts/framework-13/
 ```
 
-Add the hardware-configuration import to `configuration.nix`, then commit it
-from the installer environment or push it after first boot.
+Add the hardware-configuration import to `configuration.nix`, then commit it from the installer environment or push it after first boot.
 
 ### 2.4 Install
 
@@ -180,15 +178,14 @@ from the installer environment or push it after first boot.
 nixos-install --flake /mnt/etc/nixos-config#framework-13 --root /mnt
 ```
 
-Set the root password when prompted. Reboot.
+Set the root password when prompted.
+Reboot.
 
 ### 2.5 First boot
 
 - Log in, change your user password
-- Clone the config repo to `~/.config/nixos-config` (symlink `/etc/nixos` →
-  here, or manage separately)
-- Generate your SSH host key (happens automatically) — record its public key
-  for agenix
+- Clone the config repo to `~/.config/nixos-config` (symlink `/etc/nixos` → here, or manage separately)
+- Generate your SSH host key (happens automatically) — record its public key for agenix
 
 ---
 
@@ -204,7 +201,8 @@ On your existing machine (or the new one after first boot):
 agenix -r -i ~/.ssh/id_ed25519
 ```
 
-Push the updated encrypted secrets. On the new machine:
+Push the updated encrypted secrets.
+On the new machine:
 
 ```bash
 nixos-rebuild switch --flake ~/.config/nixos-config#framework-13
@@ -212,8 +210,8 @@ nixos-rebuild switch --flake ~/.config/nixos-config#framework-13
 
 ### 3.2 Enable Home Manager
 
-Home Manager runs as a NixOS module (already in the flake). After rebuild, all
-dotfiles, shell config, and user packages declared in `home/huw/` are active.
+Home Manager runs as a NixOS module (already in the flake).
+After rebuild, all dotfiles, shell config, and user packages declared in `home/huw/` are active.
 
 ### 3.3 Firmware update
 
@@ -222,9 +220,10 @@ sudo fwupdmgr refresh
 sudo fwupdmgr update
 ```
 
-Reboot if firmware was updated. Do this before considering the system settled.
+Reboot after updating firmware.
+Do this before considering the system settled.
 
-### 3.4 Validate suspend/resume
+### 3.4 Check suspend/resume
 
 ```bash
 systemctl suspend
@@ -232,8 +231,7 @@ systemctl suspend
 journalctl -b -1 | grep -i "suspend\|resume\|error"
 ```
 
-Note any issues and apply kernel parameter workarounds in `configuration.nix`
-if needed.
+Note any issues and apply kernel parameter workarounds in `configuration.nix` if needed.
 
 ---
 
@@ -285,7 +283,8 @@ git checkout main
 
 ### 4.4 Rolling back
 
-NixOS keeps previous generations. If an update breaks something:
+NixOS keeps previous generations.
+If an update breaks something:
 
 ```bash
 nixos-rebuild --rollback switch          # roll back one generation
@@ -300,7 +299,8 @@ nix-env --list-generations --profile /nix/var/nix/profiles/system
 
 ### 4.5 Garbage collection
 
-Nix accumulates old generations. Prune periodically:
+Nix accumulates old generations.
+Prune periodically:
 
 ```bash
 # Keep last 5 generations
@@ -322,8 +322,7 @@ nix.gc = {
 
 ## Phase 5: CI/CD Pipeline
 
-A GitHub Actions workflow that keeps dependencies fresh and flags CVEs before
-they reach your machine.
+A GitHub Actions workflow that keeps dependencies fresh and flags CVEs before they reach your machine.
 
 ### 5.1 Workflow: weekly dependency update
 
@@ -376,7 +375,7 @@ jobs:
           delete-branch: true
 ```
 
-### 5.2 Workflow: validate on every PR
+### 5.2 Workflow: check every PR
 
 ```yaml
 # .github/workflows/check.yml
@@ -408,10 +407,9 @@ jobs:
         continue-on-error: true   # informational until you tune whitelists
 ```
 
-> CI builds the full NixOS closure — this is slow on GitHub-hosted runners the
-> first time (~20–40 min). `magic-nix-cache-action` caches derivations between
-> runs and dramatically reduces subsequent build times. Consider a self-hosted
-> runner on an x86 machine for faster builds.
+> CI builds the full NixOS closure — this is slow on GitHub-hosted runners the first time (~20–40 min).
+> `magic-nix-cache-action` caches derivations between runs and dramatically reduces later build times.
+> Consider a self-hosted runner on an x86 machine for faster builds.
 
 ---
 
