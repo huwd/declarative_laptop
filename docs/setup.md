@@ -66,16 +66,7 @@ Private keys should come from your password manager or offline backup, never fro
 The configuration disables the SSH daemon (`services.openssh.enable = false`).
 Before enabling it, add a firewall rule for port 22 that limits access to a trusted interface or source.
 
-## 6. Bootstrap agenix when needed
-
-The repository does not currently declare any secrets.
-Once the host is stable, check that its SSH host key exists.
-With the SSH daemon off, a fresh install may lack this key.
-Create a missing key with `sudo ssh-keygen -t ed25519 -N "" -f /etc/ssh/ssh_host_ed25519_key`.
-Then copy `/etc/ssh/ssh_host_ed25519_key.pub` into `secrets/secrets.nix` alongside your personal public key, declare the required secret files, and encrypt them with `agenix`.
-Commit only the resulting `.age` files.
-
-## 7. Configure optional stateful services
+## 6. Configure optional stateful services
 
 The configuration enables Syncthing, but its devices and folders are not yet declarative.
 Add the laptop through the local web UI at <http://127.0.0.1:8384>, verify a small test folder first, and only then connect existing data folders.

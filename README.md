@@ -19,7 +19,6 @@ home/           Home Manager user configuration
 terminal/       terminal environment (shell, prompt, editor, multiplexer)
 packages/       packages built by this flake (the Vale prose linter)
 scripts/        helper scripts used by the checks
-secrets/        agenix secret declarations
 docs/           guides, reference and decision records
 ```
 
@@ -62,7 +61,7 @@ sudo nixos-rebuild switch --flake .#<host>
 Or use the justfile shortcuts (host defaults to this machine's hostname; override with `just HOST=<host> build`):
 
 ```text
-just check       check Nix formatting and lint, evaluate, check secrets, and lint Markdown
+just check       check Nix formatting and lint, evaluate, and lint Markdown
 just build       build the system closure without applying
 just scan        build, then scan the closure for known vulnerabilities (vulnix)
 just apply       nixos-rebuild switch

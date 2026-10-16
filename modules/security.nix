@@ -9,10 +9,6 @@
     # Example: allowedTCPPorts = [ 22 443 ];
   };
 
-  # ── Secrets management ───────────────────────────────────────────────────────
-  # agenix is wired at the flake level (see flake.nix + secrets/)
-  # Secrets are decrypted at activation using the host SSH key
-
   # ── Password manager ─────────────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
     bitwarden-cli # `bw` — scripting and terminal access to your vault
@@ -27,8 +23,6 @@
   # first; do not open it globally on a roaming laptop. NixOS defaults
   # openFirewall to true, which would silently override the empty
   # allowedTCPPorts list in the firewall config above.
-  # Without the daemon nothing generates the host key agenix decrypts with;
-  # see "Bootstrap agenix" in docs/setup.md.
   services.openssh = {
     enable = false;
     openFirewall = false;

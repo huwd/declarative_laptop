@@ -5,7 +5,7 @@ HOST := `hostname`
 
 # ── Local checks (mirrors CI tiers 1 + 2) ───────────────────────────────────
 
-check: format-check lint evaluate secrets docs-lint
+check: format-check lint evaluate docs-lint
     @echo "All checks passed"
 
 format-check:
@@ -17,9 +17,6 @@ lint:
 
 evaluate:
     nix flake check --no-build
-
-secrets:
-    bash scripts/check-secrets.sh
 
 # Markdown structure lint (config: .markdownlint-cli2.jsonc)
 docs-lint:
