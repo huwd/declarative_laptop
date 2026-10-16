@@ -55,7 +55,7 @@ The config implements:
 | Threat | Covered? | How |
 |--------|----------|-----|
 | Known CVE in Nix package | Yes | vulnix + NVD |
-| Stale packages | Yes | weekly flake update |
+| Stale packages | Yes | weekly Dependabot update PRs |
 | Retroactive exposure analysis | Yes | flake.lock git history |
 | Firmware vulnerabilities | Partially | fwupd / LVFS |
 

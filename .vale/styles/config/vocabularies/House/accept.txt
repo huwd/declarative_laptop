@@ -40,6 +40,7 @@ Flatpak
 (?i)fwupd
 (?i)fzf
 (?i)gdisk
+Goodix
 GPUs
 (?i)grype
 Guix
@@ -68,6 +69,7 @@ Nygard
 PCIe
 (?i)plaintext
 Podman
+(?i)polkit
 powerline
 (?i)prezto
 PRs

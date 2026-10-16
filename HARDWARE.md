@@ -26,7 +26,7 @@ Product: <https://frame.work/gb/en/products/laptop13pro-amd-ai300/configuration/
 
 ### CPU / Platform
 
-**Good.** Zen 5 is well-supported from kernel 6.10+.
+**Good.** Zen 5 has been well supported since about kernel 6.10.
 Full performance scaling, thermal management, and CPU frequency governors work correctly.
 Use `linux_latest` on NixOS to ensure you have a recent enough kernel.
 
@@ -39,13 +39,14 @@ GNOME on Wayland runs well on AMD iGPU.
 
 ### NPU (XDNA 2 / AI accelerator)
 
-**Partial.** The NPU is not yet well-supported on Linux as of mid-2025.
-The AMDXDNA driver is in early upstream stages.
-Ignore it for now — the target use case does not need it and will improve over time.
+**Partial.** The NPU was not well supported on Linux when the project began.
+The configuration doesn't use it, and the [local LLM setup](docs/local-llm.md) runs on the GPU instead.
+Check the AMDXDNA driver's upstream status before relying on it.
 
-### Wi-Fi (Intel BE200 / AX210)
+### Wi-Fi (AMD RZ717)
 
-**Expected to be good on a current kernel.** The ordered system uses the AMD RZ717 Wi-Fi 7 module rather than the Intel card assumed by the original plan.
+**Expected to be good on a current kernel.** The Framework uses the AMD RZ717 Wi-Fi 7 module, not the Intel card assumed by the original plan.
+It needs firmware that `hardware.enableRedistributableFirmware` provides.
 Confirm Wi-Fi and Bluetooth in the live installer before partitioning the disk.
 
 ### Suspend / Resume
@@ -57,9 +58,9 @@ Follow the Framework Linux community forum for your specific BIOS version.
 
 ### Fingerprint Reader
 
-**Check before buying.** Framework has shipped both supported and unsupported fingerprint sensors across batches.
-Supported sensors work via `fprintd`.
-Verify your batch against the Framework Linux wiki before expecting this to work.
+**Works.** The `framework-13` host uses a Goodix sensor through `fprintd`.
+`modules/security.nix` enables it for `sudo` and polkit prompts, and deliberately not for login.
+Framework has shipped both supported and unsupported sensors across batches, so check your batch against the Framework Linux wiki before buying.
 
 ### Display / HiDPI
 
@@ -86,12 +87,11 @@ No special drivers needed.
 Framework ships firmware via LVFS (Linux Vendor Firmware Service).
 Apply updates with `fwupdmgr`, which works on NixOS with `services.fwupd.enable = true`.
 
-## Linux support rating: B+ → A
+## Linux support rating
 
-Strong hardware choice for Linux.
-The main uncertainty at time of writing is suspend/resume reliability on Strix Point and NPU support.
-Both will improve with kernel updates.
-Everything else is first-class.
+A strong hardware choice for Linux.
+The main uncertainty is suspend/resume reliability on Strix Point, and the NPU is unused.
+The other components work well on a current kernel.
 
 Check the Framework Linux community subforum for your specific BIOS version before buying: <https://community.frame.work/c/framework-laptop/linux>
 
@@ -101,16 +101,11 @@ Check the Framework Linux community subforum for your specific BIOS version befo
 
 ### nixos-hardware module
 
-The pinned `nixos-hardware` input includes a dedicated Framework 13 AMD AI 300 Series module, enabled in `flake.nix`:
+The pinned `nixos-hardware` input includes a dedicated Framework 13 AMD AI 300 Series module.
+`flake.nix` adds it to the `framework-13` host's modules:
 
 ```nix
-# flake.nix inputs
-nixos-hardware.url = "github:NixOS/nixos-hardware/master";
-
-# configuration.nix
-imports = [
-  nixos-hardware.nixosModules.framework-amd-ai-300-series
-];
+nixos-hardware.nixosModules.framework-amd-ai-300-series
 ```
 
 It supplies the shared Framework/AMD configuration, Framework EC integration, firmware updates, audio enhancement device and model-specific audio workarounds.
@@ -126,10 +121,8 @@ Strix Point benefits from the most recent stable kernel.
 
 ### Firmware and microcode
 
-```nix
-hardware.enableRedistributableFirmware = true;
-hardware.cpu.amd.updateMicrocode = true;
-```
+`hosts/framework-13/configuration.nix` sets `hardware.enableRedistributableFirmware = true`.
+The generated `hardware-configuration.nix` enables AMD microcode updates.
 
 ### Power management
 
