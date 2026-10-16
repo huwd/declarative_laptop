@@ -9,6 +9,13 @@
 # real, unpatched and accepted as low risk — re-check them before expiry.
 # Keys with a version (pkg-1.2.3) stop matching when the package is bumped,
 # which forces a fresh look; version-less keys are for wrong-product matches.
+#
+# Real, unpatched entries (those with `until`) also say how to stay safe while
+# they are unpatched. `comment` is a list: the first item is the triage, the
+# second starts "Mitigation:" and names what NOT to do with this machine, or
+# what to do instead, until the fix lands. vulnix prints each item as a bullet
+# in the CI comment. Do not add a separate `mitigation` key: vulnix ignores
+# unknown keys and warns about them on every run.
 
 # ── Individually triaged ─────────────────────────────────────────────────────
 
@@ -120,7 +127,10 @@ comment = "vulnix sees nixpkgs' lapack interface package, whose version string (
 cve = [ "CVE-2025-25468", "CVE-2025-25469", "CVE-2026-107660", "CVE-2026-107675", "CVE-2026-107676", "CVE-2026-107677", "CVE-2026-107678", "CVE-2026-107696" ]
 until = "2026-11-06"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "CVE-2025-25468/25469 are memory leaks fixed on FFmpeg master (commit d5873b) in early 2025; the 9.0.1 release includes the fix, permanently N/A. CVE-2026-107660 (TLS hostname check skipped for IP-literal URLs, mbedtls backend) is fixed in 9.0.2, not yet in nixpkgs. CVE-2026-107675/107676/107677/107678/107696 (SFTP host-key check, uninitialised metadata bytes, DASH and RTSP infinite loops, stack exhaustion on a crafted MP4) affect releases through 9.0.2 with no upstream fix yet. All real and accepted as low risk: each needs ffmpeg to process hostile media or connect to a hostile server, and ffmpeg is only in the closure as a library dependency of desktop apps; no scripts or services here feed it untrusted URLs. Re-check for an ffmpeg bump in nixpkgs before this expires."
+comment = [
+  "CVE-2025-25468/25469 are memory leaks fixed on FFmpeg master (commit d5873b) in early 2025; the 9.0.1 release includes the fix, permanently N/A. CVE-2026-107660 (TLS hostname check skipped for IP-literal URLs, mbedtls backend) is fixed in 9.0.2, not yet in nixpkgs. CVE-2026-107675/107676/107677/107678/107696 (SFTP host-key check, uninitialised metadata bytes, DASH and RTSP infinite loops, stack exhaustion on a crafted MP4) affect releases through 9.0.2 with no upstream fix yet. All real and accepted as low risk: each needs ffmpeg to process hostile media or connect to a hostile server, and ffmpeg is only in the closure as a library dependency of desktop apps; no scripts or services here feed it untrusted URLs. Re-check for an ffmpeg bump in nixpkgs before this expires.",
+  "Mitigation: until nixpkgs ships a fixed ffmpeg, do not play, transcode or thumbnail media from untrusted sources with ffmpeg or apps built on it (especially RTSP, DASH or sftp URLs, and MP4 or MKV files from unknown senders). Stick to media you trust.",
+]
 
 ["libmicrohttpd-1.0.6"]
 cve = [ "CVE-2025-59777", "CVE-2025-62689" ]
@@ -264,12 +274,18 @@ comment = "All thirteen fixed in OpenSSL 3.5.9; nixpkgs (including unstable) sti
 cve = [ "CVE-2026-106587", "CVE-2026-106552", "CVE-2026-106553", "CVE-2026-106555", "CVE-2026-106582", "CVE-2026-106583", "CVE-2026-106584", "CVE-2026-106585", "CVE-2026-106586" ]
 until = "2026-11-02"
 issue_url = "https://github.com/huwd/declarative_laptop/pull/69"
-comment = "All fixed in OpenSSH 10.6, not yet in nixpkgs. sshd is disabled (services.openssh.enable = false in modules/security.nix), so the sshd-only bugs are N/A: CVE-2026-106587 (\"none\" config value read as a filename), CVE-2026-106586 (restrict keyword and tunnel forwarding) and CVE-2026-106553/106555 (GSSAPI state persisting across attempts). The package stays in the closure for the ssh client, ssh-keygen and git, so the client-side bugs are real but low risk: CVE-2026-106585 (no packet-size check on decompression) and CVE-2026-106552 (sftp path traversal during recursive copy) need a hostile server, and we only connect to GitHub and hosts we control; CVE-2026-106583 (username injection) needs a crafted username on our own command line; CVE-2026-106582 (compression weakness) and CVE-2026-106584 (ssh-keygen certificate expiry across DST) have negligible impact here. Re-check for an openssh 10.6 bump."
+comment = [
+  "All fixed in OpenSSH 10.6, not yet in nixpkgs. sshd is disabled (services.openssh.enable = false in modules/security.nix), so the sshd-only bugs are N/A: CVE-2026-106587 (\"none\" config value read as a filename), CVE-2026-106586 (restrict keyword and tunnel forwarding) and CVE-2026-106553/106555 (GSSAPI state persisting across attempts). The package stays in the closure for the ssh client, ssh-keygen and git, so the client-side bugs are real but low risk: CVE-2026-106585 (no packet-size check on decompression) and CVE-2026-106552 (sftp path traversal during recursive copy) need a hostile server, and we only connect to GitHub and hosts we control; CVE-2026-106583 (username injection) needs a crafted username on our own command line; CVE-2026-106582 (compression weakness) and CVE-2026-106584 (ssh-keygen certificate expiry across DST) have negligible impact here. Re-check for an openssh 10.6 bump.",
+  "Mitigation: until openssh 10.6 lands, only use ssh, scp and sftp against GitHub and hosts you control; avoid recursive scp or sftp downloads from servers you do not trust; never pass an untrusted username on the command line; keep sshd disabled.",
+]
 
 ["libsoup-3.6.6"]
 cve = [ "CVE-2026-102555", "CVE-2026-102556", "CVE-2026-102557", "CVE-2026-102558" ]
 until = "2026-11-06"
-comment = "Real and unpatched: fixed in libsoup 3.7.3 and later (3.8.0 is the current stable release), but nixpkgs still ships 3.6.6, the last 3.6 release, which predates the 29 Sep disclosure. CVE-2026-102556/102557/102558 are heap corruption or crashes in SoupWebsocketConnection (wrong Pong signal type, no cap on reassembled message size, frame-length overflow when max-incoming-payload-size is unlimited); CVE-2026-102555 is an out-of-bounds read decoding a crafted base64 data: URI with embedded NULs. libsoup is only a dependency of GNOME components (webkitgtk, gvfs, geoclue, gnome-online-accounts, evolution-data-server, sushi); exploitation needs a hostile WebSocket peer or a crafted data: URI to reach one of them, and our main browser is separate. Accepted as low risk. Re-check for a libsoup 3.8 bump in nixpkgs before this expires."
+comment = [
+  "Real and unpatched: fixed in libsoup 3.7.3 and later (3.8.0 is the current stable release), but nixpkgs still ships 3.6.6, the last 3.6 release, which predates the 29 Sep disclosure. CVE-2026-102556/102557/102558 are heap corruption or crashes in SoupWebsocketConnection (wrong Pong signal type, no cap on reassembled message size, frame-length overflow when max-incoming-payload-size is unlimited); CVE-2026-102555 is an out-of-bounds read decoding a crafted base64 data: URI with embedded NULs. libsoup is only a dependency of GNOME components (webkitgtk, gvfs, geoclue, gnome-online-accounts, evolution-data-server, sushi); exploitation needs a hostile WebSocket peer or a crafted data: URI to reach one of them, and our main browser is separate. Accepted as low risk. Re-check for a libsoup 3.8 bump in nixpkgs before this expires.",
+  "Mitigation: until a fixed libsoup lands, do not open untrusted links or web content inside GNOME embedded web views (Online Accounts sign-in, Evolution, sushi previews of untrusted files), do untrusted browsing in the main browser instead, and do not mount untrusted network shares in Files.",
+]
 
 ["unbound-1.26.0"]
 cve = [ "CVE-2026-81642", "CVE-2026-82717", "CVE-2026-81634", "CVE-2026-82720", "CVE-2026-80225", "CVE-2026-85501" ]
