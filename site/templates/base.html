@@ -6,6 +6,9 @@
   <title>{% block title %}{{ config.title }}{% endblock title %}</title>
   <meta name="description" content="{{ config.description }}">
   <link rel="stylesheet" href="{{ get_url(path='style.css') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ get_url(path='favicon.svg') }}">
+  <link rel="icon" type="image/x-icon" sizes="any" href="{{ get_url(path='favicon.ico') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ get_url(path='apple-touch-icon.png') }}">
 </head>
 <body>
   <header class="site-header">
@@ -41,6 +44,15 @@
       {% block content %}{% endblock content %}
     </main>
   </div>
+  <footer class="site-footer">
+    <p>
+      Built on <a href="https://nixos.org/">NixOS</a>. This is a personal configuration, not an official NixOS project.
+      Favicon: “NixOS Logo” by Simon Frankau, Tim Cuthbertson and Daniel Baker, maintained by the
+      <a href="https://nixos.org/community/teams/marketing/">NixOS Marketing Team</a>,
+      from <a href="https://github.com/NixOS/branding">nixos/branding</a>,
+      licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Used unchanged.
+    </p>
+  </footer>
   <script src="{{ get_url(path='search.js') }}" defer></script>
 </body>
 </html>
