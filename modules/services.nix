@@ -86,56 +86,6 @@
       # Device IDs are shown in the web UI under Actions → Show ID.
       # Committing them here makes every rebuild reproduce the full sync topology.
     };
-
-    # ── Flatpak ───────────────────────────────────────────────────────────────
-    # Safety valve for apps not in nixpkgs. Keep the footprint small.
-    # Flatpak apps are outside the Nix store and therefore outside vulnix —
-    # see OPSEC.md for the residual risk and mitigations.
-    flatpak.enable = true;
-  };
-
-  # ── Flatpak automation ───────────────────────────────────────────────────────
-  systemd = {
-    services = {
-      # Automatic Flatpak updates — runs weekly, keeps runtimes and apps current
-      flatpak-update = {
-        description = "Update Flatpak runtimes and applications";
-        serviceConfig = {
-          Type = "oneshot";
-          ExecStart = "${pkgs.flatpak}/bin/flatpak update --noninteractive";
-        };
-      };
-
-      # grype — CVE scan of Flatpak runtimes after each update
-      # Covers runtime-level vulnerabilities; individual app internals vary.
-      # Results land in the journal: journalctl -u flatpak-scan
-      flatpak-scan = {
-        description = "Scan Flatpak installation for CVEs (grype)";
-        after = [ "flatpak-update.service" ];
-        serviceConfig = {
-          Type = "oneshot";
-          ExecStart = "${pkgs.grype}/bin/grype dir:/var/lib/flatpak --output table";
-        };
-      };
-    };
-
-    timers = {
-      flatpak-update = {
-        wantedBy = [ "timers.target" ];
-        timerConfig = {
-          OnCalendar = "weekly";
-          Persistent = true; # catch up if the machine was off
-        };
-      };
-
-      flatpak-scan = {
-        wantedBy = [ "timers.target" ];
-        timerConfig = {
-          OnCalendar = "weekly";
-          Persistent = true;
-        };
-      };
-    };
   };
 
   # ── Timezone + locale ────────────────────────────────────────────────────────
@@ -155,6 +105,4 @@
       "nas.local"
     ];
   };
-
-  environment.systemPackages = [ pkgs.grype ];
 }
