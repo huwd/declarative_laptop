@@ -3,13 +3,26 @@
 This guide covers getting a bootable NixOS installer onto a USB drive, partitioning a target machine with full-disk encryption, and installing from this flake.
 It assumes a Linux machine for writing the USB.
 
+The install is manual.
+You type the disk layout yourself, so the commands here must match [the record of the disk layout](decisions/0004-luks-btrfs-systemd-boot.md).
+[#93](https://github.com/huwd/declarative_laptop/issues/93) tracks building an installer that does this for you.
+
 Throughout this guide, replace `<host>` with the name of the host you are installing (e.g. `framework-13` or `dell-xps-13-9343`), and `<username>` with the username you have configured in `hosts/<host>/configuration.nix`.
+
+## What you will decide
+
+| Decision | Where |
+|----------|-------|
+| Which host to install | Steps 10 and 11 |
+| Which disk to erase | Steps 3 to 6 |
+| The disk encryption passphrase | Step 6 |
+| The root password | Step 11 |
+| The password for your user | Step 12 |
+| How to connect to the network | Step 2 |
 
 ---
 
 ## 1. Get the installer
-
-### Option A — official NixOS ISO (recommended)
 
 Download the latest NixOS minimal ISO from <https://nixos.org/download>.
 
@@ -23,22 +36,8 @@ lsblk
 sudo cp nixos-minimal-*.iso /dev/sdX && sync
 ```
 
-The official installer includes git, nix, and all partitioning tools needed for this guide.
-
-### Option B — custom ISO from this flake
-
-Builds a live environment that reflects your config.
-Useful for air-gapped installs or verifying hardware support before committing to install.
-
-```bash
-nix run github:nix-community/nixos-generators -- \
-  --format iso \
-  --flake .#<host>
-
-sudo cp result /dev/sdX && sync
-```
-
-The ISO choice only affects the installer environment — `nixos-install` is the same either way.
+The minimal ISO includes every tool this guide uses: `git`, `gdisk`, `cryptsetup`, `mkfs.btrfs`, `mkfs.fat`, NetworkManager, `nixos-generate-config` and `nixos-install`.
+It doesn't contain this configuration, so the install downloads the system from the internet.
 
 ---
 
@@ -47,7 +46,7 @@ The ISO choice only affects the installer environment — `nixos-install` is the
 Boot the target machine from the USB.
 Use Ethernet via a USB adapter if available; Wi-Fi firmware may not be available in the installer environment.
 
-If Wi-Fi is the only option:
+If Wi-Fi is the only option, use `nmtui` to choose a network interactively, or:
 
 ```bash
 nmcli device wifi connect "<SSID>" password "<password>"
@@ -232,7 +231,8 @@ You can push now or after first boot — `nixos-install` only needs the local cl
 nixos-install --flake /tmp/config#<host>
 ```
 
-This builds the full system closure, installs the bootloader (systemd-boot), and copies everything to `/mnt`.
+The installer doesn't enable flakes, but `nixos-install --flake` turns them on for this command, so you need no extra setup.
+It builds the full system closure, installs the bootloader (systemd-boot), and copies everything to `/mnt`.
 When prompted, set a root password.
 
 When the install completes:
