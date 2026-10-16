@@ -85,7 +85,12 @@
       # nix develop .#ai  — or add `use flake .#ai` to an .envrc
       devShells.${system}.ai = import ./modules/development/ai-shell.nix { inherit pkgs; };
 
-      # nix run .#vale -- <files>  — prose linter with this repo's styles (just docs-prose)
-      packages.${system}.vale = import ./packages/vale.nix { inherit pkgs; };
+      packages.${system} = {
+        # nix run .#vale -- <files>  — prose linter with this repo's styles (just docs-prose)
+        vale = import ./packages/vale.nix { inherit pkgs; };
+
+        # nix build .#docs-site  — the documentation site (just docs-site, just docs-serve)
+        docs-site = import ./packages/docs-site.nix { inherit pkgs; };
+      };
     };
 }

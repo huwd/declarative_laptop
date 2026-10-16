@@ -111,3 +111,7 @@ CI also attempts an nvd package diff when it can fetch the baseline closure, wit
 Markdown follows [docs/style-guide.md](docs/style-guide.md): GOV.UK style, British English.
 Record significant decisions in [docs/decisions/](docs/decisions/README.md).
 Check with `just docs-lint` (also in CI) and `just docs-prose`.
+
+The documentation site is built from these files with [Zola](https://www.getzola.org/).
+`just docs-serve` previews it locally, and `just docs-site` builds it and fails on any broken internal link.
+`scripts/build-site-content.py` maps the Markdown into the site, so a new page needs an entry in its `PAGES` list.

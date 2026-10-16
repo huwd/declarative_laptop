@@ -29,6 +29,22 @@ docs-lint:
 docs-prose *FILES:
     nix run .#vale -- {{ if FILES == "" { "$(git ls-files '*.md')" } else { FILES } }}
 
+# Build the documentation site into ./result (fails on broken internal links)
+docs-site:
+    nix build .#docs-site
+
+# Preview the documentation site at http://127.0.0.1:1111
+# Re-run to pick up changes to the Markdown sources
+docs-serve:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    dir=$(mktemp -d)
+    trap 'rm -rf "$dir"' EXIT
+    cp -r site/. "$dir"/
+    chmod -R u+w "$dir"
+    nix run --inputs-from . nixpkgs#python3 -- scripts/build-site-content.py . "$dir/content"
+    nix run --inputs-from . nixpkgs#zola -- --root "$dir" serve
+
 # ── Auto-fix ────────────────────────────────────────────────────────────────
 
 fix:
