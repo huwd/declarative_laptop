@@ -102,6 +102,10 @@ CI also attempts an nvd package diff when it can fetch the baseline closure, wit
 - [docs/operations.md](docs/operations.md): roll back, list generations, and check an earlier configuration for vulnerabilities
 - [docs/local-llm.md](docs/local-llm.md): run local language models on `framework-13`
 
+## Working with AI agents
+
+[CLAUDE.md](CLAUDE.md) sets out how agents should work here: teach first, and follow the repository's workflow.
+
 ## Writing docs
 
 Markdown follows [docs/style-guide.md](docs/style-guide.md): GOV.UK style, British English.
