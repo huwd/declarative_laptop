@@ -1,0 +1,18 @@
+# Zola site configuration — see docs/decisions/ and `just docs-serve`.
+# The content is generated from the repository's Markdown by
+# scripts/build-site-content.py; only the landing page lives in site/content.
+base_url = "https://huwd.github.io/declarative_laptop"
+title = "declarative-laptop"
+description = "A reproducible NixOS configuration for laptops, with the guides and decision records behind it."
+default_language = "en"
+
+compile_sass = false
+generate_feeds = false
+minify_html = false
+
+[markdown]
+# Link checking is Zola's job: every @/ link must resolve or the build fails.
+bottom_footnotes = false
+
+[extra]
+repo_url = "https://github.com/huwd/declarative_laptop"
