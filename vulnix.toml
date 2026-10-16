@@ -117,9 +117,10 @@ issue_url = "https://github.com/huwd/declarative_laptop/issues/39"
 comment = "vulnix sees nixpkgs' lapack interface package, whose version string ('3') is the LAPACK API version, not the real implementation. passthru.implementation confirms this resolves to openblas 0.3.33 — the fix landed in OpenBLAS 0.3.18 and upstream LAPACK 3.10.1."
 
 ["ffmpeg-9.0.1"]
-cve = [ "CVE-2025-25468", "CVE-2025-25469" ]
+cve = [ "CVE-2025-25468", "CVE-2025-25469", "CVE-2026-107660", "CVE-2026-107675", "CVE-2026-107676", "CVE-2026-107677", "CVE-2026-107678", "CVE-2026-107696" ]
+until = "2026-11-06"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "Memory leaks fixed on FFmpeg master (commit d5873b) in early 2025; the 9.0.1 release (2026) includes the fix."
+comment = "CVE-2025-25468/25469 are memory leaks fixed on FFmpeg master (commit d5873b) in early 2025; the 9.0.1 release includes the fix, permanently N/A. CVE-2026-107660 (TLS hostname check skipped for IP-literal URLs, mbedtls backend) is fixed in 9.0.2, not yet in nixpkgs. CVE-2026-107675/107676/107677/107678/107696 (SFTP host-key check, uninitialised metadata bytes, DASH and RTSP infinite loops, stack exhaustion on a crafted MP4) affect releases through 9.0.2 with no upstream fix yet. All real and accepted as low risk: each needs ffmpeg to process hostile media or connect to a hostile server, and ffmpeg is only in the closure as a library dependency of desktop apps; no scripts or services here feed it untrusted URLs. Re-check for an ffmpeg bump in nixpkgs before this expires."
 
 ["libmicrohttpd-1.0.6"]
 cve = [ "CVE-2025-59777", "CVE-2025-62689" ]
@@ -260,10 +261,10 @@ issue_url = "https://github.com/huwd/declarative_laptop/pull/69"
 comment = "All thirteen fixed in OpenSSL 3.5.9; nixpkgs (including unstable) still ships 3.5.8. Each needs OpenSSL acting as a server or a specific protocol this laptop doesn't serve: CVE-2026-84782 (DTLS retransmission over-read), CVE-2026-75806 (DTLS 1.2 teardown), CVE-2026-54873/84784/42772/75804/35191 (QUIC stack: memory retention, connection-ID flood, reassembly, flow control, amplification) and CVE-2026-72897 (servers calling SSL_set_SSL_CTX) have no DTLS/QUIC/TLS server running here. CVE-2026-75805 is a CMP client NULL deref (CMP is not used). CVE-2026-35189 is heap growth from a certificate with many CRL distribution points: DoS only. CVE-2026-54872/54875/77696 are timing side-channels in SM2 and generic-curve ECDSA signing (54875 is ARM64/RISC-V only; both hosts are x86_64) and need an attacker timing many local signatures. Short expiry given the 8.2 CVSS; re-check for an openssl 3.5.9 bump."
 
 ["openssh-10.5p1"]
-cve = "CVE-2026-106587"
+cve = [ "CVE-2026-106587", "CVE-2026-106552", "CVE-2026-106553", "CVE-2026-106555", "CVE-2026-106582", "CVE-2026-106583", "CVE-2026-106584", "CVE-2026-106585", "CVE-2026-106586" ]
 until = "2026-11-02"
 issue_url = "https://github.com/huwd/declarative_laptop/pull/69"
-comment = "Fixed in OpenSSH 10.6, not yet in nixpkgs. The bug is in sshd, which treats the config value \"none\" as a filename in some options instead of 'disabled'. sshd is disabled (services.openssh.enable = false in modules/security.nix); the openssh package stays in the closure only for the ssh client, ssh-keygen and git, none of which run sshd. CVSS 3.6. Re-check for an openssh 10.6 bump."
+comment = "All fixed in OpenSSH 10.6, not yet in nixpkgs. sshd is disabled (services.openssh.enable = false in modules/security.nix), so the sshd-only bugs are N/A: CVE-2026-106587 (\"none\" config value read as a filename), CVE-2026-106586 (restrict keyword and tunnel forwarding) and CVE-2026-106553/106555 (GSSAPI state persisting across attempts). The package stays in the closure for the ssh client, ssh-keygen and git, so the client-side bugs are real but low risk: CVE-2026-106585 (no packet-size check on decompression) and CVE-2026-106552 (sftp path traversal during recursive copy) need a hostile server, and we only connect to GitHub and hosts we control; CVE-2026-106583 (username injection) needs a crafted username on our own command line; CVE-2026-106582 (compression weakness) and CVE-2026-106584 (ssh-keygen certificate expiry across DST) have negligible impact here. Re-check for an openssh 10.6 bump."
 
 ["unbound-1.26.0"]
 cve = [ "CVE-2026-81642", "CVE-2026-82717", "CVE-2026-81634", "CVE-2026-82720", "CVE-2026-80225", "CVE-2026-85501" ]
