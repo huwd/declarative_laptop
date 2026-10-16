@@ -49,9 +49,6 @@ scan: build
 apply:
     sudo nixos-rebuild switch --flake .#{{HOST}}
 
-apply-home:
-    home-manager switch --flake .#{{HOST}}
-
 # ── Dependency updates (mirrors CI tier 5) ──────────────────────────────────
 
 update:
