@@ -29,7 +29,9 @@ Dependabot
 (?i)devenv
 (?i)dir
 (?i)direnv
+Docusaurus
 (?i)dotfiles?
+(?i)elasticlunr
 (?i)env
 (?i)eval
 (?i)eza
@@ -119,6 +121,7 @@ Vulkan
 Wayland
 Wh
 (?i)zellij
+Zensical
 Zimmermann
 (?i)zoxide
 (?i)zsh
