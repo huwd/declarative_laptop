@@ -118,3 +118,13 @@ blockquote { margin-left: 0; padding-left: 16px; border-left: 3px solid var(--bo
   .site-header { flex-wrap: wrap; gap: 8px; }
   .search { order: 3; flex-basis: 100%; max-width: none; margin: 0; }
 }
+
+.site-footer {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.site-footer p { margin: 0; }
