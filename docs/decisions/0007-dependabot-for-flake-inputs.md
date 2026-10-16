@@ -5,7 +5,7 @@
 - **Decided:** 2026-06-13 ([#3](https://github.com/huwd/declarative_laptop/pull/3)); scheduled workflow removed 2026-10-04 ([#63](https://github.com/huwd/declarative_laptop/pull/63))
 - **Recorded:** 2026-10-04
 - **Discussion:** [#3](https://github.com/huwd/declarative_laptop/pull/3), [#62](https://github.com/huwd/declarative_laptop/pull/62), [#63](https://github.com/huwd/declarative_laptop/pull/63)
-- **Replaces:** the weekly update workflow described as "Tier 5" in [PLAN.md](../../PLAN.md)
+- **Replaces:** the weekly update workflow described as "Tier 5" in [PLAN.md](https://github.com/huwd/declarative_laptop/blob/eda4907a0533899ebb033fcd5b49d802f60214dc/PLAN.md)
 
 ## Summary
 

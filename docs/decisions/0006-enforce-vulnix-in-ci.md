@@ -18,7 +18,7 @@ Findings can block an update until the maintainer assesses their relevance and r
 Publishing the configuration exposes the declared packages and dependency revisions (see [OPSEC.md](../../OPSEC.md)).
 Scanning and reviewing findings help manage the associated risk.
 The project adopted vulnix for its convenience in this Nix-based workflow, without comparing alternative scanners.
-[OS.md](../../OS.md) set the goal: CVE scanning on every dependency update, with findings blocking merge.
+[OS.md](https://github.com/huwd/declarative_laptop/blob/eda4907a0533899ebb033fcd5b49d802f60214dc/OS.md) set the goal: CVE scanning on every dependency update, with findings blocking merge.
 
 vulnix matches the packages in a Nix closure against the US National Vulnerability Database (NVD).
 The [vulnix documentation](https://github.com/nix-community/vulnix) describes its name-and-version matching.
@@ -50,7 +50,7 @@ This is a practical starting point for reviewing CVEs in Nix packages, with a re
 
 ### Informational only
 
-The original [build plan](../../BUILD_PLAN.md) proposed `continue-on-error: true` while setting up the whitelist.
+The original [build plan](https://github.com/huwd/declarative_laptop/blob/eda4907a0533899ebb033fcd5b49d802f60214dc/BUILD_PLAN.md) proposed `continue-on-error: true` while setting up the whitelist.
 The failure in [#16](https://github.com/huwd/declarative_laptop/pull/16) showed that informational output alone did not ensure review.
 
 ### No CVE scanning

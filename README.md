@@ -99,6 +99,7 @@ CI also attempts an nvd package diff when it can fetch the baseline closure, wit
 
 - [docs/install.md](docs/install.md): install a host from a USB drive
 - [docs/setup.md](docs/setup.md): first-boot checklist
+- [docs/operations.md](docs/operations.md): roll back, list generations, and check an earlier configuration for vulnerabilities
 - [docs/local-llm.md](docs/local-llm.md): run local language models on `framework-13`
 
 ## Writing docs
