@@ -266,6 +266,11 @@ until = "2026-11-02"
 issue_url = "https://github.com/huwd/declarative_laptop/pull/69"
 comment = "All fixed in OpenSSH 10.6, not yet in nixpkgs. sshd is disabled (services.openssh.enable = false in modules/security.nix), so the sshd-only bugs are N/A: CVE-2026-106587 (\"none\" config value read as a filename), CVE-2026-106586 (restrict keyword and tunnel forwarding) and CVE-2026-106553/106555 (GSSAPI state persisting across attempts). The package stays in the closure for the ssh client, ssh-keygen and git, so the client-side bugs are real but low risk: CVE-2026-106585 (no packet-size check on decompression) and CVE-2026-106552 (sftp path traversal during recursive copy) need a hostile server, and we only connect to GitHub and hosts we control; CVE-2026-106583 (username injection) needs a crafted username on our own command line; CVE-2026-106582 (compression weakness) and CVE-2026-106584 (ssh-keygen certificate expiry across DST) have negligible impact here. Re-check for an openssh 10.6 bump."
 
+["libsoup-3.6.6"]
+cve = [ "CVE-2026-102555", "CVE-2026-102556", "CVE-2026-102557", "CVE-2026-102558" ]
+until = "2026-11-06"
+comment = "Real and unpatched: fixed in libsoup 3.7.3 and later (3.8.0 is the current stable release), but nixpkgs still ships 3.6.6, the last 3.6 release, which predates the 29 Sep disclosure. CVE-2026-102556/102557/102558 are heap corruption or crashes in SoupWebsocketConnection (wrong Pong signal type, no cap on reassembled message size, frame-length overflow when max-incoming-payload-size is unlimited); CVE-2026-102555 is an out-of-bounds read decoding a crafted base64 data: URI with embedded NULs. libsoup is only a dependency of GNOME components (webkitgtk, gvfs, geoclue, gnome-online-accounts, evolution-data-server, sushi); exploitation needs a hostile WebSocket peer or a crafted data: URI to reach one of them, and our main browser is separate. Accepted as low risk. Re-check for a libsoup 3.8 bump in nixpkgs before this expires."
+
 ["unbound-1.26.0"]
 cve = [ "CVE-2026-81642", "CVE-2026-82717", "CVE-2026-81634", "CVE-2026-82720", "CVE-2026-80225", "CVE-2026-85501" ]
 until = "2026-10-07"
