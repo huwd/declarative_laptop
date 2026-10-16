@@ -1,0 +1,80 @@
+name: Docs
+
+# Builds the documentation site on every change to its sources, and publishes
+# it to GitHub Pages from main. See docs/decisions/0012-zola-documentation-site.md.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**.md"
+      - "docs/**"
+      - "site/**"
+      - "scripts/build-site-content.py"
+      - "packages/docs-site.nix"
+      - "flake.nix"
+      - "flake.lock"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    paths:
+      - "**.md"
+      - "docs/**"
+      - "site/**"
+      - "scripts/build-site-content.py"
+      - "packages/docs-site.nix"
+      - "flake.nix"
+      - "flake.lock"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24  # v31.11.1
+
+      # Zola fails the build on any broken internal link.
+      - name: Build the site
+        run: nix build .#docs-site
+
+      - name: Collect the site files
+        if: github.event_name != 'pull_request'
+        run: cp -rL result public
+
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d  # v6.0.0
+        if: github.event_name != 'pull_request'
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9  # v5.0.0
+        if: github.event_name != 'pull_request'
+        with:
+          path: public
+
+  # The only job that can change what the public site shows. It has no
+  # repository-content write access: Pages deployment needs `pages: write`
+  # and an OIDC token to prove where the artifact came from.
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346  # v5.0.1

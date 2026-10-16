@@ -70,3 +70,4 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0009](0009-signed-commits-and-merge-commits.md) | Approve local signing through Bitwarden and preserve signed commits when merging | Accepted |
 | [0010](0010-zellij-as-primary-multiplexer.md) | Use zellij as the primary terminal multiplexer | Accepted |
 | [0011](0011-vulkan-for-local-inference.md) | Run local inference on the Vulkan backend rather than ROCm | Accepted |
+| [0012](0012-zola-documentation-site.md) | Publish the documentation as a Zola site on GitHub Pages | Accepted |
