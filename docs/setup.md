@@ -80,4 +80,4 @@ Commit only the resulting `.age` files.
 The configuration enables Syncthing, but its devices and folders are not yet declarative.
 Add the laptop through the local web UI at <http://127.0.0.1:8384>, verify a small test folder first, and only then connect existing data folders.
 
-Review any Flatpak applications and browser extensions before installing them; both sit partly outside the repository's Nix closure checks.
+Review any browser extensions before installing them, because they sit outside the repository's Nix closure checks.

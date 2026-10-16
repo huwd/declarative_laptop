@@ -82,9 +82,6 @@ The configuration enables fwupd to apply firmware updates.
 A service that is correctly versioned but misconfigured (unnecessarily exposed, weak permissions, insecure default) is not caught.
 The security module applies conservative defaults; there is no automated configuration audit.
 
-**Flatpak blind spot.** Anything installed via Flatpak is outside the Nix store and outside vulnix's reach.
-See the Flatpak section below.
-
 **Browser extensions.** Users install Firefox and Chrome extensions at runtime, outside the configured scanning.
 This is a meaningful blind spot — extensions run with broad permissions and have a poor security track record.
 
@@ -95,39 +92,6 @@ It does not remove supply chain or targeted attack risks, and a published manife
 
 The preparation likely outweighs the exposure: an attacker who exploits the published manifest to construct an attack still has to execute it against a machine whose maintainer reviews updates regularly and whose firewall restricts incoming connections.
 The realistic threat model for a personal laptop is opportunistic attack, not nation-state targeting — and for opportunistic attack, staying current is the dominant mitigation.
-
----
-
-## Flatpak
-
-The configuration enables Flatpak as a safety valve for applications outside Nixpkgs.
-The initial setup included no Flatpak applications.
-
-### The gap
-
-Users install Flatpak applications at runtime, and the configured timer updates them outside the Nix store and declarative configuration.
-vulnix cannot see them.
-CI does not have an inventory of the applications on the running machine, so its closure scan cannot audit them.
-
-### Mitigations in place
-
-**Automatic updates** — a systemd timer runs `flatpak update` weekly, keeping runtimes and apps current without manual intervention.
-See `modules/services.nix`.
-
-**grype scanning** — a systemd service runs grype against the Flatpak installation directory after each update and writes a report to the journal.
-This provides CVE coverage for Flatpak runtimes (the GNOME runtime, etc.) but coverage for individual app internals varies with their packaging.
-
-**Sandbox** — Flatpak applications run in a sandboxed environment.
-A vulnerable Flatpak app has a meaningfully reduced blast radius compared to a vulnerable system package, because it cannot directly access system resources without explicit portal permissions.
-
-### Remaining gap
-
-grype's Flatpak coverage is runtime-only: it sees the runtimes but not necessarily all libraries bundled inside individual app containers.
-A fully-scanned Flatpak app would require the app author to publish an SBOM.
-Most do not.
-
-**Preference**: use Flatpak only for apps where no nixpkgs alternative exists and the app is from a reputable publisher.
-Keep the Flatpak footprint small and reviewed.
 
 ---
 
@@ -156,5 +120,4 @@ The repository records this lack of automated review as a known gap.
 | Software inventory enabling targeted research | Yes | Active scanning is the mitigation |
 | AI-assisted attack chain construction | Yes | No practical mitigation; accepted |
 | Zero-day exposure window | Yes | Unavoidable; manual update PR for critical CVEs |
-| Flatpak partial scan coverage | Yes | Auto-updates + grype + sandbox |
 | Browser extension risk | Yes | Manual hygiene; tracked as known gap |
