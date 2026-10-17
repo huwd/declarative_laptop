@@ -133,6 +133,9 @@ Python's `hmac` works in process.
   Nobody has checked whether SOPS 3.13.3 accepts plugin identities.
 - A running process as the same user can still read secrets from another process of the same user while it runs.
   Agent sandboxing and a credential proxy are separate work.
+- On 2026-10-17 the whole chain was checked on the laptop: an approval prompt naming `ssh-keygen` and `sops-age`, derivation, decryption, injection into one command, and decryption with the recovery key from Bitwarden alone.
+  `secrets-edit` kept its temporary file on tmpfs and left no swap, undo or history files.
+- `with-secrets` doesn't convert the `\n` in multi-line values, so those values reach the command with literal backslash-n sequences.
 
 ### When to reconsider
 
