@@ -80,6 +80,14 @@ creation_rules:
 
 By default, `with-secrets` decrypts `~/.secrets/dev.sops.env` and the `secrets.sops.env` at the root of the current git repository, with the project file winning.
 It warns when either file is missing.
+
+The two files layer rather than compete, so a project needs only the values that differ from the shared file.
+Three options change that:
+
+- `SECRETS_CENTRAL=<file>` replaces the shared file for that command, for example to use another checkout of the secrets repository.
+- `-f <file>` (repeatable) replaces both defaults, and later files win.
+- `--only A,B` injects just the named variables from whatever was decrypted.
+
 It puts `sops`, `git` and `sops-age-derive` first on the `PATH` of the command that it runs.
 
 Never run these tools under `set -x`, which prints the secrets.
