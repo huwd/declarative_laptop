@@ -133,6 +133,19 @@ Before committing, check that the values in the file read `ENC[…]`:
 grep -c 'ENC\[' <file>
 ```
 
+### Scan for committed secrets
+
+Encryption doesn't stop a plaintext file from being committed by mistake.
+The laptop provides `betterleaks` for that ([0014](decisions/0014-betterleaks-as-secret-scanner.md)).
+To check the staged changes of a repository, run this from its root:
+
+```sh
+betterleaks git --staged
+```
+
+The laptop doesn't run this for you.
+Each project decides whether to call it from a hook or from CI.
+
 ### Add or remove a recipient
 
 Edit `.sops.yaml`, then re-wrap each file:
