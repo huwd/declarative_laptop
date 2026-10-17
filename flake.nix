@@ -81,6 +81,9 @@
 
         # nix build .#docs-site  — the documentation site (just docs-site, just docs-serve)
         docs-site = import ./packages/docs-site.nix { inherit pkgs; };
+
+        # nix build .#secrets-tools  — with-secrets, secrets-edit and sops-age-derive
+        secrets-tools = import ./packages/secrets-tools.nix { inherit pkgs; };
       };
     };
 }

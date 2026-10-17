@@ -27,6 +27,98 @@ nixos-rebuild list-generations
 The garbage collector deletes generations older than 30 days each week.
 See `nix.gc` in `hosts/framework-13/configuration.nix`.
 
+## Dev secrets
+
+Dev secrets are SOPS-encrypted files that `with-secrets` decrypts for one command at a time.
+[0013](decisions/0013-derive-age-key-from-ssh-agent.md) explains the design.
+Each call that decrypts asks the Bitwarden SSH agent for one signature.
+The agent needs an unlocked vault, and with the recommended setting it asks you to approve each request.
+
+### Set up
+
+Do this once, after applying the configuration that installs the tools.
+
+Create a dedicated Ed25519 SSH key in Bitwarden, named `sops-age`, and save its public half as `~/.ssh/sops-age.pub`.
+Use this key for nothing else: don't add it to GitHub or `allowed_signers`.
+Then create the recovery key on tmpfs, store it in Bitwarden, then delete the file:
+
+```bash
+age-keygen -o "$XDG_RUNTIME_DIR/recovery.txt"
+```
+
+Copy the whole file into a Bitwarden secure note called "SOPS recovery age key".
+Note the public key (the `age1…` line), then delete the file:
+
+```bash
+shred -u "$XDG_RUNTIME_DIR/recovery.txt"
+```
+
+Compute the laptop recipient, which asks the agent for one signature:
+
+```bash
+sops-age-derive | age-keygen -y
+```
+
+Put both public keys in the `.sops.yaml` of the secrets repository and of each project:
+
+```yaml
+creation_rules:
+  - path_regex: (^|/)[^/]*\.sops\.env$
+    age: >-
+      age1<laptop-recipient>,
+      age1<recovery-recipient>
+```
+
+### Daily use
+
+| Task | Command |
+| ---- | ------- |
+| Run a command with secrets | `with-secrets <command>` |
+| Add or edit a secret | `secrets-edit <file>` |
+| List the variable names in a file, without values | `grep -o '^[A-Z_]*=' <file>` |
+| Inject only some variables | `with-secrets --only A,B -- <command>` |
+
+By default, `with-secrets` decrypts `~/.secrets/dev.sops.env` and the `secrets.sops.env` at the root of the current git repository, with the project file winning.
+It warns when either file is missing.
+It puts `sops`, `git` and `sops-age-derive` first on the `PATH` of the command that it runs.
+
+Never run these tools under `set -x`, which prints the secrets.
+
+### Add or remove a recipient
+
+Edit `.sops.yaml`, then re-wrap each file:
+
+```bash
+sops updatekeys <file>
+```
+
+After removing a recipient, also replace the file's data key, because the removed recipient could still decrypt an old copy:
+
+```bash
+sops rotate -i <file>
+```
+
+### Recover after losing or rotating the dedicated key
+
+Rotating the `sops-age` key changes the derived identity, and the old identity can no longer be derived.
+Use the recovery key to re-wrap every file to the new one.
+
+1. Read the recovery key from Bitwarden into a variable, without echoing it or saving it in shell history:
+
+   ```bash
+   read -rs SOPS_AGE_KEY && export SOPS_AGE_KEY
+   ```
+
+2. Compute the new laptop recipient with `sops-age-derive | age-keygen -y`, and replace the old one in `.sops.yaml`.
+3. Re-wrap each file with `sops updatekeys <file>`.
+4. Clear the variable:
+
+   ```bash
+   unset SOPS_AGE_KEY
+   ```
+
+Test this once end to end before relying on it.
+
 ## Check an earlier configuration for a vulnerability
 
 The history of `flake.lock` records the dependency versions of every earlier configuration.
