@@ -84,6 +84,55 @@ It puts `sops`, `git` and `sops-age-derive` first on the `PATH` of the command t
 
 Never run these tools under `set -x`, which prints the secrets.
 
+A new file starts with example entries from SOPS: a comment and the keys `hello`, `example_key` and `example_multiline`.
+Delete them when you first edit the file, because `with-secrets` would export them into every command.
+
+`with-secrets` exports each value exactly as `sops decrypt` prints it.
+That is fine for tokens and passwords, but a multi-line value, such as a PEM key, arrives with a literal `\n` where each line break was, and whatever reads it must convert them.
+
+### Add, edit and remove secrets
+
+Choose the file first:
+
+| Where the secret is used | File |
+| ------------------------ | ---- |
+| By more than one project | `~/.secrets/dev.sops.env` |
+| By one project only | `secrets.sops.env` at the root of that project's git repository |
+
+When both files define a name, the project's value wins.
+Every file must be called `*.sops.env`, which is what `.sops.yaml` matches to encrypt it to both recipients.
+
+**Add or edit** a secret by opening the file:
+
+```bash
+secrets-edit ~/.secrets/dev.sops.env
+```
+
+Bitwarden asks you to approve the request, then your editor shows the decrypted content as one `NAME=value` line for each secret.
+Add a line, or change the value on an existing one, then save and quit.
+Names use letters, digits and underscores, and can't start with a digit.
+If you quit without saving, nothing changes.
+
+Check that a value was stored, without printing it:
+
+```bash
+with-secrets --only NAME sh -c 'test -n "$NAME" && echo set'
+```
+
+**Remove** a secret by opening the file in the same way and deleting its line.
+To remove a whole file, delete it and commit the deletion.
+
+Removing a secret doesn't undo an exposure.
+Earlier commits of the encrypted file stay in git history, and both recipients can decrypt them.
+If a secret has leaked, or you're retiring it, revoke or rotate it at the service that issued it.
+
+Commit the encrypted file, never a plaintext `.env` file.
+Before committing, check that the values in the file read `ENC[…]`:
+
+```bash
+grep -c 'ENC\[' <file>
+```
+
 ### Add or remove a recipient
 
 Edit `.sops.yaml`, then re-wrap each file:
