@@ -72,3 +72,4 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0011](0011-vulkan-for-local-inference.md) | Run local inference on the Vulkan backend rather than ROCm | Accepted |
 | [0012](0012-zola-documentation-site.md) | Publish the documentation as a Zola site on GitHub Pages | Accepted |
 | [0013](0013-derive-age-key-from-ssh-agent.md) | Derive the age key for dev secrets from an SSH-agent signature | Accepted |
+| [0014](0014-betterleaks-as-secret-scanner.md) | Install Betterleaks as the laptop's secret scanner | Accepted |

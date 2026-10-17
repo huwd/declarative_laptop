@@ -18,6 +18,7 @@
     # Bitwarden browser extension handles GUI access via Firefox/Chrome
     age # `age-keygen -y` to compute recipients
     sops # `sops updatekeys` and friends, beyond what the wrappers cover
+    betterleaks # secret scanner for staged changes and history; see docs/decisions/0014
     (import ../packages/secrets-tools.nix { inherit pkgs; }) # with-secrets, secrets-edit, sops-age-derive
   ];
 

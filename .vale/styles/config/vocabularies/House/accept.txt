@@ -11,6 +11,7 @@ Ansible
 (?i)backend
 (?i)backports?
 (?i)beamforming
+Betterleaks
 Bitwarden
 (?i)bootable
 (?i)bootloader
@@ -42,6 +43,7 @@ Flatpak
 (?i)fwupd
 (?i)fzf
 (?i)gdisk
+Gitleaks
 Goodix
 GPUs
 (?i)grype
@@ -85,6 +87,7 @@ Radeon
 (?i)reproducibility
 (?i)reviewable
 (?i)ripgrep
+(?i)ripsecrets
 ROCm
 (?i)rulesets?
 (?i)runtimes
@@ -110,6 +113,7 @@ Syncthing
 (?i)tmuxinator
 (?i)toolchains?
 Trivy
+TruffleHog
 (?i)unencrypted
 (?i)unformatted
 (?i)unfree
