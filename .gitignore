@@ -12,3 +12,6 @@ result-*
 
 # macOS (if ever editing on a Mac)
 .DS_Store
+
+# Python
+__pycache__/

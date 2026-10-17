@@ -9,10 +9,16 @@
     # Example: allowedTCPPorts = [ 22 443 ];
   };
 
-  # ── Password manager ─────────────────────────────────────────────────────────
+  # ── Password manager and encrypted dev secrets ───────────────────────────────
+  # The age identity for dev secrets is derived from a Bitwarden SSH-agent
+  # signature (one Bitwarden approval per use, if set to ask) and never stored.
+  # See docs/decisions/0013.
   environment.systemPackages = with pkgs; [
     bitwarden-cli # `bw` — scripting and terminal access to your vault
     # Bitwarden browser extension handles GUI access via Firefox/Chrome
+    age # `age-keygen -y` to compute recipients
+    sops # `sops updatekeys` and friends, beyond what the wrappers cover
+    (import ../packages/secrets-tools.nix { inherit pkgs; }) # with-secrets, secrets-edit, sops-age-derive
   ];
 
   # ── SSH ──────────────────────────────────────────────────────────────────────

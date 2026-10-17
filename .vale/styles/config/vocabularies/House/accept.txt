@@ -55,6 +55,7 @@ Guix
 (?i)misconfigured
 (?i)mitigations
 (?i)mountpoint
+(?i)namespaces?
 (?i)natively
 (?i)neovim
 (?i)nix
@@ -100,6 +101,7 @@ Silverblue
 Strix
 (?i)subforum
 (?i)subvolumes?
+(?i)sudo
 (?i)symlink
 Syncthing
 (?i)systemd
