@@ -31,8 +31,8 @@ comment = "Same as perl-5.42.3-env — see that entry."
 
 ["binutils-2.46"]
 cve = [ "CVE-2026-6846", "CVE-2025-69649", "CVE-2025-69650", "CVE-2025-69651", "CVE-2025-69652" ]
-until = "2026-10-22"
-comment = "Pulled in via gcc, which LazyVim's nvim-treesitter uses to compile parsers from source fetched by lazy.nvim. CVE-2026-6846 needs linking a crafted XCOFF (AIX) object file; nothing here links XCOFF. CVE-2025-69649/69650/69651/69652 are readelf crashes (DoS only) on crafted ELF input; readelf is never run on untrusted binaries. Accepted risk; drop this entry once nixpkgs ships a fixed binutils, and re-check before it expires."
+until = "2026-11-26"
+comment = "Pulled in via gcc, which LazyVim's nvim-treesitter uses to compile parsers from source fetched by lazy.nvim. CVE-2026-6846 needs linking a crafted XCOFF (AIX) object file; nothing here links XCOFF. It is confirmed unfixed in 2.46 (bfd/xcofflink.c still sizes reloc_info by section_count + 1) and fixed in 2.47. CVE-2025-69649/69650/69651/69652 are readelf crashes (DoS only) on crafted ELF input; readelf is never run on untrusted binaries. Debian's tracker lists fix commits for these tagged binutils-2_46, but each description says affected 'thru 2.46', so whether the nixpkgs 2.46 tarball already contains them is unverified. Accepted risk; drop this entry once nixpkgs ships binutils 2.47, and re-check before it expires."
 
 ["samba-4.23.10"]
 cve = "CVE-2026-2340"
