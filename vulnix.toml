@@ -21,13 +21,11 @@
 
 ["perl-5.42.3-env"]
 cve = [ "CVE-2026-8376", "CVE-2026-57432", "CVE-2026-13221" ]
-until = "2026-10-21"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "CVE-2026-8376 only affects 32-bit builds (heap overflow in regex compilation); this system is x86_64-linux, permanently N/A. CVE-2026-57432's vulnerable range ends before 5.42.3-RC1; we run 5.42.3 final, which already contains the fix, permanently N/A. CVE-2026-13221 is real and unpatched upstream (fixed in perl 5.44.0, not yet in nixpkgs) — requires compiling an attacker-controlled regex with >65535 alternation branches, no such input path exists on this personal machine. Re-check for a nixpkgs perl bump before this expires."
+comment = "All three are permanently N/A. CVE-2026-8376 only affects 32-bit builds (heap overflow in regex compilation); this system is x86_64-linux. CVE-2026-57432's vulnerable range ends before 5.42.3-RC1; we run 5.42.3 final, which already contains the fix. CVE-2026-13221 (regex trie offset overflow with >65535 alternation branches) is fixed upstream in 5.43.10 by commit 03f74bb and backported to 5.42.3: regcomp_study.c in the nixpkgs 5.42.3 source has the `tail - startbranch >= U16_MAX` guard (GH #23388). The CPAN Security Group advisory gives the affected range as \"through 5.43.9\", so the flag on 5.42.3 is a false positive."
 
 ["perl-5.42.3"]
 cve = [ "CVE-2026-8376", "CVE-2026-57432", "CVE-2026-13221" ]
-until = "2026-10-21"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
 comment = "Same as perl-5.42.3-env — see that entry."
 
