@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+_: {
   hardware = {
     # ── Bluetooth ─────────────────────────────────────────────────────────────
     bluetooth = {
@@ -22,15 +21,6 @@
 
     # ── Bluetooth ─────────────────────────────────────────────────────────────
     blueman.enable = true; # GUI Bluetooth manager
-
-    # ── Printing ──────────────────────────────────────────────────────────────
-    printing = {
-      enable = true;
-      drivers = with pkgs; [
-        gutenprint
-        hplip # HP printers; swap/remove if not applicable
-      ];
-    };
 
     # Network printer discovery — restricted to the local interface only.
     # openFirewall = false avoids exposing mDNS on public wifi networks.
