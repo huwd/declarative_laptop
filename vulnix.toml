@@ -107,9 +107,13 @@ issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
 comment = "Only affects Debian's packaging (avahi-daemon-check-dns.sh run from /etc/network/if-up.d); NixOS doesn't ship that script."
 
 ["cups-2.4.19"]
-cve = "CVE-2022-26691"
+cve = [ "CVE-2022-26691", "CVE-2026-55480", "CVE-2026-61702", "CVE-2026-107888", "CVE-2026-55453", "CVE-2026-107885", "CVE-2026-107890", "CVE-2026-55467", "CVE-2026-107886" ]
+until = "2026-11-13"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "Fixed in CUPS 2.4.2 (Apple's advisory for the same bug); we run 2.4.19."
+comment = [
+  "CVE-2022-26691 is fixed in CUPS 2.4.2 (Apple's advisory for the same bug); we run 2.4.19. The other eight are real but are all in the cupsd scheduler or the IPP backend (CVE-2026-55480 symlink race, 61702 path traversal, 55453 and 55467 option injection, 107888, 107885, 107890 and 107886 denial of service); they are fixed in CUPS 2.4.20 (CVE-2026-107885 needs 2.4.21), but nixpkgs still ships 2.4.19. services.printing is disabled, so cupsd never runs; only the libcups client library stays in the closure, pulled in by GTK, Qt and similar. None of these bugs are in libcups. Accepted as low risk. Re-check for a CUPS 2.4.21 bump in nixpkgs before this expires.",
+  "Mitigation: do not re-enable services.printing until a fixed CUPS lands, and do not run cupsd or open IPP (port 631) in the meantime.",
+]
 
 [dbus-1]
 cve = [ "CVE-2022-42010", "CVE-2022-42011", "CVE-2022-42012" ]
@@ -220,12 +224,6 @@ until = "2026-11-22"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
 comment = "All in cJSON_Utils (RFC 6902 JSON Patch / cJSON_Compare): stack exhaustion, exponential compare time, non-atomic patch. Needs an application applying an untrusted JSON Patch: DoS at worst."
 
-["cups-filters-2.0.1"]
-cve = "CVE-2025-64524"
-until = "2026-11-22"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "rastertopclx crashes on a crafted raster job. Printing is enabled but only local jobs are submitted: DoS of one filter process."
-
 ["dhcpcd-10.3.2"]
 cve = [ "CVE-2026-56113", "CVE-2026-56114", "CVE-2026-56116", "CVE-2026-56117" ]
 until = "2026-11-22"
@@ -278,10 +276,10 @@ comment = [
 ]
 
 ["libsoup-3.6.6"]
-cve = [ "CVE-2026-102555", "CVE-2026-102556", "CVE-2026-102557", "CVE-2026-102558" ]
-until = "2026-11-06"
+cve = [ "CVE-2026-102555", "CVE-2026-102556", "CVE-2026-102557", "CVE-2026-102558", "CVE-2026-102559", "CVE-2026-102560" ]
+until = "2026-11-13"
 comment = [
-  "Real and unpatched: fixed in libsoup 3.7.3 and later (3.8.0 is the current stable release), but nixpkgs still ships 3.6.6, the last 3.6 release, which predates the 29 Sep disclosure. CVE-2026-102556/102557/102558 are heap corruption or crashes in SoupWebsocketConnection (wrong Pong signal type, no cap on reassembled message size, frame-length overflow when max-incoming-payload-size is unlimited); CVE-2026-102555 is an out-of-bounds read decoding a crafted base64 data: URI with embedded NULs. libsoup is only a dependency of GNOME components (webkitgtk, gvfs, geoclue, gnome-online-accounts, evolution-data-server, sushi); exploitation needs a hostile WebSocket peer or a crafted data: URI to reach one of them, and our main browser is separate. Accepted as low risk. Re-check for a libsoup 3.8 bump in nixpkgs before this expires.",
+  "Real and unpatched: fixed in libsoup 3.7.3 and later (3.8.0 is the current stable release), but nixpkgs still ships 3.6.6, the last 3.6 release, which predates the 29 Sep disclosure. CVE-2026-102556/102557/102558 are heap corruption or crashes in SoupWebsocketConnection (wrong Pong signal type, no cap on reassembled message size, frame-length overflow when max-incoming-payload-size is unlimited); CVE-2026-102555 is an out-of-bounds read decoding a crafted base64 data: URI with embedded NULs. CVE-2026-102559 and CVE-2026-102560 are heap overflows on the sending side (size truncation when masking or permessage-deflate compressing a very large outgoing WebSocket message), so they need an app of ours to send a huge message. libsoup is only a dependency of GNOME components (webkitgtk, gvfs, geoclue, gnome-online-accounts, evolution-data-server, sushi); exploitation needs a hostile WebSocket peer or a crafted data: URI to reach one of them, and our main browser is separate. Accepted as low risk. Re-check for a libsoup 3.8 bump in nixpkgs before this expires.",
   "Mitigation: until a fixed libsoup lands, do not open untrusted links or web content inside GNOME embedded web views (Online Accounts sign-in, Evolution, sushi previews of untrusted files), do untrusted browsing in the main browser instead, and do not mount untrusted network shares in Files.",
 ]
 
