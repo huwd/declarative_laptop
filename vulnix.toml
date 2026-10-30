@@ -21,20 +21,18 @@
 
 ["perl-5.42.3-env"]
 cve = [ "CVE-2026-8376", "CVE-2026-57432", "CVE-2026-13221" ]
-until = "2026-10-21"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "CVE-2026-8376 only affects 32-bit builds (heap overflow in regex compilation); this system is x86_64-linux, permanently N/A. CVE-2026-57432's vulnerable range ends before 5.42.3-RC1; we run 5.42.3 final, which already contains the fix, permanently N/A. CVE-2026-13221 is real and unpatched upstream (fixed in perl 5.44.0, not yet in nixpkgs) — requires compiling an attacker-controlled regex with >65535 alternation branches, no such input path exists on this personal machine. Re-check for a nixpkgs perl bump before this expires."
+comment = "All three are permanently N/A. CVE-2026-8376 only affects 32-bit builds (heap overflow in regex compilation); this system is x86_64-linux. CVE-2026-57432's vulnerable range ends before 5.42.3-RC1; we run 5.42.3 final, which already contains the fix. CVE-2026-13221 (regex trie offset overflow with >65535 alternation branches) is fixed upstream in 5.43.10 by commit 03f74bb and backported to 5.42.3: regcomp_study.c in the nixpkgs 5.42.3 source has the `tail - startbranch >= U16_MAX` guard (GH #23388). The CPAN Security Group advisory gives the affected range as \"through 5.43.9\", so the flag on 5.42.3 is a false positive."
 
 ["perl-5.42.3"]
 cve = [ "CVE-2026-8376", "CVE-2026-57432", "CVE-2026-13221" ]
-until = "2026-10-21"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
 comment = "Same as perl-5.42.3-env — see that entry."
 
 ["binutils-2.46"]
 cve = [ "CVE-2026-6846", "CVE-2025-69649", "CVE-2025-69650", "CVE-2025-69651", "CVE-2025-69652" ]
-until = "2026-10-22"
-comment = "Pulled in via gcc, which LazyVim's nvim-treesitter uses to compile parsers from source fetched by lazy.nvim. CVE-2026-6846 needs linking a crafted XCOFF (AIX) object file; nothing here links XCOFF. CVE-2025-69649/69650/69651/69652 are readelf crashes (DoS only) on crafted ELF input; readelf is never run on untrusted binaries. Accepted risk; drop this entry once nixpkgs ships a fixed binutils, and re-check before it expires."
+until = "2026-11-26"
+comment = "Pulled in via gcc, which LazyVim's nvim-treesitter uses to compile parsers from source fetched by lazy.nvim. CVE-2026-6846 needs linking a crafted XCOFF (AIX) object file; nothing here links XCOFF. It is confirmed unfixed in 2.46 (bfd/xcofflink.c still sizes reloc_info by section_count + 1) and fixed in 2.47. CVE-2025-69649/69650/69651/69652 are readelf crashes (DoS only) on crafted ELF input; readelf is never run on untrusted binaries. Debian's tracker lists fix commits for these tagged binutils-2_46, but each description says affected 'thru 2.46', so whether the nixpkgs 2.46 tarball already contains them is unverified. Accepted risk; drop this entry once nixpkgs ships binutils 2.47, and re-check before it expires."
 
 ["samba-4.23.10"]
 cve = "CVE-2026-2340"
@@ -108,10 +106,30 @@ cve = "CVE-2021-26720"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
 comment = "Only affects Debian's packaging (avahi-daemon-check-dns.sh run from /etc/network/if-up.d); NixOS doesn't ship that script."
 
+["brotli-1.2.0"]
+cve = "CVE-2026-111497"
+until = "2026-11-06"
+comment = [
+  "Real and unpatched: a buffer overflow in the Brotli decoder (c/dec/decode.c) on a crafted stream, in 1.0.3 through 1.2.0, fixed in 1.2.1 (published 22 Oct 2026, CVSS 9.8). nixpkgs still ships 1.2.0 on nixos-unstable, and its one patch is an unrelated platform macro. The library is linked by curl (which only decodes brotli with --compressed or an Accept-Encoding it sends), freetype (WOFF2 fonts), libsoup, nodejs-slim, mupdf and nix-util. Exploitation needs a hostile server, font or document to feed one of them a crafted stream. Accepted as low-to-medium risk for a short period because the severity is high and a fix exists. Re-check for brotli 1.2.1 in nixpkgs before this expires.",
+  "Mitigation: until a fixed brotli lands, do not run curl --compressed against untrusted servers, do not open untrusted web content in GNOME embedded web views, and do not open untrusted PDFs or fonts.",
+]
+
+["glib-2.88.3"]
+cve = "CVE-2026-58016"
+until = "2026-11-13"
+comment = [
+  "Real and unpatched: g_dbus_node_info_new_for_xml() mishandles a node element nested inside method, signal, property or arg in malformed D-Bus introspection XML, causing an unsigned integer overflow and an out-of-bounds read (denial of service only, CVSS 7.5). NVD gives the fix as glib 2.89.0, a development release; whether it is backported to 2.88 is unverified. nixpkgs ships 2.88.3 on nixos-unstable with no related patch. Exploitation needs an application of ours to parse attacker-supplied introspection XML, which a remote party cannot normally supply. Accepted as low risk. Re-check for a fixed glib in nixpkgs before this expires.",
+  "Mitigation: until a fixed glib lands, do not run D-Bus tools or applications against untrusted introspection XML.",
+]
+
 ["cups-2.4.19"]
-cve = "CVE-2022-26691"
+cve = [ "CVE-2022-26691", "CVE-2026-55480", "CVE-2026-61702", "CVE-2026-107888", "CVE-2026-55453", "CVE-2026-107885", "CVE-2026-107890", "CVE-2026-55467", "CVE-2026-107886" ]
+until = "2026-11-13"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "Fixed in CUPS 2.4.2 (Apple's advisory for the same bug); we run 2.4.19."
+comment = [
+  "CVE-2022-26691 is fixed in CUPS 2.4.2 (Apple's advisory for the same bug); we run 2.4.19. The other eight are real but are all in the cupsd scheduler or the IPP backend (CVE-2026-55480 symlink race, 61702 path traversal, 55453 and 55467 option injection, 107888, 107885, 107890 and 107886 denial of service); they are fixed in CUPS 2.4.20 (CVE-2026-107885 needs 2.4.21), but nixpkgs still ships 2.4.19. services.printing is disabled, so cupsd never runs; only the libcups client library stays in the closure, pulled in by GTK, Qt and similar. None of these bugs are in libcups. Accepted as low risk. Re-check for a CUPS 2.4.21 bump in nixpkgs before this expires.",
+  "Mitigation: do not re-enable services.printing until a fixed CUPS lands, and do not run cupsd or open IPP (port 631) in the meantime.",
+]
 
 [dbus-1]
 cve = [ "CVE-2022-42010", "CVE-2022-42011", "CVE-2022-42012" ]
@@ -222,12 +240,6 @@ until = "2026-11-22"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
 comment = "All in cJSON_Utils (RFC 6902 JSON Patch / cJSON_Compare): stack exhaustion, exponential compare time, non-atomic patch. Needs an application applying an untrusted JSON Patch: DoS at worst."
 
-["cups-filters-2.0.1"]
-cve = "CVE-2025-64524"
-until = "2026-11-22"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "rastertopclx crashes on a crafted raster job. Printing is enabled but only local jobs are submitted: DoS of one filter process."
-
 ["dhcpcd-10.3.2"]
 cve = [ "CVE-2026-56113", "CVE-2026-56114", "CVE-2026-56116", "CVE-2026-56117" ]
 until = "2026-11-22"
@@ -280,10 +292,10 @@ comment = [
 ]
 
 ["libsoup-3.6.6"]
-cve = [ "CVE-2026-102555", "CVE-2026-102556", "CVE-2026-102557", "CVE-2026-102558" ]
-until = "2026-11-06"
+cve = [ "CVE-2026-102555", "CVE-2026-102556", "CVE-2026-102557", "CVE-2026-102558", "CVE-2026-102559", "CVE-2026-102560" ]
+until = "2026-11-13"
 comment = [
-  "Real and unpatched: fixed in libsoup 3.7.3 and later (3.8.0 is the current stable release), but nixpkgs still ships 3.6.6, the last 3.6 release, which predates the 29 Sep disclosure. CVE-2026-102556/102557/102558 are heap corruption or crashes in SoupWebsocketConnection (wrong Pong signal type, no cap on reassembled message size, frame-length overflow when max-incoming-payload-size is unlimited); CVE-2026-102555 is an out-of-bounds read decoding a crafted base64 data: URI with embedded NULs. libsoup is only a dependency of GNOME components (webkitgtk, gvfs, geoclue, gnome-online-accounts, evolution-data-server, sushi); exploitation needs a hostile WebSocket peer or a crafted data: URI to reach one of them, and our main browser is separate. Accepted as low risk. Re-check for a libsoup 3.8 bump in nixpkgs before this expires.",
+  "Real and unpatched: fixed in libsoup 3.7.3 and later (3.8.0 is the current stable release), but nixpkgs still ships 3.6.6, the last 3.6 release, which predates the 29 Sep disclosure. CVE-2026-102556/102557/102558 are heap corruption or crashes in SoupWebsocketConnection (wrong Pong signal type, no cap on reassembled message size, frame-length overflow when max-incoming-payload-size is unlimited); CVE-2026-102555 is an out-of-bounds read decoding a crafted base64 data: URI with embedded NULs. CVE-2026-102559 and CVE-2026-102560 are heap overflows on the sending side (size truncation when masking or permessage-deflate compressing a very large outgoing WebSocket message), so they need an app of ours to send a huge message. libsoup is only a dependency of GNOME components (webkitgtk, gvfs, geoclue, gnome-online-accounts, evolution-data-server, sushi); exploitation needs a hostile WebSocket peer or a crafted data: URI to reach one of them, and our main browser is separate. Accepted as low risk. Re-check for a libsoup 3.8 bump in nixpkgs before this expires.",
   "Mitigation: until a fixed libsoup lands, do not open untrusted links or web content inside GNOME embedded web views (Online Accounts sign-in, Evolution, sushi previews of untrusted files), do untrusted browsing in the main browser instead, and do not mount untrusted network shares in Files.",
 ]
 
