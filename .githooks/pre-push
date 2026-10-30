@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Run the CI checks locally before a push, so failures show up here rather
+# than in a pull request. Install with `just hooks`; skip once with
+# `git push --no-verify`.
+#
+# The vulnix scan builds this machine's system closure, so it only runs when
+# a change could alter the closure or its whitelist. CVEs published after the
+# scan can still fail CI later: the scan is date-dependent.
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+just check
+
+base=$(git merge-base HEAD origin/main 2>/dev/null || true)
+if [ -z "$base" ]; then
+  echo "pre-push: no origin/main to compare against; skipping vulnix scan" >&2
+  exit 0
+fi
+
+if ! git diff --name-only "$base" HEAD | grep -q -E '\.nix$|^flake\.lock$|^vulnix\.toml$'; then
+  echo "pre-push: no Nix, flake.lock or vulnix.toml changes; skipping vulnix scan"
+  exit 0
+fi
+
+host=$(hostname)
+if ! nix eval --json --apply builtins.attrNames .#nixosConfigurations \
+  | jq -e --arg host "$host" 'index($host)' > /dev/null; then
+  echo "pre-push: '$host' is not a nixosConfigurations host; skipping vulnix scan" >&2
+  exit 0
+fi
+
+just scan
