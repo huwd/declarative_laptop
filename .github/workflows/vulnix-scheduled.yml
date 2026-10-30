@@ -1,0 +1,114 @@
+name: Vulnix scan
+
+# New CVEs are published every day, so a pull request can fail the vulnix gate
+# in build.yml for a reason it did not cause. This scan of main reports them
+# on their own schedule, in one issue per host.
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Scan main (${{ matrix.host }})
+    runs-on: ubuntu-latest
+    # Issues only: no repository-content write access in CI (ADR 0008).
+    permissions:
+      contents: read
+      issues: write
+    strategy:
+      fail-fast: false
+      matrix:
+        host: [framework-13, dell-xps-13-9343]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24  # v31.11.1
+
+      - name: Build NixOS closure
+        id: build
+        env:
+          HOST: ${{ matrix.host }}
+        run: |
+          CLOSURE=$(nix build \
+            ".#nixosConfigurations.$HOST.config.system.build.toplevel" \
+            --no-link --print-out-paths)
+          echo "closure=$CLOSURE" >> "$GITHUB_OUTPUT"
+
+      - name: Run vulnix against closure
+        id: vulnix
+        env:
+          CLOSURE: ${{ steps.build.outputs.closure }}
+        run: |
+          set +e
+          nix build --inputs-from . nixpkgs#vulnix --no-link
+          # Same mirror as build.yml and the justfile.
+          nix run --inputs-from . nixpkgs#vulnix -- --mirror https://vig-os.github.io/nvd-mirror/ --closure "$CLOSURE" --whitelist vulnix.toml > vulnix-report.txt 2>&1
+          echo "exit-code=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Open, update or close the findings issue
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        env:
+          HOST: ${{ matrix.host }}
+          EXIT_CODE: ${{ steps.vulnix.outputs['exit-code'] }}
+        with:
+          script: |
+            const fs = require('fs');
+            const host = process.env.HOST;
+            const exitCode = process.env.EXIT_CODE;
+            const title = `vulnix findings on main (${host})`;
+            const { owner, repo } = context.repo;
+
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open',
+            });
+            const existing = issues.find(i => !i.pull_request && i.title === title);
+
+            if (exitCode === '0') {
+              if (existing) {
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: existing.number,
+                  body: 'The latest scan of `main` has no findings. Closing.',
+                });
+                await github.rest.issues.update({
+                  owner, repo, issue_number: existing.number, state: 'closed',
+                });
+              }
+              return;
+            }
+
+            // GitHub limits an issue body to 65536 characters.
+            const report = fs.readFileSync('vulnix-report.txt', 'utf8').trim().slice(0, 60000);
+            const body = [
+              `vulnix exited with code ${exitCode} on \`main\` for \`${host}\`.`,
+              '',
+              '```',
+              report,
+              '```',
+              '',
+              `[Scan run](${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId})`,
+              '',
+              'Assess each finding and add a justified entry to `vulnix.toml`, or update the package. This issue closes itself when a scan comes back clean.',
+            ].join('\n');
+
+            if (existing) {
+              await github.rest.issues.update({
+                owner, repo, issue_number: existing.number, body,
+              });
+            } else {
+              await github.rest.issues.create({ owner, repo, title, body });
+            }
+
+      - name: Fail the run on findings
+        if: steps.vulnix.outputs['exit-code'] != '0'
+        env:
+          VULNIX_EXIT_CODE: ${{ steps.vulnix.outputs['exit-code'] }}
+        run: |
+          echo "vulnix reported findings or failed with exit code ${VULNIX_EXIT_CODE}"
+          exit "${VULNIX_EXIT_CODE}"

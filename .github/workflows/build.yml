@@ -66,6 +66,9 @@ jobs:
       contents: read
       pull-requests: write
     strategy:
+      # Let every host report: one failing host must not cancel the other,
+      # or its own failures stay hidden until the first host is green.
+      fail-fast: false
       matrix:
         host: ${{ fromJSON(needs.changes.outputs.hosts) }}
     steps:

@@ -3,6 +3,11 @@ default: check
 # Defaults to this machine; hostnames match nixosConfigurations names
 HOST := `hostname`
 
+# NVD retired the bulk feeds vulnix relies on, so scans use a community mirror
+# (https://github.com/nix-community/vulnix/issues/171).
+# Keep in sync with the vulnix steps in .github/workflows/.
+NVD_MIRROR := "https://vig-os.github.io/nvd-mirror/"
+
 # ── Local checks (mirrors CI tiers 1 + 2) ───────────────────────────────────
 
 check: format-check lint evaluate docs-lint
@@ -42,6 +47,10 @@ docs-serve:
     nix run --inputs-from . nixpkgs#python3 -- scripts/build-site-content.py . "$dir/content"
     nix run --inputs-from . nixpkgs#zola -- --root "$dir" serve
 
+# Run `just check` (and `just scan` when Nix files change) before every push
+hooks:
+    git config core.hooksPath .githooks
+
 # ── Auto-fix ────────────────────────────────────────────────────────────────
 
 fix:
@@ -55,7 +64,7 @@ build:
     nix build .#nixosConfigurations.{{HOST}}.config.system.build.toplevel
 
 scan: build
-    nix run --inputs-from . nixpkgs#vulnix -- --closure ./result --whitelist vulnix.toml
+    nix run --inputs-from . nixpkgs#vulnix -- --mirror {{NVD_MIRROR}} --closure ./result --whitelist vulnix.toml
 
 # ── System management ───────────────────────────────────────────────────────
 
