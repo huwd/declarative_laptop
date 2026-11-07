@@ -11,11 +11,6 @@
     "ttm.pages_limit=12582912" # 48 GiB of 4 KiB pages - GPU-usable GTT memory
     "ttm.page_pool_size=12582912" # amdgpu.gttsize is deprecated; both ttm.* params are needed together
   ];
-  services.open-webui = {
-    enable = true;
-    host = "127.0.0.1"; # localhost only - same reasoning as ollama's host binding
-  };
-  systemd.services.open-webui.wantedBy = lib.mkForce [ ];
   environment.sessionVariables.OPENCODE_CONFIG = toString (
     pkgs.writeText "opencode-local-llm.json" (
       builtins.toJSON {
