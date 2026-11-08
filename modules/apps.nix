@@ -7,6 +7,7 @@
 
     # Communication
     signal-desktop
+    discord
 
     # Music
     spotify
