@@ -1,17 +1,19 @@
 # Local LLM inference (framework-13)
 
-Ollama (Vulkan backend) and Open WebUI, running on demand — neither starts at boot.
+Ollama (Vulkan backend), running on demand — it doesn't start at boot.
 See `modules/local-llm.nix` (framework-13 only; the Dell XPS is too old for this).
+
+Open WebUI is off for now.
+nixpkgs marks its dependency `posthog` as broken ([NixOS/nixpkgs#581042](https://github.com/NixOS/nixpkgs/issues/581042)), which stops the system evaluating.
+Restore it once upstream resolves that issue.
 
 ## Start / stop
 
 ```bash
 sudo systemctl start ollama
-sudo systemctl start open-webui   # optional — only if you want the chat UI
 ```
 
 ```bash
-sudo systemctl stop open-webui
 sudo systemctl stop ollama
 ```
 
@@ -22,8 +24,8 @@ systemctl status ollama
 journalctl -u ollama -f
 ```
 
-Ollama's API listens on `127.0.0.1:11434`; Open WebUI on `127.0.0.1:8080`.
-Both are localhost-only — nothing here is reachable from the network.
+Ollama's API listens on `127.0.0.1:11434`.
+Nothing here is reachable from the network.
 
 ## GPU acceleration
 
@@ -61,8 +63,6 @@ The configuration lists two Granite 4.0 hybrid (Mamba/transformer) MoE models al
 Pull models by hand; the opencode configuration below only lists them.
 
 ## Using it
-
-**Open WebUI**: start the service, open `http://127.0.0.1:8080`, create an account on first visit (local-only, no external auth), pick the model from the chat picker.
 
 **opencode**: the local provider is already configured — `modules/local-llm.nix` sets `OPENCODE_CONFIG` to a generated JSON file with an `ollama` provider pointing at `http://127.0.0.1:11434/v1` (via `@ai-sdk/openai-compatible`).
 This is deliberately *not* done through `programs.opencode.settings`, which would make home-manager own `~/.config/opencode/opencode.json` as a read-only store symlink — `OPENCODE_CONFIG` merges in as an extra layer instead, leaving opencode's own config file alone.
