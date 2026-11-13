@@ -41,6 +41,26 @@
         "type": "github"
       }
     },
+    "immurok": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794610736,
+        "narHash": "sha256-mn4D1lM9aULw2nAJ4yocphgCGivEH3Ijxuf6wFKauN8=",
+        "owner": "huwd",
+        "repo": "immurok-nix",
+        "rev": "61248cf8de02d23c83d73e593ede900c2deb048c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "huwd",
+        "repo": "immurok-nix",
+        "type": "github"
+      }
+    },
     "nixos-hardware": {
       "inputs": {
         "nixpkgs": "nixpkgs"
@@ -113,6 +133,7 @@
     "root": {
       "inputs": {
         "home-manager": "home-manager",
+        "immurok": "immurok",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_2",
         "nur": "nur"
