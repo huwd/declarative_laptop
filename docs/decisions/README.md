@@ -74,3 +74,4 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0013](0013-derive-age-key-from-ssh-agent.md) | Derive the age key for dev secrets from an SSH-agent signature | Accepted |
 | [0014](0014-betterleaks-as-secret-scanner.md) | Install Betterleaks as the laptop's secret scanner | Accepted |
 | [0015](0015-scan-main-for-new-vulnerabilities-on-a-schedule.md) | Scan main for new vulnerabilities on a schedule, and check locally before pushing | Accepted |
+| [0016](0016-ai-attribution-trailers.md) | Attribute AI help with Assisted-by and Generated-by trailers, a human sign-off and a Co-Authored-By trailer | Accepted |
