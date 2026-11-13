@@ -54,7 +54,8 @@ jobs:
       # 2026-11-11 nixpkgs has no cached convco: it fails to build, because
       # libgit2-sys wants a libgit2-experimental that nixpkgs' libgit2 no
       # longer provides (https://github.com/NixOS/nixpkgs/issues/570939).
-      # Go back to `--inputs-from . nixpkgs#convco` once nixpkgs fixes it.
+      # Go back to `--inputs-from . nixpkgs#convco` once nixpkgs fixes it;
+      # #117 tracks that and says how to tell.
       - name: Check conventional commits
         run: |
           nix run github:NixOS/nixpkgs/f9a75f41be3a74eab55d3a7679d34ad6cc0da977#convco -- check \
