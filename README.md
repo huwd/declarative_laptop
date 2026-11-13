@@ -106,6 +106,7 @@ CI also attempts an nvd package diff when it can fetch the baseline closure, wit
 ## Working with AI agents
 
 [CLAUDE.md](CLAUDE.md) sets out how agents should work here: teach first, and follow the repository's workflow.
+Commits made with an agent's help carry attribution trailers, as [0016](docs/decisions/0016-ai-attribution-trailers.md) describes.
 
 ## Writing docs
 
