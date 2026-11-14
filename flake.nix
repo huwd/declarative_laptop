@@ -15,6 +15,12 @@
       url = "github:nix-community/NUR";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # NixOS module and package for the immurok fingerprint key
+    immurok = {
+      url = "github:huwd/immurok-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -23,6 +29,7 @@
       nixos-hardware,
       home-manager,
       nur,
+      immurok,
       ...
     }:
     let
@@ -35,6 +42,9 @@
         modules = [
           # Framework Laptop 13 Pro, AMD Ryzen AI 300 Series (Strix Point)
           nixos-hardware.nixosModules.framework-amd-ai-300-series
+
+          # Declares services.immurok; ./modules/immurok.nix turns it on
+          immurok.nixosModules.default
 
           ./hosts/framework-13/configuration.nix
 

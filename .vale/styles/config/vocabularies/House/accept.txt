@@ -50,6 +50,7 @@ GPUs
 Guix
 (?i)hostnames?
 (?i)hotplug
+immurok
 (?i)installer
 (?i)justfile
 (?i)lanzaboote

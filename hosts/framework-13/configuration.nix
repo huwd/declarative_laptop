@@ -8,6 +8,7 @@
     ../../modules/gaming.nix
     ../../modules/development/default.nix
     ../../modules/security.nix
+    ../../modules/immurok.nix
     ../../modules/services.nix
     ../../modules/local-llm.nix
   ];
