@@ -20,7 +20,9 @@ jobs:
       - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b  # v31.11.3
 
       - name: Check Nix formatting
-        run: nix run --inputs-from . nixpkgs#nixfmt -- --check $(find . -name '*.nix' -not -path './.direnv/*')
+        run: |
+          find . -name '*.nix' -not -path './.direnv/*' -print0 \
+            | xargs -0 nix run --inputs-from . nixpkgs#nixfmt -- --check
 
   lint:
     name: Lint
@@ -50,9 +52,15 @@ jobs:
 
       - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b  # v31.11.3
 
+      # convco comes from a pinned older nixpkgs, not this repository's. Since
+      # 2026-11-11 nixpkgs has no cached convco: it fails to build, because
+      # libgit2-sys wants a libgit2-experimental that nixpkgs' libgit2 no
+      # longer provides (https://github.com/NixOS/nixpkgs/issues/570939).
+      # Go back to `--inputs-from . nixpkgs#convco` once nixpkgs fixes it;
+      # #117 tracks that and says how to tell.
       - name: Check conventional commits
         run: |
-          nix run --inputs-from . nixpkgs#convco -- check \
+          nix run github:NixOS/nixpkgs/f9a75f41be3a74eab55d3a7679d34ad6cc0da977#convco -- check \
             ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
 
   evaluate:
