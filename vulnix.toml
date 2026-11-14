@@ -98,6 +98,14 @@ cve = "CVE-2021-24028"
 issue_url = "https://github.com/huwd/declarative_laptop/pull/60"
 comment = "Facebook Thrift (Meta's fbthrift, date-versioned YYYY.MM.DD.NN) SSL cert validation bug — unrelated codebase from Apache Thrift 0.x, same false positive already identified under thrift-0.22.0. framework-13 resolves thrift to 0.24.0 (dell-xps-13-9343 still resolves 0.22.0); the other 25 CVEs whitelisted under thrift-0.22.0 no longer apply here — 0.24.0 already contains those fixes, so vulnix doesn't flag them."
 
+["thrift-0.25.0"]
+cve = "CVE-2021-24028"
+comment = "NVD CPE false positive, the same one recorded under thrift-0.24.0: CVE-2021-24028 is Facebook Thrift (Meta's fbthrift, date-versioned YYYY.MM.DD.NN), affected before 2021.02.22.00, an unrelated codebase from Apache Thrift 0.x. vulnix reads 0.25.0 as lower than a 2021 date. On framework-13 it is reached only through open-webui, python3.14-pyarrow and arrow-cpp."
+
+["ninja-1.13.2"]
+cve = "CVE-2021-4336"
+comment = "NVD CPE false positive: CVE-2021-4336 is an SQL injection in ITRS Group's monitor-ninja, a PHP monitoring web app, affected before 2021.11.30. It is unrelated to the Ninja build system. vulnix reads 1.13.2 as lower than that date. On framework-13 it is reached only through open-webui and python3.14-torch."
+
 ["ruby"]
 cve = "CVE-2026-97229"
 comment = "NVD lists ruby-lang:ruby alongside GitLab, but the description and the fixed versions (GitLab 19.2.8, 19.3.5 and 19.4.2) are only about GitLab CE/EE: a crafted regular expression in a CI/CD configuration. Nothing in it concerns the Ruby interpreter, and GitLab is not in this closure. Treated as an NVD data error; the Ruby listing is unconfirmed, so re-check if Ruby publishes an advisory for it."
