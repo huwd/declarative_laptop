@@ -54,13 +54,13 @@
     polkit.enable = true;
 
     # Fingerprint (Goodix MOC sensor, via services.fprintd below) is used by
-    # polkit (Bitwarden biometric unlock, GNOME prompts) and sudo. Deliberately
-    # not used for login: a fingerprint can't unlock the GNOME keyring, so the
-    # password is needed there anyway.
+    # polkit (Bitwarden biometric unlock, GNOME prompts), sudo and the lock
+    # screen (gdm-fingerprint, which NixOS creates). Not used at the login
+    # screen: a fingerprint can't unlock the GNOME keyring there, so the
+    # password is needed anyway. See docs/decisions/0018.
     pam.services = {
       login.fprintAuth = false;
       gdm-password.fprintAuth = false;
-      gdm-fingerprint.enable = false;
       sudo.fprintAuth = true;
     };
 
@@ -71,4 +71,12 @@
   };
 
   services.fprintd.enable = true;
+
+  # The login screen reads this from the gdm dconf profile, the lock screen
+  # from the user profile, so this turns fingerprint off at login only.
+  programs.dconf.profiles.gdm.databases = [
+    {
+      settings."org/gnome/login-screen".enable-fingerprint-authentication = false;
+    }
+  ];
 }
