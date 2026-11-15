@@ -76,3 +76,4 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0015](0015-scan-main-for-new-vulnerabilities-on-a-schedule.md) | Scan main for new vulnerabilities on a schedule, and check locally before pushing | Accepted |
 | [0016](0016-ai-attribution-trailers.md) | Attribute AI help with Assisted-by and Generated-by trailers, a human sign-off and a Co-Authored-By trailer | Accepted |
 | [0017](0017-enable-immurok-without-pam.md) | Use the immurok key through an external flake, and enable it on the Framework without any PAM rule first | Accepted |
+| [0018](0018-fingerprint-unlocks-the-lock-screen-not-login.md) | Let a fingerprint unlock the lock screen, and keep the password for login | Accepted |

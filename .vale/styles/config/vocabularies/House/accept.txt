@@ -23,6 +23,7 @@ Broadwell
 (?i)config
 (?i)configs
 CVEs
+dconf
 (?i)declaratively
 Dependabot
 (?i)deployable
@@ -53,6 +54,7 @@ Guix
 immurok
 (?i)installer
 (?i)justfile
+(?i)keyrings?
 (?i)lanzaboote
 (?i)ls
 (?i)misconfigured
