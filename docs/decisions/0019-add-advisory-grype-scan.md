@@ -4,7 +4,7 @@
 - **Decided by:** @huwd
 - **Decided:** 2026-11-16
 - **Recorded:** 2026-11-16
-- **Discussion:** to be linked when the pull request opens
+- **Discussion:** [#125](https://github.com/huwd/declarative_laptop/pull/125)
 
 ## Summary
 

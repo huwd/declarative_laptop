@@ -246,7 +246,7 @@ jobs:
           name: grype-report-${{ matrix.host }}
           path: grype-report/
           if-no-files-found: ignore
-          retention-days: 30
+          retention-days: 10
 
       - name: Post grype findings as PR comment
         if: github.event_name == 'pull_request'
