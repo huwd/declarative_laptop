@@ -46,6 +46,7 @@ The project accepts it as a cost of working in the open.
 The config implements:
 
 - **vulnix** scanning the Nix store closure against NVD on every PR
+- **grype**, an advisory scan on every PR that covers packages vulnix cannot match, such as the kernel and Chrome ([0019](docs/decisions/0019-add-advisory-grype-scan.md))
 - **Weekly Dependabot checks** proposing input updates, with CI scanning the resulting closures
 - **Historic CVE analysis** via committed `flake.lock` history
 - **fwupd** for firmware currency
@@ -54,7 +55,7 @@ The config implements:
 
 | Threat | Covered? | How |
 |--------|----------|-----|
-| Known CVE in Nix package | Yes | vulnix + NVD |
+| Known CVE in Nix package | Mostly | vulnix + NVD gate; the kernel and Chrome only in the advisory grype scan |
 | Stale packages | Yes | weekly Dependabot update PRs |
 | Retroactive exposure analysis | Yes | flake.lock git history |
 | Firmware vulnerabilities | Partially | fwupd / LVFS |
