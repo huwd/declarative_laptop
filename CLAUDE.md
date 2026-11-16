@@ -28,6 +28,8 @@ Agents help most by teaching, not by doing the work for the maintainer.
   Don't pipe its output through `tail` or `head`, because that hides failures.
 - Every entry in `vulnix.toml` needs a specific justification.
   Accepted real vulnerabilities also need an `until` date.
+- Every statement in `openvex.json` needs a specific justification and a link to its assessment ([0019](docs/decisions/0019-add-advisory-grype-scan.md)).
+  An `affected` statement also needs an action statement giving the mitigation.
 
 ## Documentation
 
