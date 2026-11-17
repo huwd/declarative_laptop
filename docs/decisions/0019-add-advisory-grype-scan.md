@@ -92,7 +92,8 @@ For each host it:
 1. generates a CycloneDX SBOM of the closure with sbomnix
 2. converts the patch list in the SBOM into OpenVEX `fixed` statements
 3. runs grype with those statements and with the hand-written statements in `openvex.json`
-4. posts the remaining findings as a pull request comment, and keeps the full JSON report as a download on the workflow run
+4. checks the findings and the triage in `vulnix.toml` and `openvex.json` against the CISA Known Exploited Vulnerabilities (KEV) catalogue
+5. posts the remaining findings as a pull request comment, and keeps the full JSON report as a download on the workflow run
 
 The script `ci/grype-scan.sh` carries out these steps, and `just scan-grype` runs the same script locally, so a local scan matches CI.
 The grype step cannot fail the job.
@@ -100,6 +101,11 @@ The vulnix gate from [0006](0006-enforce-vulnix-in-ci.md) and its whitelist rule
 
 Hand-written statements in `openvex.json` follow the same standard as `vulnix.toml`: each one has a specific justification and links its assessment.
 A `not_affected` statement gives a justification and an impact statement, and an `affected` statement gives an action statement, which records the mitigation.
+
+A CVE in KEV is being exploited in the wild, so a triage decision made before it joined KEV needs a fresh look.
+The KEV check flags open grype findings in KEV, triage entries for a KEV CVE whose justification does not mention KEV, and accepted risks whose `until` date runs past KEV's due date.
+Each flag appears at the top of the comment and as a "CISA KEV" warning on the workflow run, but it does not fail the job.
+A first run on 17 November 2026 flagged the `ruby` whitelist entry for CVE-2026-97229, whose reasoning Ruby's own advisory had overtaken ([#126](https://github.com/huwd/declarative_laptop/pull/126)).
 
 By 2027-01-16, grype becomes a gate for the packages vulnix cannot match, starting with the kernel and Chrome, or a new record explains why not.
 

@@ -3,8 +3,8 @@
 #
 # Usage: ci/grype-scan.sh <closure> <output-dir> <host>
 #
-# Run it from the repository root, so it finds openvex.json, with sbomnix,
-# grype and jq on PATH:
+# Run it from the repository root, so it finds openvex.json and vulnix.toml,
+# with sbomnix, grype, jq, curl and nix on PATH:
 #
 #   nix shell --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq \
 #     -c ci/grype-scan.sh ./result grype-report framework-13
@@ -17,6 +17,7 @@
 #   patches.openvex.json   "fixed" statements for the CVEs Nixpkgs patches
 #   grype.json             full report, including the matches VEX removed
 #   grype.txt              the same findings as a table
+#   kev.json, kev-hits.json, kev.md   CISA KEV cross-check, from ci/kev-check.sh
 #   comment.md             pull request comment body
 #
 # Exit status reports whether the scan ran, never whether it found anything.
@@ -68,7 +69,11 @@ grype "sbom:$out/sbom.cdx.json" \
   -o "json=$out/grype.json" \
   -o "table=$out/grype.txt"
 
-# 4. Comment. GitHub rejects comments over 65,536 characters, so the full
+# 4. Known exploited vulnerabilities: flag findings and triage entries for
+# CVEs in CISA's KEV catalogue, and write kev.md for the comment.
+ci/kev-check.sh "$out"
+
+# 5. Comment. GitHub rejects comments over 65,536 characters, so the full
 # table goes in a collapsed section and is cut short if it is too long.
 matches=$(jq '.matches | length' "$out/grype.json")
 ignored=$(jq '[.ignoredMatches[]?] | length' "$out/grype.json")
@@ -95,6 +100,8 @@ fi
   echo
   echo "Advisory only: this scan never fails the build ([ADR 0019](https://github.com/huwd/declarative_laptop/blob/main/docs/decisions/0019-add-advisory-grype-scan.md))."
   echo "It covers packages vulnix cannot match, such as the kernel and Chrome."
+  echo
+  cat "$out/kev.md"
   echo
   echo "**$matches findings** (${severities:-none})."
   echo "VEX removed $ignored more: Nixpkgs patches $patched CVEs, and \`openvex.json\` holds the hand-written triage."
