@@ -22,8 +22,8 @@
 #   kev-hits.json    every match, with "attention": true for those flagged
 #   kev.md           section for the pull request comment
 #
-# In GitHub Actions it also adds kev.md to the run summary and prints a
-# "CISA KEV" warning annotation for each flagged match. It never fails because of a match: the check is advisory.
+# In GitHub Actions it also prints a "CISA KEV" warning annotation for each
+# flagged match. It never fails because of a match: the check is advisory.
 set -euo pipefail
 
 out=$1
@@ -123,9 +123,6 @@ row='"| `\(.package)` | [\(.cve)](https://nvd.nist.gov/vuln/detail/\(.cve)) | \(
 } > "$out/kev.md"
 
 if [ "$in_ci" = true ]; then
-  if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
-    cat "$out/kev.md" >> "$GITHUB_STEP_SUMMARY"
-  fi
   jq -r '.hits[] | select(.attention)
     | "::warning title=CISA KEV::\(.cve) in \(.package) is a known exploited vulnerability: \(.reason) (in KEV since \(.added))"' \
     "$out/kev-hits.json"

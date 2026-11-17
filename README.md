@@ -93,10 +93,11 @@ See [docs/install.md](docs/install.md) for how to generate `hardware-configurati
 
 ## CI
 
-Every pull request builds affected host closures and runs a CVE scan with vulnix.
+Every pull request that can affect the Framework builds its closure and runs a CVE scan with vulnix.
+CI covers only the Framework, the laptop in daily use ([0021](docs/decisions/0021-build-and-scan-only-the-framework-in-ci.md)); the Dell is built and scanned on demand, as [docs/operations.md](docs/operations.md#bring-the-dell-up-to-date-before-using-it) describes.
 An advisory grype scan runs alongside it, to cover packages vulnix cannot match, such as the kernel and Chrome ([0019](docs/decisions/0019-add-advisory-grype-scan.md)).
 Its findings appear in a comment but never fail the build.
-A nightly scan of `main` opens an issue for each host with new findings, because new CVEs can fail a pull request that did not cause them.
+A nightly scan of `main` opens an issue for the Framework when it has new findings, because new CVEs can fail a pull request that did not cause them.
 CI also attempts an nvd package diff when it can fetch the baseline closure, with reports in PR comments when permissions allow.
 
 ## Guides
