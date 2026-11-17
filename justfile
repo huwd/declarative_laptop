@@ -66,6 +66,10 @@ build:
 scan: build
     nix run --inputs-from . nixpkgs#vulnix -- --mirror {{NVD_MIRROR}} --closure ./result --whitelist vulnix.toml
 
+# Advisory grype scan, the same as CI's (ADR 0019); reports go to ./grype-report
+scan-grype: build
+    nix shell --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq -c ci/grype-scan.sh ./result grype-report {{HOST}}
+
 # ── System management ───────────────────────────────────────────────────────
 
 apply:

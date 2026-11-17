@@ -76,7 +76,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b  # v31.11.3
+      - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086  # v31.11.5
 
       # Packages that are slow to build and never on cache.nixos.org
       # (unfree, so Hydra skips them) are cached as one Actions cache
@@ -216,6 +216,69 @@ jobs:
                 body,
               });
             } else if (report) {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              });
+            }
+
+      # Advisory only (ADR 0019). grype matches packages vulnix cannot, such
+      # as the kernel and Chrome, but nobody has triaged its findings yet, so
+      # continue-on-error stops this step from ever failing the job.
+      - name: Run grype against closure (advisory)
+        id: grype
+        continue-on-error: true
+        env:
+          CLOSURE: ${{ steps.build.outputs.closure }}
+          HOST: ${{ matrix.host }}
+        run: |
+          # Fetch the tools first, as for vulnix, so their download noise
+          # stays out of the scan's own output.
+          nix build --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq --no-link
+          nix shell --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq \
+            -c ci/grype-scan.sh "$CLOSURE" grype-report "$HOST"
+
+      - name: Upload grype report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: grype-report-${{ matrix.host }}
+          path: grype-report/
+          if-no-files-found: ignore
+          retention-days: 10
+
+      - name: Post grype findings as PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        env:
+          HOST: ${{ matrix.host }}
+          OUTCOME: ${{ steps.grype.outcome }}
+        with:
+          script: |
+            const fs = require('fs');
+            const host = process.env.HOST;
+            const heading = `## 🛡️ grype CVE scan, advisory (${host})`;
+            // A failed scan still gets a comment, so a broken tool is noticed
+            // even though it cannot fail the build.
+            const body = fs.existsSync('grype-report/comment.md')
+              ? fs.readFileSync('grype-report/comment.md', 'utf8').trim()
+              : `${heading}\nThe scan did not finish (step outcome: ${process.env.OUTCOME}). See the job log.`;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const existing = comments.find(c => c.body.startsWith(heading));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                comment_id: existing.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              });
+            } else {
               await github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
