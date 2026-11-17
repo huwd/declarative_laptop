@@ -73,8 +73,10 @@ jobs:
 
       - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086  # v31.11.5
 
-      - name: nix flake check
-        run: nix flake check --no-build
+      # Only the hosts routine CI covers (ADR 0021); a manual run of
+      # build.yml evaluates and builds any other host.
+      - name: Evaluate packages, dev shells and CI hosts
+        run: ci/evaluate.sh
 
   # Skips its steps (rather than using `on: paths`) when a PR touches no
   # Markdown, so the job still reports success and can be a required check.

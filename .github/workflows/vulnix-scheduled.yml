@@ -23,7 +23,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        host: [framework-13, dell-xps-13-9343]
+        # Only the hosts routine CI covers (ADR 0021); run build.yml by hand
+        # to scan another host.
+        host: [framework-13]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:

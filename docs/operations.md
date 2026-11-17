@@ -1,6 +1,6 @@
 # Operating the system
 
-Commands for the day-to-day tasks that the other guides don't cover: rolling back, listing generations, and checking an earlier configuration for a vulnerability.
+Commands for the day-to-day tasks that the other guides don't cover: rolling back, listing generations, checking an earlier configuration for a vulnerability, and bringing the Dell up to date before using it.
 [The README](../README.md) covers applying and updating the configuration.
 
 ## Roll back
@@ -208,3 +208,46 @@ nix run nixpkgs#vulnix -- \
 
 Leave out `--whitelist` to see every finding, including the ones that `vulnix.toml` accepts today.
 [OPSEC.md](../OPSEC.md) explains what vulnix can and can't see.
+
+## Bring the Dell up to date before using it
+
+Routine CI builds and scans only the Framework ([0021](decisions/0021-build-and-scan-only-the-framework-in-ci.md)).
+The Dell (`dell-xps-13-9343`) stays in the flake, but nothing checks that it still builds, so check it here before you boot it.
+
+1. On any machine with this repository, make sure `main` is current, and merge any open Dependabot update first:
+
+   ```bash
+   git switch main
+   git pull --ff-only
+   ```
+
+2. Build and scan the Dell's closure in CI, then wait for the run to finish:
+
+   ```bash
+   gh workflow run build.yml -f host=dell-xps-13-9343
+   gh run watch
+   ```
+
+   `gh run watch` asks which run to follow; pick the newest "Build" run.
+
+   The run summary shows the vulnix and grype results.
+   If the build fails, fix the Dell's configuration on a branch, the same way as any other change, before going further.
+
+   To check it locally instead, from the Framework:
+
+   ```bash
+   just HOST=dell-xps-13-9343 scan
+   just HOST=dell-xps-13-9343 scan-grype
+   ```
+
+3. On the Dell, pull and apply:
+
+   ```bash
+   cd ~/.config/nixos-config
+   git switch main
+   git pull --ff-only
+   just apply
+   ```
+
+   The first apply after a long gap downloads most of the system again, so use a fast connection.
+   Keep the previous generation in the boot menu until the new one has booted.

@@ -4,13 +4,22 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Hosts outside routine CI (ADR 0021) are built and scanned on demand,
+  # for example before booting the Dell after a long gap.
+  workflow_dispatch:
+    inputs:
+      host:
+        description: Host to build and scan
+        type: choice
+        options: [dell-xps-13-9343, framework-13]
 
 permissions:
   contents: read
 
 jobs:
-  # Work out which hosts a PR can affect so unrelated host builds are skipped.
-  # Pushes to main always build every host to keep the cached diff baseline fresh.
+  # Routine CI builds only the hosts in CI_HOSTS (ADR 0021). A PR builds them
+  # unless its changes cannot affect them; pushes to main always build them to
+  # keep the cached diff baseline fresh. A manual run builds the chosen host.
   changes:
     name: Detect affected hosts
     runs-on: ubuntu-latest
@@ -28,9 +37,20 @@ jobs:
           EVENT: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          DISPATCH_HOST: ${{ inputs.host }}
+          # Hosts that routine CI builds and scans. The Dell is kept in the
+          # flake but left out on purpose (ADR 0021).
+          CI_HOSTS: framework-13
         run: |
+          to_json() { printf '%s\n' "$@" | jq -R . | jq -sc 'map(select(length>0))'; }
+
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            echo "hosts=$(to_json "$DISPATCH_HOST")" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # shellcheck disable=SC2086 # CI_HOSTS is a space-separated list
           if [ "$EVENT" != "pull_request" ]; then
-            echo 'hosts=["framework-13","dell-xps-13-9343"]' >> "$GITHUB_OUTPUT"
+            echo "hosts=$(to_json $CI_HOSTS)" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -41,19 +61,22 @@ jobs:
           # (Vale, markdownlint, the Zola site) and packages/vale.nix and
           # packages/docs-site.nix only feed the flake's `packages` output,
           # which no host imports.
-          ignore='^(docs/|scripts/|site/|\.vale/)|\.md$|^(justfile|\.gitignore|\.github/dependabot\.yml|\.github/workflows/(check|docs)\.yml|\.vale\.ini|\.markdownlint-cli2\.jsonc|packages/(vale|docs-site)\.nix)$'
+          ignore='^(docs/|scripts/|site/|\.vale/)|\.md$|^(justfile|\.gitignore|\.github/dependabot\.yml|\.github/workflows/(check|docs)\.yml|ci/evaluate\.sh|\.vale\.ini|\.markdownlint-cli2\.jsonc|packages/(vale|docs-site)\.nix)$'
 
-          # A host builds if any change is not ignorable and not confined to
-          # the *other* host's own directory. Unknown paths therefore build.
-          builds_unless_only_in() {
-            echo "$changed" | grep -v -E "$ignore" | grep -q -v -E "^hosts/$1/"
+          # A CI host builds if any change is not ignorable and not confined
+          # to another host's own directory. Unknown paths therefore build.
+          builds() {
+            echo "$changed" | grep -v -E "$ignore" \
+              | grep -v -E '^hosts/' | grep -q . && return 0
+            echo "$changed" | grep -q -E "^hosts/$1/"
           }
 
           hosts=()
-          builds_unless_only_in dell-xps-13-9343 && hosts+=(framework-13)
-          builds_unless_only_in framework-13 && hosts+=(dell-xps-13-9343)
+          for host in $CI_HOSTS; do
+            if builds "$host"; then hosts+=("$host"); fi
+          done
 
-          json=$(printf '%s\n' "${hosts[@]}" | jq -R . | jq -sc 'map(select(length>0))')
+          json=$(to_json "${hosts[@]}")
           echo "Building: $json"
           echo "hosts=$json" >> "$GITHUB_OUTPUT"
 
@@ -247,6 +270,26 @@ jobs:
           path: grype-report/
           if-no-files-found: ignore
           retention-days: 10
+
+      # The run summary carries both scans for every run. A manual run has
+      # no pull request to comment on, so this is where its results appear.
+      - name: Write scan summary
+        env:
+          HOST: ${{ matrix.host }}
+        run: |
+          {
+            echo "## 🔒 vulnix CVE scan ($HOST)"
+            echo '```text'
+            cat vulnix-report.txt
+            echo '```'
+            echo
+            if [ -f grype-report/comment.md ]; then
+              cat grype-report/comment.md
+            else
+              echo "## 🛡️ grype CVE scan, advisory ($HOST)"
+              echo "The scan did not finish. See the job log."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Post grype findings as PR comment
         if: github.event_name == 'pull_request'

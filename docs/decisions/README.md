@@ -79,3 +79,4 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0018](0018-fingerprint-unlocks-the-lock-screen-not-login.md) | Let a fingerprint unlock the lock screen, and keep the password for login | Accepted |
 | [0019](0019-add-advisory-grype-scan.md) | Add an advisory grype scan alongside vulnix, to cover packages vulnix cannot match | Accepted |
 | [0020](0020-shorten-dependabot-cooldown-to-two-days.md) | Shorten the Dependabot cooldown from seven days to two | Accepted |
+| [0021](0021-build-and-scan-only-the-framework-in-ci.md) | Build and scan only the Framework in CI, and check the Dell on demand | Accepted |

@@ -45,7 +45,8 @@ The project accepts it as a cost of working in the open.
 
 The config implements:
 
-- **vulnix** scanning the Nix store closure against NVD on every PR
+- **vulnix** scanning the Framework's Nix store closure against NVD on every PR
+- **The Dell is scanned only on demand**, before it is booted ([0021](docs/decisions/0021-build-and-scan-only-the-framework-in-ci.md)); between those checks its vulnerabilities go unreported
 - **grype**, an advisory scan on every PR that covers packages vulnix cannot match, such as the kernel and Chrome ([0019](docs/decisions/0019-add-advisory-grype-scan.md))
 - **Weekly Dependabot checks** proposing input updates, with CI scanning the resulting closures
 - **Historic CVE analysis** via committed `flake.lock` history

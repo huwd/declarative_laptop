@@ -20,8 +20,9 @@ lint:
     nix run --inputs-from . nixpkgs#statix -- check .
     nix run --inputs-from . nixpkgs#deadnix -- --fail .
 
+# Evaluates the packages, dev shells and CI hosts, not the Dell (ADR 0021)
 evaluate:
-    nix flake check --no-build
+    ci/evaluate.sh
 
 # Markdown structure lint (config: .markdownlint-cli2.jsonc)
 docs-lint:
