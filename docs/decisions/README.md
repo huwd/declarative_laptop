@@ -77,4 +77,5 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0016](0016-ai-attribution-trailers.md) | Attribute AI help with Assisted-by and Generated-by trailers, a human sign-off and a Co-Authored-By trailer | Accepted |
 | [0017](0017-enable-immurok-without-pam.md) | Use the immurok key through an external flake, and enable it on the Framework without any PAM rule first | Accepted |
 | [0018](0018-fingerprint-unlocks-the-lock-screen-not-login.md) | Let a fingerprint unlock the lock screen, and keep the password for login | Accepted |
+| [0019](0019-add-advisory-grype-scan.md) | Add an advisory grype scan alongside vulnix, to cover packages vulnix cannot match | Accepted |
 | [0020](0020-shorten-dependabot-cooldown-to-two-days.md) | Shorten the Dependabot cooldown from seven days to two | Accepted |

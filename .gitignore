@@ -2,6 +2,9 @@
 result
 result-*
 
+# Reports from `just scan-grype`
+grype-report/
+
 # direnv
 .direnv/
 

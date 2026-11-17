@@ -64,6 +64,7 @@ Or use the justfile shortcuts (host defaults to this machine's hostname; overrid
 just check       check Nix formatting and lint, evaluate, and lint Markdown
 just build       build the system closure without applying
 just scan        build, then scan the closure for known vulnerabilities (vulnix)
+just scan-grype  build, then run the advisory grype scan that CI runs
 just hooks       run `just check` (and `just scan` for Nix changes) before every push
 just apply       nixos-rebuild switch
 just diff        compare built closure against running system
@@ -93,6 +94,8 @@ See [docs/install.md](docs/install.md) for how to generate `hardware-configurati
 ## CI
 
 Every pull request builds affected host closures and runs a CVE scan with vulnix.
+An advisory grype scan runs alongside it, to cover packages vulnix cannot match, such as the kernel and Chrome ([0019](docs/decisions/0019-add-advisory-grype-scan.md)).
+Its findings appear in a comment but never fail the build.
 A nightly scan of `main` opens an issue for each host with new findings, because new CVEs can fail a pull request that did not cause them.
 CI also attempts an nvd package diff when it can fetch the baseline closure, with reports in PR comments when permissions allow.
 
