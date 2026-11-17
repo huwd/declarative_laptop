@@ -106,10 +106,6 @@ comment = "NVD CPE false positive, the same one recorded under thrift-0.24.0: CV
 cve = "CVE-2021-4336"
 comment = "NVD CPE false positive: CVE-2021-4336 is an SQL injection in ITRS Group's monitor-ninja, a PHP monitoring web app, affected before 2021.11.30. It is unrelated to the Ninja build system. vulnix reads 1.13.2 as lower than that date. On framework-13 it is reached only through open-webui and python3.14-torch."
 
-["ruby"]
-cve = "CVE-2026-97229"
-comment = "NVD lists ruby-lang:ruby alongside GitLab, but the description and the fixed versions (GitLab 19.2.8, 19.3.5 and 19.4.2) are only about GitLab CE/EE: a crafted regular expression in a CI/CD configuration. Nothing in it concerns the Ruby interpreter, and GitLab is not in this closure. Treated as an NVD data error; the Ruby listing is unconfirmed, so re-check if Ruby publishes an advisory for it."
-
 ["game-music-emu"]
 cve = [ "CVE-2026-0016", "CVE-2026-0017", "CVE-2026-0018" ]
 comment = "NVD lists libgme:game_music_emu alongside Android, but all three descriptions are bugs in AOSP Java services (BiometricService, AccessibilityManagerService, CredentialManagerService). game-music-emu is a C++ chip-music library with none of that code, and it is only in the closure through gst-plugins-bad for the thumbnailer. Treated as NVD data errors from an Android security bulletin."
@@ -124,7 +120,7 @@ comment = "Only affects Debian's packaging (avahi-daemon-check-dns.sh run from /
 
 ["brotli-1.2.1"]
 cve = "CVE-2026-111497"
-comment = "NVD CPE false positive: 1.2.1 is the release that fixes this CVE. The record lists Google Brotli as affected from 1.0.3 up to 1.0.10, from 1.1.0 up to 1.1.1 and from 1.2.0 up to 1.2.1, so 1.2.1 is outside every range. It also lists an unrelated Go port, andybalholm/brotli, affected below 1.2.7. vulnix reports 1.2.1 anyway, and the Go port's range is the likely match, because it compares the product name and version and not the vendor."
+comment = "NVD CPE false positive: 1.2.1 is the release that fixes this CVE. The record lists Google Brotli as affected from 1.0.3 up to 1.0.10, from 1.1.0 up to 1.1.1 and from 1.2.0 up to 1.2.1, so 1.2.1 is outside every range. It also lists an unrelated Go port, andybalholm/brotli, affected below 1.2.7. vulnix reports 1.2.1 anyway, and the Go port's range is the likely match, because it compares the product name and version and not the vendor. In CISA KEV since 2026-10-27; its notes name the v1.2.1 release as the fix, which agrees with this assessment."
 
 ["cups-2.4.19"]
 cve = [ "CVE-2022-26691", "CVE-2026-55480", "CVE-2026-61702", "CVE-2026-107888", "CVE-2026-55453", "CVE-2026-107885", "CVE-2026-107890", "CVE-2026-55467", "CVE-2026-107886" ]
