@@ -61,7 +61,7 @@ jobs:
           # (Vale, markdownlint, the Zola site) and packages/vale.nix and
           # packages/docs-site.nix only feed the flake's `packages` output,
           # which no host imports.
-          ignore='^(docs/|scripts/|site/|\.vale/)|\.md$|^(justfile|\.gitignore|\.github/dependabot\.yml|\.github/workflows/(check|docs)\.yml|\.vale\.ini|\.markdownlint-cli2\.jsonc|packages/(vale|docs-site)\.nix)$'
+          ignore='^(docs/|scripts/|site/|\.vale/)|\.md$|^(justfile|\.gitignore|\.github/dependabot\.yml|\.github/workflows/(check|docs)\.yml|ci/evaluate\.sh|\.vale\.ini|\.markdownlint-cli2\.jsonc|packages/(vale|docs-site)\.nix)$'
 
           # A CI host builds if any change is not ignorable and not confined
           # to another host's own directory. Unknown paths therefore build.

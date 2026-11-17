@@ -64,6 +64,8 @@ This would remove the configuration the maintainer still wants to apply when the
 
 Routine CI builds and scans only the hosts listed in `CI_HOSTS` in the build workflow, which is `framework-13`.
 The nightly vulnix scan runs for the same hosts.
+The `Evaluate flake` check and `just check` run `ci/evaluate.sh`, which evaluates the flake's packages, dev shells and the Framework's system, but not the Dell's.
+It replaces `nix flake check --no-build`, which evaluates every host.
 The build workflow has a manual trigger with a host input, so `gh workflow run build.yml -f host=dell-xps-13-9343` builds and scans the Dell on demand.
 Every run, manual or not, writes its vulnix and grype results to the run summary.
 
@@ -73,9 +75,10 @@ Before using the Dell, the maintainer checks it with the manual run, then pulls 
 ## Consequences
 
 - Most pull requests build one host instead of two, and carry one set of scan comments.
-- The `Evaluate flake` check (`nix flake check --no-build`) still evaluates both hosts, so a change that stops the Dell's configuration from evaluating fails CI.
-  Evaluation takes seconds, and this is the one remaining check on the Dell.
+- Nothing in routine CI or `just check` evaluates the Dell, so no change to the repository can fail a check because of it.
+  The manual run evaluates and builds the Dell, and is the only check on it.
+- `ci/evaluate.sh` lists the flake's outputs itself, so it skips the checks `nix flake check` makes on the structure of the flake's outputs.
 - The Dell's vulnerabilities go unreported between manual runs.
   [OPSEC.md](../../OPSEC.md) records this gap.
 - `vulnix.toml` entries that only the Dell needed become dormant, and can be removed in a later tidy-up.
-- To bring a host back into routine CI, add it to `CI_HOSTS` in `build.yml` and to the matrix in `vulnix-scheduled.yml`.
+- To bring a host back into routine CI, add it to `CI_HOSTS` in `build.yml`, to the matrix in `vulnix-scheduled.yml` and to the default hosts in `ci/evaluate.sh`.
