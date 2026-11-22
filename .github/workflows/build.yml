@@ -252,21 +252,42 @@ jobs:
               });
             }
 
+      # Whether a fix commit is in a release tag never changes, so the
+      # fix-commit check keeps its answers between runs (ADR 0027). Each run
+      # restores the newest cache and saves a new one.
+      - name: Restore fix-commit answers
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ runner.temp }}/fix-commits.json
+          key: fix-commits-${{ github.run_id }}
+          restore-keys: fix-commits-
+
       # Advisory only (ADR 0019). grype matches packages vulnix cannot, such
       # as the kernel and Chrome, but nobody has triaged its findings yet, so
       # continue-on-error stops this step from ever failing the job.
+      # GH_TOKEN lets the fix-commit check call GitHub's API (ADR 0027).
       - name: Run grype against closure (advisory)
         id: grype
         continue-on-error: true
         env:
           CLOSURE: ${{ steps.build.outputs.closure }}
           HOST: ${{ matrix.host }}
+          GH_TOKEN: ${{ github.token }}
+          FIX_COMMITS_CACHE: ${{ runner.temp }}/fix-commits.json
         run: |
           # Fetch the tools first, as for vulnix, so their download noise
           # stays out of the scan's own output.
-          nix build --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq --no-link
-          nix shell --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq \
+          nix build --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq nixpkgs#python3 --no-link
+          nix shell --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq nixpkgs#python3 \
             -c ci/grype-scan.sh "$CLOSURE" grype-report "$HOST"
+
+      # Only warns, without failing, if the scan didn't write the file.
+      - name: Save fix-commit answers
+        if: always()
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ runner.temp }}/fix-commits.json
+          key: fix-commits-${{ github.run_id }}
 
       - name: Upload grype report
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2

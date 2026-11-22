@@ -73,7 +73,7 @@ scan: build
 
 # Advisory grype scan, the same as CI's (ADR 0019); reports go to ./grype-report
 scan-grype: build
-    nix shell --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq -c ci/grype-scan.sh ./result grype-report {{HOST}}
+    nix shell --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq nixpkgs#python3 -c ci/grype-scan.sh ./result grype-report {{HOST}}
 
 # ── System management ───────────────────────────────────────────────────────
 

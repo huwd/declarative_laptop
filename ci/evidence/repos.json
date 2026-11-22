@@ -1,0 +1,33 @@
+{
+  "_comment": "Where to check fix commits for each package (ADR 0027, C). `repo` is the GitHub repository whose history holds the release; `tag` gives the release tag from the package version; `links` are the commit-link prefixes that name a commit in that history. Only packages listed here get proofs. Read by ci/evidence/commits.py.",
+  "ffmpeg": {
+    "repo": "FFmpeg/FFmpeg",
+    "tag": "n{version}",
+    "links": ["https://github.com/FFmpeg/FFmpeg/commit/", "https://code.ffmpeg.org/FFmpeg/FFmpeg/commit/", "https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/"]
+  },
+  "ffmpeg-headless": {
+    "repo": "FFmpeg/FFmpeg",
+    "tag": "n{version}",
+    "links": ["https://github.com/FFmpeg/FFmpeg/commit/", "https://code.ffmpeg.org/FFmpeg/FFmpeg/commit/", "https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/"]
+  },
+  "linux": {
+    "repo": "gregkh/linux",
+    "tag": "v{version}",
+    "links": ["https://git.kernel.org/", "https://github.com/torvalds/linux/commit/", "https://github.com/gregkh/linux/commit/"]
+  },
+  "dhcpcd": {
+    "repo": "NetworkConfiguration/dhcpcd",
+    "tag": "v{version}",
+    "links": ["https://github.com/NetworkConfiguration/dhcpcd/commit/"]
+  },
+  "imagemagick": {
+    "repo": "ImageMagick/ImageMagick",
+    "tag": "{version}",
+    "links": ["https://github.com/ImageMagick/ImageMagick/commit/"]
+  },
+  "alsa-lib": {
+    "repo": "alsa-project/alsa-lib",
+    "tag": "v{version}",
+    "links": ["https://github.com/alsa-project/alsa-lib/commit/"]
+  }
+}
