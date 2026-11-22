@@ -32,6 +32,8 @@
 #   grype.json             full report, including the matches VEX removed
 #   grype.txt              the same findings as a table
 #   kev.json, kev-hits.json, kev.md   CISA KEV cross-check, from ci/kev-check.sh
+#   debian.json, drafts.ttl   Debian's verdict for each finding, and draft
+#                          triage statements from it (ADR 0027)
 #   upstream.cdx.json      SBOM of <host> evaluated against the nixos-unstable head
 #   fix-status.json        each finding's fix status, from ci/fix-status.nix
 #   upstream.md            the comment's Upstream section
@@ -135,6 +137,20 @@ grype "sbom:$out/sbom.cdx.json" \
 # CVEs in CISA's KEV catalogue, and write kev.md for the comment.
 ci/kev-check.sh "$out"
 
+# Debian's security tracker: evidence for each finding, never a proof
+# (ADR 0027). It is about 90 MB, so it stays out of the report directory.
+debian_on=""
+tracker_dir=$(mktemp -d)
+if curl -sfL --retry 2 -o "$tracker_dir/tracker.json" https://security-tracker.debian.org/tracker/data/json \
+  && python3 -I ci/evidence/debian.py "$out/grype.json" "$tracker_dir/tracker.json" \
+    ci/evidence/debian-names.json "$out" "$(date -u +%F)"; then
+  debian_on=$(date -u +%F)
+else
+  echo '[]' > "$out/debian.json"
+  : > "$out/drafts.ttl"
+fi
+rm -rf "$tracker_dir"
+
 # 5. Upstream: classify each finding by where a fix exists (ADR 0026).
 # Evaluate the host against the current nixos-unstable head, without
 # building it, and take a build-time SBOM of that derivation. Only this
@@ -153,12 +169,13 @@ upstream() {
   sbomnix "$drv" --buildtime --cdx "$out/upstream.sbomnix.cdx.json" --spdx /dev/null --csv /dev/null > /dev/null 2>&1 || return 1
   jq -f ci/sbom-identity.jq "$out/upstream.sbomnix.cdx.json" > "$out/upstream.cdx.json" || return 1
   nix eval --impure --json --expr \
-    "import $PWD/ci/fix-status.nix { grype = $(realpath "$out/grype.json"); head = $(realpath "$out/upstream.cdx.json"); accepted = $(realpath "$out/accepted.json"); commits = $(realpath "$out/commits.json"); }" \
+    "import $PWD/ci/fix-status.nix { grype = $(realpath "$out/grype.json"); head = $(realpath "$out/upstream.cdx.json"); accepted = $(realpath "$out/accepted.json"); commits = $(realpath "$out/commits.json"); debian = $(realpath "$out/debian.json"); }" \
     > "$out/fix-status.json" || return 1
 
   # One row for each package, CVE and version, as grype can match a CVE twice.
   # shellcheck disable=SC2016
-  jq -r --arg rev "$rev" --arg date "$date" --arg pinned "$pinned" --arg docs "$docs" '
+  jq -r --arg rev "$rev" --arg date "$date" --arg pinned "$pinned" --arg docs "$docs" \
+    --arg debian_on "$debian_on" --arg host "$host" --argjson drafts "$(grep -c '^triage:' "$out/drafts.ttl" || true)" '
     unique_by([.package, .version, .cve]) as $f
     | def n($b): [$f[] | select(.bucket == $b)] | length;
       def rows($b; cols):
@@ -185,7 +202,21 @@ upstream() {
     (if n("pending") > 0 then
       "", "**Pending Nixpkgs:**", "", "| Package | Pinned | Fixed in | CVEs |", "| --- | --- | --- | --- |",
       rows("pending"; "| `\(.[0].package)` | \(.[0].version) | \(map(.fixedIn // "?") | unique | join(", ")) | \(length) |")
-    else empty end)
+    else empty end),
+    (if $debian_on == "" then
+      "", "Debian evidence was skipped: the tracker could not be downloaded or read."
+    else
+      def d($b; $v): [$f[] | select(.bucket == $b and .debian == $v)] | length;
+      "", "**What Debian records** for the findings still open here ([Debian tracker](\($docs)#debian-tracker), downloaded \($debian_on)). This is evidence, not proof:", "",
+      "| Debian records | Unknown | Fixed after this version |", "| --- | --- | --- |",
+      (["fixed-upstream", "Fixed upstream at or below this version"], ["fixed-debian", "Fixed in a later Debian revision, maybe a Debian patch"],
+       ["fixed-later", "Fixed in a version above ours"], ["not-affected", "Never affected in Debian"], ["unimportant", "Open, rated unimportant"],
+       ["open", "Open"], [null, "Not in the tracker"]
+       | "| \(.[1]) | \(d("unknown"; .[0])) | \(d("fixed-after"; .[0])) |"),
+      (if $drafts > 0 then
+        "", "Draft triage statements for \($drafts) packages are in `drafts.ttl` in the `grype-report-\($host)` artifact. Check each one before adding it to `triage/vulnerabilities.ttl`."
+      else empty end)
+    end)
   ' "$out/fix-status.json" > "$out/upstream.md"
 }
 if ! upstream; then

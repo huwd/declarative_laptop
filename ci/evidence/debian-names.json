@@ -1,0 +1,12 @@
+{
+  "_comment": "Debian source package names for packages whose Nix name differs (ADR 0027, B). Any other Nix package is looked up under its own name. Read by ci/evidence/debian.py.",
+  "ffmpeg-headless": "ffmpeg",
+  "gnutls": "gnutls28",
+  "gstreamer": "gstreamer1.0",
+  "podman": "libpod",
+  "firefox-unwrapped": "firefox",
+  "git-minimal": "git",
+  "systemd-minimal": "systemd",
+  "util-linux-minimal": "util-linux",
+  "coreutils-full": "coreutils"
+}
