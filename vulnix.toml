@@ -142,19 +142,19 @@ issue_url = "https://github.com/huwd/declarative_laptop/issues/39"
 comment = "vulnix sees nixpkgs' lapack interface package, whose version string ('3') is the LAPACK API version, not the real implementation. passthru.implementation confirms this resolves to openblas 0.3.33 — the fix landed in OpenBLAS 0.3.18 and upstream LAPACK 3.10.1."
 
 ["ffmpeg-9.0.2"]
-cve = [ "CVE-2025-25468", "CVE-2025-25469", "CVE-2026-107675", "CVE-2026-107676", "CVE-2026-107677", "CVE-2026-107678", "CVE-2026-107696" ]
-until = "2026-11-22"
+cve = [ "CVE-2025-25468", "CVE-2025-25469", "CVE-2026-107675", "CVE-2026-107676", "CVE-2026-107677", "CVE-2026-107678", "CVE-2026-107696", "CVE-2026-125064" ]
+until = "2026-12-06"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
 comment = [
-  "CVE-2025-25468/25469 are memory leaks fixed on FFmpeg master (commit d5873b) in early 2025; the 9.0.2 release includes the fix, permanently N/A. CVE-2026-107675/107676/107677/107678/107696 (SFTP host-key check, uninitialised metadata bytes, DASH and RTSP infinite loops, stack exhaustion on a crafted MP4) are described by NVD as affecting releases through 9.0.2, though its CPE range stops before 9.0.2, so whether 9.0.2 is really affected is unclear; there is no later release and nixos-unstable ships 9.0.2. CVE-2026-107660, which the 9.0.1 entry covered, is fixed in 9.0.2. All real or presumed real, and accepted as low risk: each needs ffmpeg to process hostile media or connect to a hostile server, and ffmpeg is only in the closure as a library dependency of desktop apps; no scripts or services here feed it untrusted URLs. Re-check for an ffmpeg bump in nixpkgs before this expires.",
+  "CVE-2025-25468/25469 are memory leaks fixed on FFmpeg master (commit d5873b) in early 2025; the 9.0.2 release includes the fix, permanently N/A. CVE-2026-107675/107676/107677/107678/107696 (SFTP host-key check, uninitialised metadata bytes, DASH and RTSP infinite loops, stack exhaustion on a crafted MP4) are described by NVD as affecting releases through 9.0.2, though its CPE range stops before 9.0.2, so whether 9.0.2 is really affected is unclear; there is no later release and nixos-unstable ships 9.0.2. CVE-2026-107660, which the 9.0.1 entry covered, is fixed in 9.0.2. CVE-2026-125064 (added 2026-11-22) is a NULL pointer dereference in the G.726 decoder (libavcodec/g726.c ignores an init_get_bits() failure) on a crafted AVI with an oversized G.726 audio chunk: a crash only. NVD lists it as affecting releases through 9.0.2, the fix (commit ec887b1) is on master only, and nixpkgs carries no patch for it. All real or presumed real, and accepted as low risk: each needs ffmpeg to process hostile media or connect to a hostile server, and ffmpeg is only in the closure as a library dependency of desktop apps; no scripts or services here feed it untrusted URLs. Renewed on 2026-11-22 for two weeks, because nixos-unstable still ships 9.0.2 and the highest CVSS is 8.8. Re-check for an ffmpeg bump in nixpkgs before this expires.",
   "Mitigation: until nixpkgs ships a fixed ffmpeg, do not play, transcode or thumbnail media from untrusted sources with ffmpeg or apps built on it (especially RTSP, DASH or sftp URLs, and MP4 or MKV files from unknown senders). Stick to media you trust.",
 ]
 
 ["rsync-3.5.0"]
 cve = "CVE-2026-119741"
-until = "2026-11-22"
+until = "2026-12-06"
 comment = [
-  "Real and unpatched: in the delta-transfer sender, hash_search() does unbounded strong-checksum work when a malicious receiver sends weak checksums that collide at consecutive offsets, exhausting CPU (denial of service only, CVSS 7.5). NVD gives the fix as 3.5.2, though its CPE range stops at 3.5.1; nixpkgs ships 3.5.0 on nixos-unstable. It is the sender that is affected, and the realistic target is a public rsync daemon module. We run no rsync daemon and only use rsync as a client over ssh. Accepted as low risk. Re-check for an rsync bump in nixpkgs before this expires.",
+  "Real and unpatched: in the delta-transfer sender, hash_search() does unbounded strong-checksum work when a malicious receiver sends weak checksums that collide at consecutive offsets, exhausting CPU (denial of service only, CVSS 7.5). NVD gives the fix as 3.5.2, though its CPE range stops at 3.5.1; nixpkgs ships 3.5.0 on nixos-unstable and master with no patches. It is the sender that is affected, and the realistic target is a public rsync daemon module. We run no rsync daemon and only use rsync as a client over ssh. Accepted as low risk; renewed on 2026-11-22 for two weeks because nixpkgs is still on 3.5.0. Re-check for an rsync bump in nixpkgs before this expires.",
   "Mitigation: until a fixed rsync lands, do not run rsyncd or serve a module to the network, and do not let untrusted hosts pull from this machine with rsync.",
 ]
 
@@ -240,9 +240,12 @@ comment = "CVE-2021-24028 is Facebook Thrift (Meta's fbthrift, date-versioned YY
 
 ["avahi-0.8"]
 cve = "CVE-2025-59529"
-until = "2026-11-22"
+until = "2026-12-20"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "avahi-daemon runs (GNOME service discovery). The simple-protocol server ignores its client limit, allowing a local user to exhaust connections: local DoS only, single-user machine."
+comment = [
+  "avahi-daemon runs (GNOME service discovery). The simple-protocol server ignores its client limit, allowing a local user to exhaust connections: local DoS only, single-user machine. Re-checked on 2026-11-22: the v0.8 source defines CLIENTS_MAX in avahi-daemon/simple-protocol.c but never checks it, so 0.8 is affected. The nixpkgs package carries a note that this CVE 'is introduced by 4e2e1ea', but that commit only touches avahi-core/wide-area.c, so the note does not make 0.8 a false positive. NVD lists no fixed release (affected through 0.9-rc5), and nixpkgs ships 0.8 with no patch for it. Renewed for four weeks given the low impact.",
+  "Mitigation: do not give untrusted users a local account or run untrusted code on this machine; if mDNS (.local) lookups stop working, restart avahi-daemon.",
+]
 
 ["busybox-1.37.0"]
 cve = "CVE-2025-46394"
@@ -252,15 +255,21 @@ comment = "tar can hide filenames from a listing via terminal escapes: cosmetic,
 
 ["cjson-1.7.19"]
 cve = [ "CVE-2026-67215", "CVE-2026-67216", "CVE-2026-67217" ]
-until = "2026-11-22"
+until = "2026-12-20"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "All in cJSON_Utils (RFC 6902 JSON Patch / cJSON_Compare): stack exhaustion, exponential compare time, non-atomic patch. Needs an application applying an untrusted JSON Patch: DoS at worst."
+comment = [
+  "All in cJSON_Utils (RFC 6902 JSON Patch / cJSON_Compare): stack exhaustion, exponential compare time, non-atomic patch. Needs an application applying an untrusted JSON Patch: DoS at worst. Re-checked on 2026-11-22: nixpkgs still ships 1.7.19 with no patches. Renewed for four weeks given the low impact.",
+  "Mitigation: do not feed JSON Patch documents or JSON for comparison from untrusted sources to tools built on cJSON.",
+]
 
 ["dhcpcd-10.3.2"]
 cve = [ "CVE-2026-56113", "CVE-2026-56114", "CVE-2026-56116", "CVE-2026-56117" ]
-until = "2026-11-22"
+until = "2026-12-20"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "Fixes land after 10.3.2. dhcpcd is in the closure only as a NetworkManager dependency; the dhcpcd service is inactive and NetworkManager uses its internal DHCP client, so neither the same-link DHCPv6/RA bugs nor the control-socket bug are reachable."
+comment = [
+  "Fixes land after 10.3.2. dhcpcd is in the closure only as a NetworkManager dependency; the dhcpcd service is inactive and NetworkManager uses its internal DHCP client, so neither the same-link DHCPv6/RA bugs nor the control-socket bug are reachable. Re-checked on 2026-11-22: nixpkgs still ships 10.3.2 with no patches. Renewed for four weeks because the code isn't reachable.",
+  "Mitigation: do not enable networking.dhcpcd or switch NetworkManager's DHCP client to dhcpcd until a fixed release lands.",
+]
 
 ["gstreamer-1.28.6"]
 cve = "CVE-2026-73433"
@@ -276,9 +285,12 @@ comment = "SEGV in jbig2_error on a crafted JBIG2 stream (e.g. inside a PDF): cr
 
 ["libsndfile-1.2.2"]
 cve = [ "CVE-2024-50612", "CVE-2024-50613", "CVE-2025-52194", "CVE-2025-56226", "CVE-2026-37555" ]
-until = "2026-11-22"
+until = "2026-12-06"
 issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "No release since 1.2.2; nixpkgs' only patch is a build fix. All need a crafted audio file opened by an app using libsndfile; CVE-2025-52194 (IRCAM header overflow) is the most serious. Don't open untrusted IRCAM/WAV/AIFF files; drop when a fixed libsndfile lands."
+comment = [
+  "No release since 1.2.2. Re-checked on 2026-11-22: nixpkgs (from commit 91d5f8b, in our lock) now patches two of the five. CVE-2024-50612 (vorbis_analysis_wrote out-of-bounds read, upstream PR 1045) and CVE-2026-37555 (IMA ADPCM integer overflow on the WAV and close paths, upstream PR 1123) carry named CVE patches in libsndfile.patches, so those two are N/A here. vulnix can't see that because the version string is unchanged. CVE-2024-50613, CVE-2025-52194 and CVE-2025-56226 are still unpatched. All need a crafted audio file opened by an app using libsndfile; CVE-2025-52194 (IRCAM header overflow, CVSS 7.5) is the most serious. Accepted as low risk; renewed for two weeks given that CVSS. Drop the unpatched three when a fixed libsndfile lands.",
+  "Mitigation: do not open untrusted IRCAM, WAV or AIFF files in apps that use libsndfile; stick to audio from sources you trust.",
+]
 
 ["mupdf-1.27.2"]
 cve = "CVE-2026-7233"
