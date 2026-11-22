@@ -20,8 +20,8 @@ triage:StatementShape
         sh:path vex:product ;
         sh:minCount 1 ;
         sh:nodeKind sh:IRI ;
-        sh:pattern "^pkg:nix/[^@/]+(@.+)?$" ;
-        sh:message "Each statement names at least one product as a pkg:nix purl." ;
+        sh:pattern "^pkg:(nix|pypi)/[^@/]+(@.+)?$" ;
+        sh:message "Each statement names at least one product as a pkg:nix purl, or a pkg:pypi purl for a Python package (ADR 0027)." ;
     ] ;
 
     # Which vulnerabilities, as their NVD pages.
@@ -29,8 +29,8 @@ triage:StatementShape
         sh:path vex:vulnerability ;
         sh:minCount 1 ;
         sh:nodeKind sh:IRI ;
-        sh:pattern "^https://nvd\\.nist\\.gov/vuln/detail/CVE-[0-9]{4}-[0-9]+$" ;
-        sh:message "Each statement names at least one CVE by its NVD URL." ;
+        sh:pattern "^(https://nvd\\.nist\\.gov/vuln/detail/CVE-[0-9]{4}-[0-9]+|https://github\\.com/advisories/GHSA(-[23456789cfghjmpqrvwx]{4}){3})$" ;
+        sh:message "Each statement names at least one vulnerability by its NVD URL, or a GitHub advisory by its URL (ADR 0027)." ;
     ] ;
 
     # OpenVEX's status vocabulary.

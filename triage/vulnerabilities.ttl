@@ -184,7 +184,7 @@ triage:zlib-1.3.2
 
 triage:firefox-other-products
     a triage:Statement ;
-    vex:product <pkg:nix/firefox> ;
+    vex:product <pkg:nix/firefox> , <pkg:nix/firefox-unwrapped> ;
     vex:vulnerability nvd:CVE-2007-3670 , nvd:CVE-2007-4013 , nvd:CVE-2009-1597 , nvd:CVE-2009-4102 , nvd:CVE-2014-6492 ;
     vex:status "not_affected" ;
     vex:justification "component_not_present" ;
@@ -196,6 +196,7 @@ triage:firefox-other-products
         CVE-2009-1597 bypasses Adobe Acrobat's JavaScript restrictions through an inline PDF, and CVE-2014-6492 is in Oracle's Java SE browser plugin: Firefox has not loaded NPAPI plugins such as these since version 52.
         CVE-2009-4102 is in the Sage 1.4.3 RSS extension, which is not installed.
         Re-checked against NVD on 2026-11-22.
+        firefox-unwrapped is the same build without its wrapper script, which grype sees once its CPE is corrected (ADR 0027).
         """ ;
     rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/145> .
 
@@ -446,19 +447,20 @@ triage:dnsmasq-2.93
 
 triage:firefox-bundled-harfbuzz
     a triage:Statement ;
-    vex:product <pkg:nix/firefox> ;
+    vex:product <pkg:nix/firefox> , <pkg:nix/firefox-unwrapped> ;
     vex:vulnerability nvd:CVE-2011-0064 ;
     vex:status "fixed" ;
     vex:statusNotes """
         Found only by grype, because the NVD record lists mozilla:firefox with no version bound.
         The bug is a missing allocation check in hb_buffer_ensure in HarfBuzz, as Pango 1.28.3 and Firefox shipped it in 2011, and HarfBuzz fixed it that year.
         Firefox bundles a current HarfBuzz, and the system harfbuzz is 14.5.1.
+        firefox-unwrapped is the same build without its wrapper script, which grype sees once its CPE is corrected (ADR 0027).
         """ ;
     rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/145> .
 
 triage:firefox-old-unbounded-records
     a triage:Statement ;
-    vex:product <pkg:nix/firefox> ;
+    vex:product <pkg:nix/firefox> , <pkg:nix/firefox-unwrapped> ;
     vex:vulnerability nvd:CVE-2003-1492 , nvd:CVE-2007-1970 , nvd:CVE-2007-2176 , nvd:CVE-2007-3827 , nvd:CVE-2007-5967 , nvd:CVE-2007-6715 , nvd:CVE-2009-4129 , nvd:CVE-2009-4130 , nvd:CVE-2009-4630 ;
     vex:status "fixed" ;
     vex:statusNotes """
@@ -467,6 +469,7 @@ triage:firefox-old-unbounded-records
         Firefox 160 is about 13 to 23 years and over 150 major releases later.
         This rests on that age and the unbounded records, not on a fix traced for each CVE: none of the records names a fixed version.
         Re-checked against NVD on 2026-11-22.
+        firefox-unwrapped is the same build without its wrapper script, which grype sees once its CPE is corrected (ADR 0027).
         """ ;
     rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/145> .
 
