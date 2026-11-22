@@ -84,3 +84,4 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0023](0023-check-for-dependabot-updates-daily.md) | Check for Dependabot updates daily, not weekly | Accepted |
 | [0024](0024-keep-vulnerability-triage-in-one-rdf-graph.md) | Keep vulnerability triage in one RDF graph, and compile each scanner's format from it | Accepted |
 | [0025](0025-keep-accepted-risks-visible-in-the-grype-scan.md) | Keep accepted risks visible in the grype scan, and compile its OpenVEX from the triage graph | Accepted |
+| [0026](0026-split-the-grype-comment-into-pinned-and-upstream.md) | Split the grype comment into Pinned and Upstream sections, and classify each finding by where a fix exists | Accepted |

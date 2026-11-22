@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Advisory grype scan of a NixOS system closure (ADR 0019).
+# Advisory grype scan of a NixOS system closure (ADR 0019), with each
+# finding classified by where a fix exists (ADR 0026).
 #
 # Usage: ci/grype-scan.sh <closure> <output-dir> <host>
 #
@@ -21,6 +22,9 @@
 #   grype.json             full report, including the matches VEX removed
 #   grype.txt              the same findings as a table
 #   kev.json, kev-hits.json, kev.md   CISA KEV cross-check, from ci/kev-check.sh
+#   upstream.cdx.json      SBOM of <host> evaluated against the nixos-unstable head
+#   fix-status.json        each finding's fix status, from ci/fix-status.nix
+#   upstream.md            the comment's Upstream section
 #   comment.md             pull request comment body
 #
 # Exit status reports whether the scan ran, never whether it found anything.
@@ -86,8 +90,64 @@ grype "sbom:$out/sbom.cdx.json" \
 # CVEs in CISA's KEV catalogue, and write kev.md for the comment.
 ci/kev-check.sh "$out"
 
-# 5. Comment. GitHub rejects comments over 65,536 characters, so the full
+# 5. Upstream: classify each finding by where a fix exists (ADR 0026).
+# Evaluate the host against the current nixos-unstable head, without
+# building it, and take a build-time SBOM of that derivation. Only this
+# section depends on an unpinned input, so it records the revision it used.
+# It is advisory too: if any step fails, the section says so and the scan
+# carries on.
+docs=https://github.com/huwd/declarative_laptop/blob/main/docs/vulnerability-scans.md
+upstream() {
+  local rev date drv pinned
+  rev=$(git ls-remote https://github.com/NixOS/nixpkgs refs/heads/nixos-unstable | cut -f1) || return 1
+  [ -n "$rev" ] || return 1
+  drv=$(nix eval --raw --override-input nixpkgs "github:NixOS/nixpkgs/$rev" \
+    ".#nixosConfigurations.$host.config.system.build.toplevel.drvPath") || return 1
+  date=$(nix flake metadata --json "github:NixOS/nixpkgs/$rev" | jq -r '.lastModified | todate | .[:10]') || return 1
+  pinned=$(jq -r '.nodes[.nodes.root.inputs.nixpkgs].locked.rev' flake.lock)
+  sbomnix "$drv" --buildtime --cdx "$out/upstream.cdx.json" --spdx /dev/null --csv /dev/null > /dev/null 2>&1 || return 1
+  nix eval --impure --json --expr \
+    "import $PWD/ci/fix-status.nix { grype = $(realpath "$out/grype.json"); head = $(realpath "$out/upstream.cdx.json"); }" \
+    > "$out/fix-status.json" || return 1
+
+  # One row for each package, CVE and version, as grype can match a CVE twice.
+  # shellcheck disable=SC2016
+  jq -r --arg rev "$rev" --arg date "$date" --arg pinned "$pinned" --arg docs "$docs" '
+    unique_by([.package, .version, .cve]) as $f
+    | def n($b): [$f[] | select(.bucket == $b)] | length;
+      def rows($b; cols):
+        [$f[] | select(.bucket == $b)] | group_by([.package, .version])
+        | sort_by(-length) | .[:15][] | cols;
+    "### Upstream: against nixos-unstable `\($rev[:12])` (\($date))",
+    "",
+    "Where a fix exists for each pinned finding, at the head of `nixos-unstable` ([fix status](\($docs)#fix-status)).",
+    "This section changes as `nixos-unstable` moves; it is reproducible against the revision above.",
+    (if $rev == $pinned then "The pinned Nixpkgs is already at this revision, so nothing is actionable." else empty end),
+    "",
+    "| Fix status | Findings | What to do |",
+    "| --- | --- | --- |",
+    "| Actionable | \(n("actionable")) | Nixpkgs has the fix: run `just update` |",
+    "| Pending Nixpkgs | \(n("pending")) | fixed upstream, not yet in Nixpkgs: wait, or look for a Nixpkgs pull request |",
+    "| No fix upstream | \(n("no-fix")) | triage it: accept it with a mitigation, or remove the package |",
+    "| Unknown | \(n("unknown")) | grype has no fix information: triage it by hand |",
+    (if n("actionable") > 0 then
+      "", "**Actionable:**", "", "| Package | Pinned | At the head | CVEs |", "| --- | --- | --- | --- |",
+      rows("actionable"; "| `\(.[0].package)` | \(.[0].version) | \(.[0].atHead // "patched") | \(length) |")
+    else empty end),
+    (if n("pending") > 0 then
+      "", "**Pending Nixpkgs:**", "", "| Package | Pinned | Fixed in | CVEs |", "| --- | --- | --- | --- |",
+      rows("pending"; "| `\(.[0].package)` | \(.[0].version) | \(map(.fixedIn // "?") | unique | join(", ")) | \(length) |")
+    else empty end)
+  ' "$out/fix-status.json" > "$out/upstream.md"
+}
+if ! upstream; then
+  printf '### Upstream\n\nSkipped: evaluating %s against the nixos-unstable head failed. The pinned findings above are complete.\n' "$host" > "$out/upstream.md"
+fi
+
+# 6. Comment. GitHub rejects comments over 65,536 characters, so the full
 # table goes in a collapsed section and is cut short if it is too long.
+commit=$(git rev-parse --short HEAD)
+db_built=$(grype db status -o json | jq -r '.built[:10]')
 matches=$(jq '.matches | length' "$out/grype.json")
 ignored=$(jq '[.ignoredMatches[]?] | length' "$out/grype.json")
 patched=$(jq '.statements | length' "$out/patches.openvex.json")
@@ -140,6 +200,10 @@ fi
   echo "Advisory only: this scan never fails the build ([ADR 0019](https://github.com/huwd/declarative_laptop/blob/main/docs/decisions/0019-add-advisory-grype-scan.md))."
   echo "It covers packages vulnix cannot match, such as the kernel and Chrome."
   echo
+  echo "### Pinned: this commit's closure"
+  echo
+  echo "The closure from \`flake.lock\` at \`$commit\`, scanned with the grype database built on $db_built ([pinned]($docs#pinned))."
+  echo
   cat "$out/kev.md"
   echo
   echo "**$matches findings** (${severities:-none})."
@@ -166,6 +230,8 @@ fi
     echo
     echo "</details>"
   fi
+  echo
+  cat "$out/upstream.md"
 } > "$out/comment.md"
 
 echo "grype ($host): $matches findings, $ignored removed by VEX"

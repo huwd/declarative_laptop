@@ -105,6 +105,7 @@ CI also attempts an nvd package diff when it can fetch the baseline closure, wit
 - [docs/install.md](docs/install.md): install a host from a USB drive
 - [docs/setup.md](docs/setup.md): first-boot checklist
 - [docs/operations.md](docs/operations.md): roll back, list generations, and check an earlier configuration for vulnerabilities
+- [docs/vulnerability-scans.md](docs/vulnerability-scans.md): read the vulnix and grype comments on a pull request
 - [docs/vulnerability-triage.md](docs/vulnerability-triage.md): record a triage decision about a CVE
 - [docs/local-llm.md](docs/local-llm.md): run local language models on `framework-13`
 
