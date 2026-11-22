@@ -44,6 +44,8 @@
     # Version control
     git
     gh
+    # `git sign-off`: sign off and sign an agent's commits — see docs/decisions/0022
+    (import ../../packages/git-sign-off.nix { inherit pkgs; })
 
     # Task runner — see justfile (check, fix, build, apply)
     just

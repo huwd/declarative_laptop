@@ -189,6 +189,24 @@ Use the recovery key to re-wrap every file to the new one.
 
 Test this once end to end before relying on it.
 
+## Sign off an agent's commits
+
+Coding agents commit without a signature or sign-off, and push their branch as a draft pull request.
+[0022](decisions/0022-sign-off-agent-commits-with-git-sign-off.md) explains why.
+
+When the branch is ready for review, run this from it:
+
+```sh
+git sign-off
+```
+
+It signs off and signs each commit that lacks a sign-off, asking Bitwarden to approve each one.
+It merges the default branch if the branch is behind, checks every commit, force-pushes the branch and marks its pull request ready.
+Add `--no-update` for a repository that doesn't need branches to be up to date.
+
+If the rebase or the merge stops on a conflict, resolve it as it says, then run `git sign-off` again.
+Commits it has already signed off are left alone.
+
 ## Check an earlier configuration for a vulnerability
 
 The history of `flake.lock` records the dependency versions of every earlier configuration.
