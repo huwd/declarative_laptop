@@ -31,7 +31,8 @@ from rdflib import RDF, RDFS, Graph, Namespace
 VEX = Namespace("https://openvex.dev/ns/v0.2.0#")
 TRIAGE = Namespace("https://huwd.github.io/declarative_laptop/ns/triage#")
 NVD = "https://nvd.nist.gov/vuln/detail/"
-PURL = re.compile(r"^pkg:nix/(?P<name>[^@]+)(?:@(?P<version>.+))?$")
+PURL = re.compile(r"^pkg:(?P<type>nix|pypi)/(?P<name>[^@]+)(?:@(?P<version>.+))?$")
+GHSA = "https://github.com/advisories/"
 ISSUE = re.compile(r"^https://github\.com/huwd/declarative_laptop/(issues|pull)/\d+$")
 
 
@@ -65,13 +66,16 @@ def statements(graph):
         for product in sorted(graph.objects(subject, VEX.product), key=sort_key):
             match = PURL.match(str(product))
             if not match:
-                sys.exit(f"{subject}: product {product} is not a pkg:nix purl")
+                sys.exit(f"{subject}: product {product} is not a pkg:nix or pkg:pypi purl")
             products.append(match.groupdict())
         cves = []
         for cve in graph.objects(subject, VEX.vulnerability):
-            if not str(cve).startswith(NVD):
-                sys.exit(f"{subject}: vulnerability {cve} is not an NVD URL")
-            cves.append(str(cve)[len(NVD):])
+            for prefix in (NVD, GHSA):
+                if str(cve).startswith(prefix):
+                    cves.append(str(cve)[len(prefix):])
+                    break
+            else:
+                sys.exit(f"{subject}: vulnerability {cve} is not an NVD or GitHub advisory URL")
         until = graph.value(subject, TRIAGE.until)
         action = graph.value(subject, VEX.actionStatement)
         links = sorted(str(link) for link in graph.objects(subject, RDFS.seeAlso))
@@ -109,11 +113,15 @@ def vulnix_toml(graph_statements):
     """
     entries = OrderedDict()
     for statement in graph_statements:
+        # vulnix reads only Nix packages and CVE IDs.
+        cves = [c for c in statement["cves"] if c.startswith("CVE-")]
         for product in statement["products"]:
+            if product["type"] != "nix" or not cves:
+                continue
             entry = entries.setdefault(
                 vulnix_key(product), {"cve": [], "until": None, "issue": None, "comment": []}
             )
-            entry["cve"].extend(c for c in statement["cves"] if c not in entry["cve"])
+            entry["cve"].extend(c for c in cves if c not in entry["cve"])
             if statement["until"] and (entry["until"] is None or statement["until"] < entry["until"]):
                 entry["until"] = statement["until"]
             entry["issue"] = entry["issue"] or statement["issue"]
@@ -143,10 +151,14 @@ def vulnix_toml(graph_statements):
     return "\n".join(lines) + "\n"
 
 
+def vulnerability_url(vulnerability):
+    return (GHSA if vulnerability.startswith("GHSA-") else NVD) + vulnerability
+
+
 def purl(product):
     if product["version"] is None:
-        return f'pkg:nix/{product["name"]}'
-    return f'pkg:nix/{product["name"]}@{product["version"]}'
+        return f'pkg:{product["type"]}/{product["name"]}'
+    return f'pkg:{product["type"]}/{product["name"]}@{product["version"]}'
 
 
 def openvex(graph_statements, timestamp):
@@ -164,7 +176,7 @@ def openvex(graph_statements, timestamp):
         for cve in statement["cves"]:
             entry = {
                 "@id": f'{statement["id"]}/{cve}',
-                "vulnerability": {"@id": NVD + cve, "name": cve},
+                "vulnerability": {"@id": vulnerability_url(cve), "name": cve},
                 "products": [{"@id": purl(p)} for p in statement["products"]],
                 "status": statement["status"],
             }

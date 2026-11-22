@@ -55,8 +55,11 @@ jq -n \
     def mentions_kev: text | test("\\bKEV\\b");
     def cves: if type == "array" then .[] else . end;
   [
+    # A GitHub advisory (GHSA) finding counts under each CVE it relates to.
     ($grype[0].matches[]
-      | { package: "\(.artifact.name) \(.artifact.version)", cve: .vulnerability.id,
+      | ([.vulnerability.id] + [.relatedVulnerabilities[]?.id]) as $ids
+      | $ids[] as $id
+      | { package: "\(.artifact.name) \(.artifact.version)", cve: $id,
           attention: true, reason: "open grype finding" }),
 
     ($patches[0].statements[]

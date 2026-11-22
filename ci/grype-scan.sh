@@ -14,7 +14,8 @@
 # script, so a local scan gives the same result as CI.
 #
 # Writes to <output-dir>:
-#   sbom.cdx.json, sbom.spdx.json, sbom.csv   SBOM of the closure, from sbomnix
+#   sbom.sbomnix.cdx.json, sbom.spdx.json, sbom.csv   SBOM of the closure, from sbomnix
+#   sbom.cdx.json          the same, with identities grype can match (ci/sbom-identity.jq)
 #   patches.openvex.json   "fixed" statements for the CVEs Nixpkgs patches
 #   triage.openvex.json    the permanent triage statements, compiled from
 #                          triage/vulnerabilities.ttl
@@ -46,9 +47,14 @@ chmod u+w "$out/triage.openvex.json" "$out/accepted.json"
 
 # 1. Inventory: every package in the closure, with a CPE and a purl.
 sbomnix "$closure" \
-  --cdx "$out/sbom.cdx.json" \
+  --cdx "$out/sbom.sbomnix.cdx.json" \
   --spdx "$out/sbom.spdx.json" \
   --csv "$out/sbom.csv"
+
+# sbomnix guesses each identity from the Nix name, so Python packages and
+# renamed variants such as ffmpeg-headless match nothing. Rewrite them to
+# PyPI purls and upstream CPEs (ADR 0027).
+jq -f ci/sbom-identity.jq "$out/sbom.sbomnix.cdx.json" > "$out/sbom.cdx.json"
 
 # 2. sbomnix lists the patches Nixpkgs applies, and the CVEs each one fixes,
 # under each component's pedigree. Nixpkgs often patches without changing
@@ -105,7 +111,8 @@ upstream() {
     ".#nixosConfigurations.$host.config.system.build.toplevel.drvPath") || return 1
   date=$(nix flake metadata --json "github:NixOS/nixpkgs/$rev" | jq -r '.lastModified | todate | .[:10]') || return 1
   pinned=$(jq -r '.nodes[.nodes.root.inputs.nixpkgs].locked.rev' flake.lock)
-  sbomnix "$drv" --buildtime --cdx "$out/upstream.cdx.json" --spdx /dev/null --csv /dev/null > /dev/null 2>&1 || return 1
+  sbomnix "$drv" --buildtime --cdx "$out/upstream.sbomnix.cdx.json" --spdx /dev/null --csv /dev/null > /dev/null 2>&1 || return 1
+  jq -f ci/sbom-identity.jq "$out/upstream.sbomnix.cdx.json" > "$out/upstream.cdx.json" || return 1
   nix eval --impure --json --expr \
     "import $PWD/ci/fix-status.nix { grype = $(realpath "$out/grype.json"); head = $(realpath "$out/upstream.cdx.json"); accepted = $(realpath "$out/accepted.json"); }" \
     > "$out/fix-status.json" || return 1
