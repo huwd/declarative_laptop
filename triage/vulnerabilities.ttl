@@ -1,0 +1,598 @@
+# Vulnerability triage for this repository's NixOS systems (ADR 0024).
+#
+# One RDF graph, using OpenVEX's vocabulary, holds every triage decision.
+# `nix build .#vuln-triage` validates it against triage/shapes.ttl and
+# compiles it into each scanner's format. docs/vulnerability-triage.md
+# explains how to write a statement.
+
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix vex:    <https://openvex.dev/ns/v0.2.0#> .
+@prefix nvd:    <https://nvd.nist.gov/vuln/detail/> .
+@prefix triage: <https://huwd.github.io/declarative_laptop/ns/triage#> .
+
+
+# ── Wrong product: NVD's CPE matches an unrelated project with the same name ───
+
+triage:ada
+    a triage:Statement ;
+    vex:product <pkg:nix/ada> ;
+    vex:vulnerability nvd:CVE-2024-9410 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        Ada.cx's Sentry SSRF (a web service). nixpkgs ada is the WHATWG URL parser C++ library.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:bolt
+    a triage:Statement ;
+    vex:product <pkg:nix/bolt> ;
+    vex:vulnerability nvd:CVE-2021-27367 , nvd:CVE-2022-31321 , nvd:CVE-2023-5214 , nvd:CVE-2025-34086 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        Bolt CMS (PHP) and Puppet Bolt. nixpkgs bolt is the Thunderbolt device manager daemon.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:codex
+    a triage:Statement ;
+    vex:product <pkg:nix/codex> ;
+    vex:vulnerability nvd:CVE-2021-43635 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        CVE is for codexnotes' Codex notebook web app (XSS via Notebook/Page name field). nixpkgs codex is OpenAI's CLI coding agent — unrelated product, same name.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/45> .
+
+triage:dbus-1
+    a triage:Statement ;
+    vex:product <pkg:nix/dbus@1> ;
+    vex:vulnerability nvd:CVE-2022-42010 , nvd:CVE-2022-42011 , nvd:CVE-2022-42012 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        vulnix parses the 'dbus-1' config derivation as dbus version 1.
+        Real dbus is 1.16.2; these were fixed in 1.14.4.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:game-music-emu
+    a triage:Statement ;
+    vex:product <pkg:nix/game-music-emu> ;
+    vex:vulnerability nvd:CVE-2026-0016 , nvd:CVE-2026-0017 , nvd:CVE-2026-0018 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        NVD lists libgme:game_music_emu alongside Android, but all three descriptions are bugs in AOSP Java services (BiometricService, AccessibilityManagerService, CredentialManagerService). game-music-emu is a C++ chip-music library with none of that code, and it is only in the closure through gst-plugins-bad for the thumbnailer.
+        Treated as NVD data errors from an Android security bulletin.
+        """ .
+
+triage:git
+    a triage:Statement ;
+    vex:product <pkg:nix/git> ;
+    vex:vulnerability nvd:CVE-2021-21684 , nvd:CVE-2022-30947 , nvd:CVE-2022-36882 , nvd:CVE-2022-36883 , nvd:CVE-2022-36884 , nvd:CVE-2022-38663 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        All in the Jenkins Git Plugin, not git itself.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:libmpeg2
+    a triage:Statement ;
+    vex:product <pkg:nix/libmpeg2> ;
+    vex:vulnerability nvd:CVE-2022-37416 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        Ittiam libmpeg2 (Android's decoder). nixpkgs libmpeg2 is the unrelated VideoLAN/mpeg2dec library.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:malcontent
+    a triage:Statement ;
+    vex:product <pkg:nix/malcontent> ;
+    vex:vulnerability nvd:CVE-2026-24845 , nvd:CVE-2026-28407 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        Chainguard's malcontent supply-chain scanner. nixpkgs malcontent is GNOME's parental-controls library.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:ninja-1.13.2
+    a triage:Statement ;
+    vex:product <pkg:nix/ninja@1.13.2> ;
+    vex:vulnerability nvd:CVE-2021-4336 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        NVD CPE false positive: CVE-2021-4336 is an SQL injection in ITRS Group's monitor-ninja, a PHP monitoring web app, affected before 2021.11.30.
+        It is unrelated to the Ninja build system. vulnix reads 1.13.2 as lower than that date.
+        On framework-13 it is reached only through open-webui and python3.14-torch.
+        """ .
+
+triage:obsidian
+    a triage:Statement ;
+    vex:product <pkg:nix/obsidian> ;
+    vex:vulnerability nvd:CVE-2023-24044 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        Plesk Obsidian (hosting control panel). nixpkgs obsidian is the Obsidian notes app.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:orc
+    a triage:Statement ;
+    vex:product <pkg:nix/orc> ;
+    vex:vulnerability nvd:CVE-2025-47436 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        Apache ORC (columnar file format) LZO decompressor. nixpkgs orc is GStreamer's Oil Runtime Compiler.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:snappy-1.2.2
+    a triage:Statement ;
+    vex:product <pkg:nix/snappy@1.2.2> ;
+    vex:vulnerability nvd:CVE-2023-28115 , nvd:CVE-2023-41330 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        NVD CPE false positive: these CVEs are in the unrelated PHP knplabs/knp-snappy PDF library, not Google's Snappy compression library.
+        """ .
+
+triage:thrift-0.24.0
+    a triage:Statement ;
+    vex:product <pkg:nix/thrift@0.24.0> ;
+    vex:vulnerability nvd:CVE-2021-24028 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        Facebook Thrift (Meta's fbthrift, date-versioned YYYY.MM.DD.NN) SSL cert validation bug — unrelated codebase from Apache Thrift 0.x, same false positive already identified under thrift-0.22.0. framework-13 resolves thrift to 0.24.0 (dell-xps-13-9343 still resolves 0.22.0); the other 25 CVEs whitelisted under thrift-0.22.0 no longer apply here — 0.24.0 already contains those fixes, so vulnix doesn't flag them.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/60> .
+
+triage:thrift-0.25.0
+    a triage:Statement ;
+    vex:product <pkg:nix/thrift@0.25.0> ;
+    vex:vulnerability nvd:CVE-2021-24028 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        NVD CPE false positive, the same one recorded under thrift-0.24.0: CVE-2021-24028 is Facebook Thrift (Meta's fbthrift, date-versioned YYYY.MM.DD.NN), affected before 2021.02.22.00, an unrelated codebase from Apache Thrift 0.x. vulnix reads 0.25.0 as lower than a 2021 date.
+        On framework-13 it is reached only through open-webui, python3.14-pyarrow and arrow-cpp.
+        """ .
+
+triage:zlib-1.3.2
+    a triage:Statement ;
+    vex:product <pkg:nix/zlib@1.3.2> ;
+    vex:vulnerability nvd:CVE-2026-27820 , nvd:CVE-2023-6992 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        NVD CPE false positives.
+        CVE-2026-27820 is in the Ruby zlib gem (Zlib::GzipReader#ungetc), a separate codebase from the C zlib library nixpkgs ships.
+        CVE-2023-6992 only affects Cloudflare's zlib fork; upstream zlib (what nixpkgs ships) was confirmed unaffected by the reporter.
+        """ .
+
+
+# ── Not affected: the vulnerable code is absent or never runs here ────────────
+
+triage:avahi
+    a triage:Statement ;
+    vex:product <pkg:nix/avahi> ;
+    vex:vulnerability nvd:CVE-2021-26720 ;
+    vex:status "not_affected" ;
+    vex:justification "vulnerable_code_not_present" ;
+    vex:statusNotes """
+        Only affects Debian's packaging (avahi-daemon-check-dns.sh run from /etc/network/if-up.d);
+        NixOS doesn't ship that script.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:cjson
+    a triage:Statement ;
+    vex:product <pkg:nix/cjson> ;
+    vex:vulnerability nvd:CVE-2026-16554 ;
+    vex:status "not_affected" ;
+    vex:justification "vulnerable_code_cannot_be_controlled_by_adversary" ;
+    vex:statusNotes """
+        Integer overflow only on 32-bit platforms (32-bit size_t).
+        Both hosts are x86_64-linux.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:gcc-15.3.0
+    a triage:Statement ;
+    vex:product <pkg:nix/gcc@15.3.0> ;
+    vex:vulnerability nvd:CVE-2023-4039 ;
+    vex:status "not_affected" ;
+    vex:justification "vulnerable_code_not_present" ;
+    vex:statusNotes """
+        Disputed; stack-protector bypass only on AArch64 targets.
+        Both hosts are x86_64-linux.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:gcc-16.2.0
+    a triage:Statement ;
+    vex:product <pkg:nix/gcc@16.2.0> ;
+    vex:vulnerability nvd:CVE-2023-4039 ;
+    vex:status "not_affected" ;
+    vex:justification "vulnerable_code_not_present" ;
+    vex:statusNotes """
+        Same as gcc-15.3.0 — disputed, stack-protector bypass only on AArch64 targets.
+        Both hosts are x86_64-linux.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/60> .
+
+triage:perl-5.42.3-32-bit-only
+    a triage:Statement ;
+    vex:product <pkg:nix/perl@5.42.3> , <pkg:nix/perl@5.42.3-env> ;
+    vex:vulnerability nvd:CVE-2026-8376 ;
+    vex:status "not_affected" ;
+    vex:justification "vulnerable_code_not_present" ;
+    vex:statusNotes """
+        CVE-2026-8376 only affects 32-bit builds (heap overflow in regex compilation); this system is x86_64-linux.
+        The perl-5.42.3-env derivation is the same perl, as vulnix names it.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:samba-4.23.10
+    a triage:Statement ;
+    vex:product <pkg:nix/samba@4.23.10> ;
+    vex:vulnerability nvd:CVE-2026-2340 ;
+    vex:status "not_affected" ;
+    vex:justification "vulnerable_code_not_in_execute_path" ;
+    vex:statusNotes """
+        Only present via gvfs (SMB client for Nautilus 'Other Locations').
+        The bug is in the server-side vfs_worm VFS module; we never run smbd/nmbd.
+        """ .
+
+
+# ── Fixed in the version we run, or patched by Nixpkgs without a version change ───
+
+triage:brotli-1.2.1
+    a triage:Statement ;
+    vex:product <pkg:nix/brotli@1.2.1> ;
+    vex:vulnerability nvd:CVE-2026-111497 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        NVD CPE false positive: 1.2.1 is the release that fixes this CVE.
+        The record lists Google Brotli as affected from 1.0.3 up to 1.0.10, from 1.1.0 up to 1.1.1 and from 1.2.0 up to 1.2.1, so 1.2.1 is outside every range.
+        It also lists an unrelated Go port, andybalholm/brotli, affected below 1.2.7. vulnix reports 1.2.1 anyway, and the Go port's range is the likely match, because it compares the product name and version and not the vendor.
+        In CISA KEV since 2026-10-27; its notes name the v1.2.1 release as the fix, which agrees with this assessment.
+        """ .
+
+triage:coreutils-9.11
+    a triage:Statement ;
+    vex:product <pkg:nix/coreutils@9.11> ;
+    vex:vulnerability nvd:CVE-2026-56391 , nvd:CVE-2026-56392 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        nixpkgs coreutils.patches includes CVE-2026-56391.patch and CVE-2026-56392.patch.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:cups-2.4.19-fixed
+    a triage:Statement ;
+    vex:product <pkg:nix/cups@2.4.19> ;
+    vex:vulnerability nvd:CVE-2022-26691 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        CVE-2022-26691 is fixed in CUPS 2.4.2 (Apple's advisory for the same bug); we run 2.4.19.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:ffmpeg-9.0.2-fixed
+    a triage:Statement ;
+    vex:product <pkg:nix/ffmpeg@9.0.2> ;
+    vex:vulnerability nvd:CVE-2025-25468 , nvd:CVE-2025-25469 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        CVE-2025-25468 and CVE-2025-25469 are memory leaks fixed on FFmpeg master (commit d5873b) in early 2025; the 9.0.2 release includes the fix.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:glibc-2.42-84
+    a triage:Statement ;
+    vex:product <pkg:nix/glibc@2.42-84> ;
+    vex:vulnerability nvd:CVE-2025-15281 , nvd:CVE-2026-4046 , nvd:CVE-2026-4437 , nvd:CVE-2026-4438 , nvd:CVE-2026-5435 , nvd:CVE-2026-5450 , nvd:CVE-2026-5928 , nvd:CVE-2026-6238 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        All eight fixed by backports in nixpkgs' 2.42-master.patch (release branch): wordexp WRDE_REUSE, IBM1390/1399 iconv, resolv record count / hostname check / ns_sprintrrf x2, scanf %mc, ungetwc.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:glibc-2.44-57
+    a triage:Statement ;
+    vex:product <pkg:nix/glibc@2.44-57> ;
+    vex:vulnerability nvd:CVE-2026-5435 , nvd:CVE-2026-6238 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        Same two CVEs as glibc-2.42-84 (GLIBC-SA-2026-0011/0012, in the deprecated ns_print functions) but not fixed by a backport here: the upstream glibc-2.44 tag's resolv/ns_print.c no longer contains a TSIG case, so the CVE-2026-5435 overflow is gone from the release itself, and NVD scopes CVE-2026-6238 to 2.0.1 through 2.43. nixpkgs' 2.44-master.patch only deletes the advisory text files. vulnix can't see either because CVE-2026-5435 has no end version in its CPE.
+        Replaces the glibc-2.44-25 entry, whose claim that the 2.44-master.patch carries the fixes does not hold.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/60> .
+
+triage:gzip-1.14
+    a triage:Statement ;
+    vex:product <pkg:nix/gzip@1.14> ;
+    vex:vulnerability nvd:CVE-2026-41991 , nvd:CVE-2026-41992 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        nixpkgs gzip.patches includes CVE-2026-41991.patch and CVE-2026-41992.patch.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:jq-1.8.2
+    a triage:Statement ;
+    vex:product <pkg:nix/jq@1.8.2> ;
+    vex:vulnerability nvd:CVE-2026-33948 , nvd:CVE-2026-39979 , nvd:CVE-2026-44777 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        Fix commits 6374ae0 and 2f09060 are ancestors of the jq-1.8.2 tag (checked via GitHub compare);
+        CVE-2026-44777 affects 1.8.2rc1 and earlier.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:lapack-3
+    a triage:Statement ;
+    vex:product <pkg:nix/lapack@3> ;
+    vex:vulnerability nvd:CVE-2021-4048 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        vulnix sees nixpkgs' lapack interface package, whose version string ('3') is the LAPACK API version, not the real implementation. passthru.implementation confirms this resolves to openblas 0.3.33 — the fix landed in OpenBLAS 0.3.18 and upstream LAPACK 3.10.1.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/39> .
+
+triage:libmicrohttpd-1.0.10
+    a triage:Statement ;
+    vex:product <pkg:nix/libmicrohttpd@1.0.10> ;
+    vex:vulnerability nvd:CVE-2025-59777 , nvd:CVE-2025-62689 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        Same as libmicrohttpd-1.0.6 — fixed in commit ff13abc after v1.0.2; we run 1.0.10.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/60> .
+
+triage:libmicrohttpd-1.0.6
+    a triage:Statement ;
+    vex:product <pkg:nix/libmicrohttpd@1.0.6> ;
+    vex:vulnerability nvd:CVE-2025-59777 , nvd:CVE-2025-62689 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        Fixed in commit ff13abc after v1.0.2; we run 1.0.6.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:libsndfile-1.2.2-patched
+    a triage:Statement ;
+    vex:product <pkg:nix/libsndfile@1.2.2> ;
+    vex:vulnerability nvd:CVE-2024-50612 , nvd:CVE-2026-37555 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        Nixpkgs patches both, from commit 91d5f8b: CVE-2024-50612 (vorbis_analysis_wrote out-of-bounds read, upstream PR 1045) and CVE-2026-37555 (IMA ADPCM integer overflow on the WAV and close paths, upstream PR 1123) carry named CVE patches in libsndfile.patches. vulnix can't see that because the version string is unchanged.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:libssh2-1.11.1
+    a triage:Statement ;
+    vex:product <pkg:nix/libssh2@1.11.1> ;
+    vex:vulnerability nvd:CVE-2025-15661 , nvd:CVE-2026-55199 , nvd:CVE-2026-55200 , nvd:CVE-2026-58050 , nvd:CVE-2026-58051 , nvd:CVE-2026-66032 , nvd:CVE-2026-66033 , nvd:CVE-2026-66034 , nvd:CVE-2026-66035 , nvd:CVE-2026-7598 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        nixpkgs libssh2.patches carries a CVE patch for each of these ten.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:perl-5.42.3-fixed
+    a triage:Statement ;
+    vex:product <pkg:nix/perl@5.42.3> , <pkg:nix/perl@5.42.3-env> ;
+    vex:vulnerability nvd:CVE-2026-57432 , nvd:CVE-2026-13221 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        CVE-2026-57432's vulnerable range ends before 5.42.3-RC1; we run 5.42.3 final, which already contains the fix.
+        CVE-2026-13221 (regex trie offset overflow with >65535 alternation branches) is fixed upstream in 5.43.10 by commit 03f74bb and backported to 5.42.3: regcomp_study.c in the nixpkgs 5.42.3 source has the `tail - startbranch >= U16_MAX` guard (GH #23388).
+        The CPAN Security Group advisory gives the affected range as "through 5.43.9", so the flag on 5.42.3 is a false positive.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:unzip-6.0
+    a triage:Statement ;
+    vex:product <pkg:nix/unzip@6.0> ;
+    vex:vulnerability nvd:CVE-2021-4217 , nvd:CVE-2022-0529 , nvd:CVE-2022-0530 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        Already patched in nixpkgs: unzip.patches includes CVE-2021-4217.patch and 28-cve-2022-0529-and-cve-2022-0530.patch.
+        Upstream Info-ZIP never released a fixed version (last release ~2009), so the version string still reads 6.0 and vulnix's version-based matching can't see the applied patches.
+        """ .
+
+
+# ── Affected: real, unpatched and accepted as low risk until a fix lands ──────
+
+triage:avahi-0.8
+    a triage:Statement ;
+    vex:product <pkg:nix/avahi@0.8> ;
+    vex:vulnerability nvd:CVE-2025-59529 ;
+    vex:status "affected" ;
+    triage:until "2026-12-20"^^xsd:date ;
+    vex:statusNotes """
+        avahi-daemon runs (GNOME service discovery).
+        The simple-protocol server ignores its client limit, allowing a local user to exhaust connections: local DoS only, single-user machine.
+        Re-checked on 2026-11-22: the v0.8 source defines CLIENTS_MAX in avahi-daemon/simple-protocol.c but never checks it, so 0.8 is affected.
+        The nixpkgs package carries a note that this CVE 'is introduced by 4e2e1ea', but that commit only touches avahi-core/wide-area.c, so the note does not make 0.8 a false positive.
+        NVD lists no fixed release (affected through 0.9-rc5), and nixpkgs ships 0.8 with no patch for it.
+        Renewed for four weeks given the low impact.
+        """ ;
+    vex:actionStatement """
+        do not give untrusted users a local account or run untrusted code on this machine; if mDNS (.local) lookups stop working, restart avahi-daemon.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:binutils-2.46
+    a triage:Statement ;
+    vex:product <pkg:nix/binutils@2.46> ;
+    vex:vulnerability nvd:CVE-2026-6846 , nvd:CVE-2025-69649 , nvd:CVE-2025-69650 , nvd:CVE-2025-69651 , nvd:CVE-2025-69652 ;
+    vex:status "affected" ;
+    triage:until "2026-11-26"^^xsd:date ;
+    vex:statusNotes """
+        Pulled in via gcc, which LazyVim's nvim-treesitter uses to compile parsers from source fetched by lazy.nvim.
+        CVE-2026-6846 needs linking a crafted XCOFF (AIX) object file; nothing here links XCOFF.
+        It is confirmed unfixed in 2.46 (bfd/xcofflink.c still sizes reloc_info by section_count + 1) and fixed in 2.47.
+        CVE-2025-69649/69650/69651/69652 are readelf crashes (DoS only) on crafted ELF input; readelf is never run on untrusted binaries.
+        Debian's tracker lists fix commits for these tagged binutils-2_46, but each description says affected 'thru 2.46', so whether the nixpkgs 2.46 tarball already contains them is unverified.
+        Accepted risk; drop this entry once nixpkgs ships binutils 2.47, and re-check before it expires.
+        """ ;
+    vex:actionStatement """
+        Do not run readelf or objdump on untrusted binaries, and do not link object files from untrusted sources, until nixpkgs ships binutils 2.47.
+        """ .
+
+triage:cfitsio-4.7.0
+    a triage:Statement ;
+    vex:product <pkg:nix/cfitsio@4.7.0> ;
+    vex:vulnerability nvd:CVE-2026-111124 , nvd:CVE-2026-111125 ;
+    vex:status "affected" ;
+    triage:until "2026-12-20"^^xsd:date ;
+    vex:statusNotes """
+        Real and unpatched: heap out-of-bounds reads on a crafted FITS (astronomy image) file, one through a zero or negative ZDITHER0 seed in the imcompress.c unquantize helpers and one in the HCOMPRESS tile decoder (fits_hdecompress.c).
+        A crash or a small heap leak at worst (CVSS 6.1, local, needs a user to open the file).
+        NVD lists 4.7.0, the latest release, as affected.
+        Upstream master has HCOMPRESS bounds checking (commit b07f2e4c, 2026-11-02), which looks like the fix for CVE-2026-111125, but there is no release yet; nixpkgs ships 4.7.0 with a patch only for CVE-2026-115504. cfitsio joined the closure on 2026-11-22 with appstream 1.2.3, through vips: the only file in appstream that references vips is lib/ascompose/asc-mediaworker, the helper `appstreamcli compose` uses to process icons and screenshots when building catalogue metadata for a software repository. libappstream, which GNOME apps use to read metadata, does not link vips, and nothing here runs `appstreamcli compose`.
+        Accepted as low risk.
+        Re-check for a cfitsio release after 4.7.0 before this expires.
+        """ ;
+    vex:actionStatement """
+        do not run `appstreamcli compose` or the vips command-line tools on FITS files or software metadata from untrusted sources.
+        """ .
+
+triage:cjson-1.7.19
+    a triage:Statement ;
+    vex:product <pkg:nix/cjson@1.7.19> ;
+    vex:vulnerability nvd:CVE-2026-67215 , nvd:CVE-2026-67216 , nvd:CVE-2026-67217 ;
+    vex:status "affected" ;
+    triage:until "2026-12-20"^^xsd:date ;
+    vex:statusNotes """
+        All in cJSON_Utils (RFC 6902 JSON Patch / cJSON_Compare): stack exhaustion, exponential compare time, non-atomic patch.
+        Needs an application applying an untrusted JSON Patch: DoS at worst.
+        Re-checked on 2026-11-22: nixpkgs still ships 1.7.19 with no patches.
+        Renewed for four weeks given the low impact.
+        """ ;
+    vex:actionStatement """
+        do not feed JSON Patch documents or JSON for comparison from untrusted sources to tools built on cJSON.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:cups-2.4.19-unpatched
+    a triage:Statement ;
+    vex:product <pkg:nix/cups@2.4.19> ;
+    vex:vulnerability nvd:CVE-2026-55480 , nvd:CVE-2026-61702 , nvd:CVE-2026-107888 , nvd:CVE-2026-55453 , nvd:CVE-2026-107885 , nvd:CVE-2026-107890 , nvd:CVE-2026-55467 , nvd:CVE-2026-107886 ;
+    vex:status "affected" ;
+    triage:until "2026-11-27"^^xsd:date ;
+    vex:statusNotes """
+        These eight are real but are all in the cupsd scheduler or the IPP backend (CVE-2026-55480 symlink race, 61702 path traversal, 55453 and 55467 option injection, 107888, 107885, 107890 and 107886 denial of service); they are fixed in CUPS 2.4.20 (CVE-2026-107885 needs 2.4.21), but nixpkgs still ships 2.4.19. services.printing is disabled, so cupsd never runs; only the libcups client library stays in the closure, pulled in by GTK, Qt and similar.
+        None of these bugs are in libcups.
+        Accepted as low risk.
+        Re-check for a CUPS 2.4.21 bump in nixpkgs before this expires.
+        """ ;
+    vex:actionStatement """
+        do not re-enable services.printing until a fixed CUPS lands, and do not run cupsd or open IPP (port 631) in the meantime.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:dhcpcd-10.3.2
+    a triage:Statement ;
+    vex:product <pkg:nix/dhcpcd@10.3.2> ;
+    vex:vulnerability nvd:CVE-2026-56113 , nvd:CVE-2026-56114 , nvd:CVE-2026-56116 , nvd:CVE-2026-56117 ;
+    vex:status "affected" ;
+    triage:until "2026-12-20"^^xsd:date ;
+    vex:statusNotes """
+        Fixes land after 10.3.2. dhcpcd is in the closure only as a NetworkManager dependency; the dhcpcd service is inactive and NetworkManager uses its internal DHCP client, so neither the same-link DHCPv6/RA bugs nor the control-socket bug are reachable.
+        Re-checked on 2026-11-22: nixpkgs still ships 10.3.2 with no patches.
+        Renewed for four weeks because the code isn't reachable.
+        """ ;
+    vex:actionStatement """
+        do not enable networking.dhcpcd or switch NetworkManager's DHCP client to dhcpcd until a fixed release lands.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:ffmpeg-9.0.2-unpatched
+    a triage:Statement ;
+    vex:product <pkg:nix/ffmpeg@9.0.2> ;
+    vex:vulnerability nvd:CVE-2026-107675 , nvd:CVE-2026-107676 , nvd:CVE-2026-107677 , nvd:CVE-2026-107678 , nvd:CVE-2026-107696 , nvd:CVE-2026-125064 ;
+    vex:status "affected" ;
+    triage:until "2026-12-06"^^xsd:date ;
+    vex:statusNotes """
+        CVE-2026-107675/107676/107677/107678/107696 (SFTP host-key check, uninitialised metadata bytes, DASH and RTSP infinite loops, stack exhaustion on a crafted MP4) are described by NVD as affecting releases through 9.0.2, though its CPE range stops before 9.0.2, so whether 9.0.2 is really affected is unclear; there is no later release and nixos-unstable ships 9.0.2.
+        CVE-2026-107660, which the 9.0.1 entry covered, is fixed in 9.0.2.
+        CVE-2026-125064 (added 2026-11-22) is a NULL pointer dereference in the G.726 decoder (libavcodec/g726.c ignores an init_get_bits() failure) on a crafted AVI with an oversized G.726 audio chunk: a crash only.
+        NVD lists it as affecting releases through 9.0.2, the fix (commit ec887b1) is on master only, and nixpkgs carries no patch for it.
+        All real or presumed real, and accepted as low risk: each needs ffmpeg to process hostile media or connect to a hostile server, and ffmpeg is only in the closure as a library dependency of desktop apps; no scripts or services here feed it untrusted URLs.
+        Renewed on 2026-11-22 for two weeks, because nixos-unstable still ships 9.0.2 and the highest CVSS is 8.8.
+        Re-check for an ffmpeg bump in nixpkgs before this expires.
+        """ ;
+    vex:actionStatement """
+        until nixpkgs ships a fixed ffmpeg, do not play, transcode or thumbnail media from untrusted sources with ffmpeg or apps built on it (especially RTSP, DASH or sftp URLs, and MP4 or MKV files from unknown senders).
+        Stick to media you trust.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:libsndfile-1.2.2-unpatched
+    a triage:Statement ;
+    vex:product <pkg:nix/libsndfile@1.2.2> ;
+    vex:vulnerability nvd:CVE-2024-50613 , nvd:CVE-2025-52194 , nvd:CVE-2025-56226 ;
+    vex:status "affected" ;
+    triage:until "2026-12-06"^^xsd:date ;
+    vex:statusNotes """
+        No release since 1.2.2, and Nixpkgs has no patch for these three (re-checked on 2026-11-22).
+        All need a crafted audio file opened by an app using libsndfile;
+        CVE-2025-52194 (IRCAM header overflow, CVSS 7.5) is the most serious.
+        Accepted as low risk; renewed for two weeks given that CVSS.
+        Drop this statement when a fixed libsndfile lands.
+        """ ;
+    vex:actionStatement """
+        do not open untrusted IRCAM, WAV or AIFF files in apps that use libsndfile; stick to audio from sources you trust.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:rsync-3.5.0
+    a triage:Statement ;
+    vex:product <pkg:nix/rsync@3.5.0> ;
+    vex:vulnerability nvd:CVE-2026-119741 ;
+    vex:status "affected" ;
+    triage:until "2026-12-06"^^xsd:date ;
+    vex:statusNotes """
+        Real and unpatched: in the delta-transfer sender, hash_search() does unbounded strong-checksum work when a malicious receiver sends weak checksums that collide at consecutive offsets, exhausting CPU (denial of service only, CVSS 7.5).
+        NVD gives the fix as 3.5.2, though its CPE range stops at 3.5.1; nixpkgs ships 3.5.0 on nixos-unstable and master with no patches.
+        It is the sender that is affected, and the realistic target is a public rsync daemon module.
+        We run no rsync daemon and only use rsync as a client over ssh.
+        Accepted as low risk; renewed on 2026-11-22 for two weeks because nixpkgs is still on 3.5.0.
+        Re-check for an rsync bump in nixpkgs before this expires.
+        """ ;
+    vex:actionStatement """
+        until a fixed rsync lands, do not run rsyncd or serve a module to the network, and do not let untrusted hosts pull from this machine with rsync.
+        """ .
+
+triage:sqlite-3.54.0
+    a triage:Statement ;
+    vex:product <pkg:nix/sqlite@3.54.0> ;
+    vex:vulnerability nvd:CVE-2026-119586 ;
+    vex:status "affected" ;
+    triage:until "2026-11-27"^^xsd:date ;
+    vex:statusNotes """
+        Real and unpatched: the sqlite3 shell's .recover command prints attacker-planted dot-commands from a database's schema verbatim, so a crafted database can run shell commands when the output of .recover is piped back into sqlite3 (CVSS 7.8, local, needs a user to run it).
+        NVD says it affects SQLite through 3.54.1, the newest release, so no fixed version exists, and nixpkgs ships 3.54.0 on nixos-unstable and master.
+        The other ten CVEs accepted under sqlite-3.53.3 are fixed in 3.54.0.
+        Library use isn't affected, the sqlite3 shell isn't in the system profile (user profiles weren't checked), and we do not open untrusted databases.
+        Accepted as low risk.
+        Re-check for a release after 3.54.1 before this expires.
+        """ ;
+    vex:actionStatement """
+        never run .recover on a database you did not create, and never pipe its output into sqlite3 or a shell.
+        """ .
