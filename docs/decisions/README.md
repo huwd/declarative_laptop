@@ -80,4 +80,5 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0019](0019-add-advisory-grype-scan.md) | Add an advisory grype scan alongside vulnix, to cover packages vulnix cannot match | Accepted |
 | [0020](0020-shorten-dependabot-cooldown-to-two-days.md) | Shorten the Dependabot cooldown from seven days to two | Accepted |
 | [0021](0021-build-and-scan-only-the-framework-in-ci.md) | Build and scan only the Framework in CI, and check the Dell on demand | Accepted |
+| [0022](0022-sign-off-agent-commits-with-git-sign-off.md) | Sign off and sign an agent's commits with one `git sign-off` command | Proposed |
 | [0023](0023-check-for-dependabot-updates-daily.md) | Check for Dependabot updates daily, not weekly | Accepted |

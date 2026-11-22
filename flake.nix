@@ -94,6 +94,9 @@
 
         # nix build .#secrets-tools  — with-secrets, secrets-edit and sops-age-derive
         secrets-tools = import ./packages/secrets-tools.nix { inherit pkgs; };
+
+        # nix build .#git-sign-off  — sign off and sign an agent's commits, then push
+        git-sign-off = import ./packages/git-sign-off.nix { inherit pkgs; };
       };
     };
 }
