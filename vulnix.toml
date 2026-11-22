@@ -232,12 +232,6 @@ comment = "Integer overflow only on 32-bit platforms (32-bit size_t). Both hosts
 # No fixed release in nixpkgs yet. Each needs crafted local input or a
 # same-link attacker against a service that isn't running.
 
-["thrift-0.22.0"]
-cve = [ "CVE-2021-24028", "CVE-2025-48431", "CVE-2026-41602", "CVE-2026-41604", "CVE-2026-41605", "CVE-2026-41606", "CVE-2026-41607", "CVE-2026-41608", "CVE-2026-41636", "CVE-2026-43868", "CVE-2026-43869", "CVE-2026-43870", "CVE-2026-43871", "CVE-2026-45112", "CVE-2026-48144", "CVE-2026-48145", "CVE-2026-48586", "CVE-2026-49158", "CVE-2026-55968", "CVE-2026-55969", "CVE-2026-55970", "CVE-2026-55971", "CVE-2026-58023", "CVE-2026-58389", "CVE-2026-58662", "CVE-2026-66053" ]
-until = "2026-10-23"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/39"
-comment = "CVE-2021-24028 is Facebook Thrift (Meta's fbthrift, date-versioned YYYY.MM.DD.NN) — an unrelated codebase from Apache Thrift 0.x, permanently N/A. The remaining 25 are real Apache Thrift bugs, unpatched until 0.23.0/0.24.0 (nixpkgs ships 0.22.0), each scoped to a specific language binding or network transport: TSSLSocket/TSSLTransportFactory cert validation, THeaderTransport decompression/header parsing, TCompactProtocol varint handling (Python/Go/PHP/Java), Go TFramedTransport, the C++ JSON parser, c_glib dispatch, Node.js web_server.js, Java/Rust resource allocation. Thrift here is pulled in transitively via arrow-cpp (pyarrow -> chromadb, Open WebUI's RAG vector store), which only uses TCompactProtocol over an in-memory buffer to encode/decode local Parquet footer metadata — no SSL socket, HTTP transport, JSON parser, non-C++ binding, or Thrift RPC server (Arrow Flight uses gRPC) is ever instantiated. Re-check when nixpkgs bumps past 0.22.0."
-
 ["avahi-0.8"]
 cve = "CVE-2025-59529"
 until = "2026-12-20"
@@ -246,12 +240,6 @@ comment = [
   "avahi-daemon runs (GNOME service discovery). The simple-protocol server ignores its client limit, allowing a local user to exhaust connections: local DoS only, single-user machine. Re-checked on 2026-11-22: the v0.8 source defines CLIENTS_MAX in avahi-daemon/simple-protocol.c but never checks it, so 0.8 is affected. The nixpkgs package carries a note that this CVE 'is introduced by 4e2e1ea', but that commit only touches avahi-core/wide-area.c, so the note does not make 0.8 a false positive. NVD lists no fixed release (affected through 0.9-rc5), and nixpkgs ships 0.8 with no patch for it. Renewed for four weeks given the low impact.",
   "Mitigation: do not give untrusted users a local account or run untrusted code on this machine; if mDNS (.local) lookups stop working, restart avahi-daemon.",
 ]
-
-["busybox-1.37.0"]
-cve = "CVE-2025-46394"
-until = "2026-11-22"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "tar can hide filenames from a listing via terminal escapes: cosmetic, and busybox is only used in the initrd."
 
 ["cjson-1.7.19"]
 cve = [ "CVE-2026-67215", "CVE-2026-67216", "CVE-2026-67217" ]
@@ -271,18 +259,6 @@ comment = [
   "Mitigation: do not enable networking.dhcpcd or switch NetworkManager's DHCP client to dhcpcd until a fixed release lands.",
 ]
 
-["gstreamer-1.28.6"]
-cve = "CVE-2026-73433"
-until = "2026-11-22"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "Length underflow in gst-plugins-good avidemux on crafted FUJIFILM strd metadata in an AVI. Needs a malicious AVI opened in a GStreamer app (Totem is excluded). Watch for 1.28.7."
-
-["jbig2dec-0.20"]
-cve = "CVE-2023-46361"
-until = "2026-11-22"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "SEGV in jbig2_error on a crafted JBIG2 stream (e.g. inside a PDF): crash only."
-
 ["libsndfile-1.2.2"]
 cve = [ "CVE-2024-50612", "CVE-2024-50613", "CVE-2025-52194", "CVE-2025-56226", "CVE-2026-37555" ]
 until = "2026-12-06"
@@ -291,44 +267,3 @@ comment = [
   "No release since 1.2.2. Re-checked on 2026-11-22: nixpkgs (from commit 91d5f8b, in our lock) now patches two of the five. CVE-2024-50612 (vorbis_analysis_wrote out-of-bounds read, upstream PR 1045) and CVE-2026-37555 (IMA ADPCM integer overflow on the WAV and close paths, upstream PR 1123) carry named CVE patches in libsndfile.patches, so those two are N/A here. vulnix can't see that because the version string is unchanged. CVE-2024-50613, CVE-2025-52194 and CVE-2025-56226 are still unpatched. All need a crafted audio file opened by an app using libsndfile; CVE-2025-52194 (IRCAM header overflow, CVSS 7.5) is the most serious. Accepted as low risk; renewed for two weeks given that CVSS. Drop the unpatched three when a fixed libsndfile lands.",
   "Mitigation: do not open untrusted IRCAM, WAV or AIFF files in apps that use libsndfile; stick to audio from sources you trust.",
 ]
-
-["mupdf-1.27.2"]
-cve = "CVE-2026-7233"
-until = "2026-11-22"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "Out-of-bounds read in CFF font subsetting, local only, CVSS 3.3. Needs a crafted document."
-
-["patch-2.8"]
-cve = [ "CVE-2026-56288", "CVE-2026-56289" ]
-until = "2026-11-22"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/17"
-comment = "NULL deref / infinite loop on a crafted unified diff: DoS only. patch is used by Nix builds on patches from nixpkgs itself."
-
-["openssl-3.5.8"]
-cve = [ "CVE-2026-84782", "CVE-2026-54873", "CVE-2026-72897", "CVE-2026-84784", "CVE-2026-35189", "CVE-2026-42772", "CVE-2026-75804", "CVE-2026-75805", "CVE-2026-75806", "CVE-2026-35191", "CVE-2026-54872", "CVE-2026-54875", "CVE-2026-77696" ]
-until = "2026-11-02"
-issue_url = "https://github.com/huwd/declarative_laptop/pull/69"
-comment = "All thirteen fixed in OpenSSL 3.5.9; nixpkgs (including unstable) still ships 3.5.8. Each needs OpenSSL acting as a server or a specific protocol this laptop doesn't serve: CVE-2026-84782 (DTLS retransmission over-read), CVE-2026-75806 (DTLS 1.2 teardown), CVE-2026-54873/84784/42772/75804/35191 (QUIC stack: memory retention, connection-ID flood, reassembly, flow control, amplification) and CVE-2026-72897 (servers calling SSL_set_SSL_CTX) have no DTLS/QUIC/TLS server running here. CVE-2026-75805 is a CMP client NULL deref (CMP is not used). CVE-2026-35189 is heap growth from a certificate with many CRL distribution points: DoS only. CVE-2026-54872/54875/77696 are timing side-channels in SM2 and generic-curve ECDSA signing (54875 is ARM64/RISC-V only; both hosts are x86_64) and need an attacker timing many local signatures. Short expiry given the 8.2 CVSS; re-check for an openssl 3.5.9 bump."
-
-["openssh-10.5p1"]
-cve = [ "CVE-2026-106587", "CVE-2026-106552", "CVE-2026-106553", "CVE-2026-106555", "CVE-2026-106582", "CVE-2026-106583", "CVE-2026-106584", "CVE-2026-106585", "CVE-2026-106586" ]
-until = "2026-11-02"
-issue_url = "https://github.com/huwd/declarative_laptop/pull/69"
-comment = [
-  "All fixed in OpenSSH 10.6, not yet in nixpkgs. sshd is disabled (services.openssh.enable = false in modules/security.nix), so the sshd-only bugs are N/A: CVE-2026-106587 (\"none\" config value read as a filename), CVE-2026-106586 (restrict keyword and tunnel forwarding) and CVE-2026-106553/106555 (GSSAPI state persisting across attempts). The package stays in the closure for the ssh client, ssh-keygen and git, so the client-side bugs are real but low risk: CVE-2026-106585 (no packet-size check on decompression) and CVE-2026-106552 (sftp path traversal during recursive copy) need a hostile server, and we only connect to GitHub and hosts we control; CVE-2026-106583 (username injection) needs a crafted username on our own command line; CVE-2026-106582 (compression weakness) and CVE-2026-106584 (ssh-keygen certificate expiry across DST) have negligible impact here. Re-check for an openssh 10.6 bump.",
-  "Mitigation: until openssh 10.6 lands, only use ssh, scp and sftp against GitHub and hosts you control; avoid recursive scp or sftp downloads from servers you do not trust; never pass an untrusted username on the command line; keep sshd disabled.",
-]
-
-["libsoup-3.6.6"]
-cve = [ "CVE-2026-102555", "CVE-2026-102556", "CVE-2026-102557", "CVE-2026-102558", "CVE-2026-102559", "CVE-2026-102560" ]
-until = "2026-11-13"
-comment = [
-  "Real and unpatched: fixed in libsoup 3.7.3 and later (3.8.0 is the current stable release), but nixpkgs still ships 3.6.6, the last 3.6 release, which predates the 29 Sep disclosure. CVE-2026-102556/102557/102558 are heap corruption or crashes in SoupWebsocketConnection (wrong Pong signal type, no cap on reassembled message size, frame-length overflow when max-incoming-payload-size is unlimited); CVE-2026-102555 is an out-of-bounds read decoding a crafted base64 data: URI with embedded NULs. CVE-2026-102559 and CVE-2026-102560 are heap overflows on the sending side (size truncation when masking or permessage-deflate compressing a very large outgoing WebSocket message), so they need an app of ours to send a huge message. libsoup is only a dependency of GNOME components (webkitgtk, gvfs, geoclue, gnome-online-accounts, evolution-data-server, sushi); exploitation needs a hostile WebSocket peer or a crafted data: URI to reach one of them, and our main browser is separate. Accepted as low risk. Re-check for a libsoup 3.8 bump in nixpkgs before this expires.",
-  "Mitigation: until a fixed libsoup lands, do not open untrusted links or web content inside GNOME embedded web views (Online Accounts sign-in, Evolution, sushi previews of untrusted files), do untrusted browsing in the main browser instead, and do not mount untrusted network shares in Files.",
-]
-
-["unbound-1.26.0"]
-cve = [ "CVE-2026-81642", "CVE-2026-82717", "CVE-2026-81634", "CVE-2026-82720", "CVE-2026-80225", "CVE-2026-85501" ]
-until = "2026-10-07"
-issue_url = "https://github.com/huwd/declarative_laptop/issues/45"
-comment = "Same disclosure batch as CVE-2026-81642 (all fixed in unbound 1.26.1, not yet in nixpkgs). Only present as unbound-lib, pulled in transitively via networkmanager -> gnutls for optional DANE (DNS-based TLS cert auth) support — no unbound daemon runs. CVE-2026-81634 and CVE-2026-85501 require DNSSEC validation, same DANE-path exposure as CVE-2026-81642. CVE-2026-82717 (CNAME synthesis), CVE-2026-80225 (TCP/DoT connection abuse), and CVE-2026-82720 (DoH stream cleanup) require full iterative-resolver or DoH-server operation, which the DANE-only library usage never performs. Short expiry given severity; re-check nixpkgs for a 1.26.1 bump."
