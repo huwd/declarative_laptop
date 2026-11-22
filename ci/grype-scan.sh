@@ -5,10 +5,14 @@
 # Usage: ci/grype-scan.sh <closure> <output-dir> <host>
 #
 # Run it from the repository root, so it can build the triage (ADR 0024),
-# with sbomnix, grype, jq, curl and nix on PATH:
+# with sbomnix, grype, jq, python3, curl and nix on PATH:
 #
-#   nix shell --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq \
+#   nix shell --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq nixpkgs#python3 \
 #     -c ci/grype-scan.sh ./result grype-report framework-13
+#
+# The fix-commit check (ADR 0027) calls GitHub's API with GH_TOKEN or
+# GITHUB_TOKEN, or `gh auth token`, and keeps its answers in
+# FIX_COMMITS_CACHE (default ~/.cache/declarative-laptop/fix-commits.json).
 #
 # CI (.github/workflows/build.yml) and `just scan-grype` both call this
 # script, so a local scan gives the same result as CI.
@@ -20,6 +24,9 @@
 #   triage.openvex.json    the permanent triage statements, compiled from
 #                          triage/vulnerabilities.ttl
 #   accepted.json          the accepted risks from the same graph
+#   grype.pass1.json       grype's first pass, which the evidence checks read
+#   commits.json, commits.openvex.json   fix commits checked against each
+#                          release tag, and the findings they prove fixed
 #   grype.json             full report, including the matches VEX removed
 #   grype.txt              the same findings as a table
 #   kev.json, kev-hits.json, kev.md   CISA KEV cross-check, from ci/kev-check.sh
@@ -81,13 +88,33 @@ jq '{
   ] | unique_by(.vulnerability.name + .products[0]["@id"])
 }' "$out/sbom.cdx.json" > "$out/patches.openvex.json"
 
-# 3. Match. Both VEX documents remove findings: the Nixpkgs patches, and
-# the permanent triage. grype keeps them under ignoredMatches in the JSON
-# report, so nothing disappears silently.
+# 3. Match, in two passes (ADR 0027). The VEX documents remove findings:
+# the Nixpkgs patches, the permanent triage and, on the second pass, the
+# findings the evidence checks prove. grype keeps them under ignoredMatches
+# in the JSON report, so nothing disappears silently.
 # --quiet keeps grype's warnings about the SBOM's CPEs out of the log.
 grype "sbom:$out/sbom.cdx.json" \
   --vex "$out/patches.openvex.json" \
   --vex "$out/triage.openvex.json" \
+  --quiet \
+  -o "json=$out/grype.pass1.json"
+
+# Fix commits: for findings with no fixed version, check whether the commit
+# the CVE record links is in the release tag we build from. Advisory too:
+# if GitHub can't be reached, the scan carries on without the proofs.
+empty_vex='{"@context":"https://openvex.dev/ns/v0.2.0","@id":"urn:declarative-laptop:none","author":"ci/grype-scan.sh","timestamp":"1970-01-01T00:00:00Z","version":1,"statements":[]}'
+commits_note=""
+if ! python3 -I ci/evidence/commits.py "$out/grype.pass1.json" ci/evidence/repos.json "$out" \
+  "${FIX_COMMITS_CACHE:-$HOME/.cache/declarative-laptop/fix-commits.json}"; then
+  echo '[]' > "$out/commits.json"
+  echo "$empty_vex" > "$out/commits.openvex.json"
+  commits_note="The fix-commit check was skipped: GitHub's API couldn't be reached."
+fi
+
+grype "sbom:$out/sbom.cdx.json" \
+  --vex "$out/patches.openvex.json" \
+  --vex "$out/triage.openvex.json" \
+  --vex "$out/commits.openvex.json" \
   --quiet \
   -o "json=$out/grype.json" \
   -o "table=$out/grype.txt"
@@ -114,7 +141,7 @@ upstream() {
   sbomnix "$drv" --buildtime --cdx "$out/upstream.sbomnix.cdx.json" --spdx /dev/null --csv /dev/null > /dev/null 2>&1 || return 1
   jq -f ci/sbom-identity.jq "$out/upstream.sbomnix.cdx.json" > "$out/upstream.cdx.json" || return 1
   nix eval --impure --json --expr \
-    "import $PWD/ci/fix-status.nix { grype = $(realpath "$out/grype.json"); head = $(realpath "$out/upstream.cdx.json"); accepted = $(realpath "$out/accepted.json"); }" \
+    "import $PWD/ci/fix-status.nix { grype = $(realpath "$out/grype.json"); head = $(realpath "$out/upstream.cdx.json"); accepted = $(realpath "$out/accepted.json"); commits = $(realpath "$out/commits.json"); }" \
     > "$out/fix-status.json" || return 1
 
   # One row for each package, CVE and version, as grype can match a CVE twice.
@@ -136,6 +163,7 @@ upstream() {
     "| Accepted | \(n("accepted")) | accepted in the triage until a date: see the accepted risks above |",
     "| Actionable | \(n("actionable")) | Nixpkgs has the fix: run `just update` |",
     "| Pending Nixpkgs | \(n("pending")) | fixed upstream, not yet in Nixpkgs: wait, or look for a Nixpkgs pull request |",
+    "| Fixed after this version | \(n("fixed-after")) | the fix commit exists upstream, but is not in this release: wait for a release, or ask Nixpkgs to backport the patch |",
     "| No fix upstream | \(n("no-fix")) | triage it: accept it with a mitigation, or remove the package |",
     "| Unknown | \(n("unknown")) | grype has no fix information: triage it by hand |",
     (if n("actionable") > 0 then
@@ -160,6 +188,7 @@ matches=$(jq '.matches | length' "$out/grype.json")
 ignored=$(jq '[.ignoredMatches[]?] | length' "$out/grype.json")
 patched=$(jq '.statements | length' "$out/patches.openvex.json")
 permanent=$(jq '.statements | length' "$out/triage.openvex.json")
+proved_commits=$(jq '.statements | length' "$out/commits.openvex.json")
 severities=$(jq -r '
   [.matches[].vulnerability.severity]
   | group_by(.) | map("\(length) \(.[0] | ascii_downcase)") | join(", ")
@@ -215,7 +244,8 @@ fi
   cat "$out/kev.md"
   echo
   echo "**$matches findings** (${severities:-none})."
-  echo "VEX removed $ignored more: Nixpkgs patches $patched CVEs, and [the triage](https://github.com/huwd/declarative_laptop/blob/main/docs/vulnerability-triage.md) holds $permanent permanent statements."
+  echo "VEX removed $ignored more: Nixpkgs patches $patched CVEs, [the triage](https://github.com/huwd/declarative_laptop/blob/main/docs/vulnerability-triage.md) holds $permanent permanent statements, and [fix commits]($docs#fix-commits) prove $proved_commits findings fixed."
+  if [ -n "$commits_note" ]; then echo "$commits_note"; fi
   if [ -n "$accepted_rows" ]; then
     echo
     echo "**$accepted_count of these findings are accepted risks** in the triage: real, unpatched and accepted until the date shown. Each statement gives the mitigation."

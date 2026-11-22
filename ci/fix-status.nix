@@ -6,12 +6,15 @@
 # `grype` is grype's JSON report for the pinned closure. `head` is a
 # CycloneDX SBOM, from sbomnix, of the same host evaluated against the
 # nixos-unstable head. `accepted` is the accepted risks compiled from the
-# triage graph. Each finding gets one bucket, in this order:
+# triage graph, and `commits` the fix commits from ci/evidence/commits.py.
+# Each finding gets one bucket, in this order:
 #
 #   accepted    the triage accepts it as a risk, with an expiry
 #   actionable  the head patches this CVE, or has a version at or above
 #               grype's fixed version: `just update` picks the fix up
 #   pending     grype knows a fixed version, but the head doesn't have it
+#   fixed-after grype has no fix information, but the fix commit the CVE
+#               record links isn't in the release tag we build from
 #   no-fix      grype says upstream has no fix
 #   unknown     grype has no fix information
 #
@@ -26,6 +29,7 @@
   grype,
   head,
   accepted ? null,
+  commits ? null,
 }:
 let
   inherit (builtins)
@@ -43,6 +47,8 @@ let
   sbom = fromJSON (readFile head);
 
   inherit (import ./fix-status/accepted.nix accepted) isAccepted;
+
+  inherit (import ./fix-status/commits.nix commits) isFixedAfter;
 
   components = groupBy (c: c.name) (sbom.components or [ ]);
   ofName = name: components.${name} or [ ];
@@ -79,6 +85,8 @@ let
             "actionable"
           else
             "pending"
+        else if state == "" && isFixedAfter (match.artifact.purl or "") cve then
+          "fixed-after"
         else if
           elem state [
             "not-fixed"
