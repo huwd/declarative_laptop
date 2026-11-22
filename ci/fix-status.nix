@@ -1,12 +1,14 @@
-# Classify each grype finding by where a fix exists (ADR 0026).
+# Classify each grype finding by where a fix exists (ADR 0026, 0027).
 #
 #   nix eval --impure --json --expr \
-#     "import ./ci/fix-status.nix { grype = $PWD/grype-report/grype.json; head = $PWD/grype-report/upstream.cdx.json; }"
+#     "import ./ci/fix-status.nix { grype = $PWD/grype-report/grype.json; head = $PWD/grype-report/upstream.cdx.json; accepted = $PWD/grype-report/accepted.json; }"
 #
 # `grype` is grype's JSON report for the pinned closure. `head` is a
 # CycloneDX SBOM, from sbomnix, of the same host evaluated against the
-# nixos-unstable head. Each finding gets one bucket:
+# nixos-unstable head. `accepted` is the accepted risks compiled from the
+# triage graph. Each finding gets one bucket, in this order:
 #
+#   accepted    the triage accepts it as a risk, with an expiry
 #   actionable  the head patches this CVE, or has a version at or above
 #               grype's fixed version: `just update` picks the fix up
 #   pending     grype knows a fixed version, but the head doesn't have it
@@ -17,7 +19,11 @@
 # minor versions. Each finding is compared with the closest version at or
 # above the pinned one, so a fix in an unrelated major version doesn't count.
 # Versions are compared with builtins.compareVersions, as Nixpkgs does.
-{ grype, head }:
+{
+  grype,
+  head,
+  accepted ? null,
+}:
 let
   inherit (builtins)
     any
@@ -28,10 +34,19 @@ let
     groupBy
     readFile
     sort
+    substring
+    stringLength
     ;
 
   report = fromJSON (readFile grype);
   sbom = fromJSON (readFile head);
+
+  risks = if accepted == null then [ ] else fromJSON (readFile accepted);
+
+  # A purl without a version covers every version of the package.
+  coversPurl =
+    product: purl: product == purl || substring 0 (stringLength product + 1) purl == "${product}@";
+  isAccepted = purl: cve: any (r: elem cve r.cves && any (p: coversPurl p purl) r.products) risks;
 
   components = groupBy (c: c.name) (sbom.components or [ ]);
   ofName = name: components.${name} or [ ];
@@ -59,7 +74,9 @@ let
         filter (v: compareVersions v version >= 0) (map (c: c.version or "") (ofName name))
       );
       bucket =
-        if patchedAtHead name cve then
+        if isAccepted (match.artifact.purl or "") cve then
+          "accepted"
+        else if patchedAtHead name cve then
           "actionable"
         else if state == "fixed" then
           if fixedIn != null && atHead != null && compareVersions atHead fixedIn >= 0 then

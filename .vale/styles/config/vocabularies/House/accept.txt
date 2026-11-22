@@ -10,7 +10,7 @@ Ansible
 (?i)auth
 (?i)backdoored
 (?i)backend
-(?i)backports?
+(?i)backport(s|ed)?
 (?i)beamforming
 Betterleaks
 Bitwarden
@@ -24,6 +24,7 @@ Broadwell
 CISA
 (?i)config
 (?i)configs
+CPEs?
 CVEs
 dconf
 (?i)declaratively
@@ -40,6 +41,7 @@ Docusaurus
 (?i)eval
 (?i)eza
 (?i)fd
+(?i)ffmpeg('s)?
 (?i)filesystems?
 Flatpak
 (?i)framework
@@ -60,6 +62,7 @@ IRIs?
 KEV
 (?i)keyrings?
 (?i)lanzaboote
+libtpms
 (?i)ls
 (?i)misconfigured
 (?i)mitigations
