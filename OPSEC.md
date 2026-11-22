@@ -48,7 +48,7 @@ The config implements:
 - **vulnix** scanning the Framework's Nix store closure against NVD on every PR
 - **The Dell is scanned only on demand**, before it is booted ([0021](docs/decisions/0021-build-and-scan-only-the-framework-in-ci.md)); between those checks its vulnerabilities go unreported
 - **grype**, an advisory scan on every PR that covers packages vulnix cannot match, such as the kernel and Chrome ([0019](docs/decisions/0019-add-advisory-grype-scan.md))
-- **Weekly Dependabot checks** proposing input updates, with CI scanning the resulting closures
+- **Daily Dependabot checks** proposing input updates, with CI scanning the resulting closures ([0023](docs/decisions/0023-check-for-dependabot-updates-daily.md))
 - **Historic CVE analysis** via committed `flake.lock` history
 - **fwupd** for firmware currency
 
@@ -57,7 +57,7 @@ The config implements:
 | Threat | Covered? | How |
 |--------|----------|-----|
 | Known CVE in Nix package | Mostly | vulnix + NVD gate; the kernel and Chrome only in the advisory grype scan |
-| Stale packages | Yes | weekly Dependabot update PRs |
+| Stale packages | Yes | daily Dependabot update PRs |
 | Retroactive exposure analysis | Yes | flake.lock git history |
 | Firmware vulnerabilities | Partially | fwupd / LVFS |
 
@@ -72,7 +72,7 @@ No practical mitigation exists beyond minimising installed software surface, whi
 Rebuilding from the same compromised inputs does not establish that the package is safe.
 This repository has no independent verification against known-good build outputs.
 
-**The time window.** Weekly checks and the Dependabot cooldown can delay an update after disclosure of a CVE.
+**The time window.** The daily check and the two-day Dependabot cooldown can delay an update by about three days after a fix reaches `nixos-unstable`, and Nixpkgs itself can lag the disclosure of a CVE.
 They provide no guaranteed time to a fix.
 For urgent fixes, run `just update` locally and open a pull request without waiting for the scheduled check, as [0007](docs/decisions/0007-dependabot-for-flake-inputs.md) describes.
 
