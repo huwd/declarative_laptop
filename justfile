@@ -64,8 +64,12 @@ fix:
 build:
     nix build .#nixosConfigurations.{{HOST}}.config.system.build.toplevel
 
+# Validate the vulnerability triage and compile it (ADR 0024); prints the output directory
+triage:
+    nix build .#vuln-triage --no-link --print-out-paths
+
 scan: build
-    nix run --inputs-from . nixpkgs#vulnix -- --mirror {{NVD_MIRROR}} --closure ./result --whitelist vulnix.toml
+    nix run --inputs-from . nixpkgs#vulnix -- --mirror {{NVD_MIRROR}} --closure ./result --whitelist "$(nix build .#vuln-triage --no-link --print-out-paths)/vulnix.toml"
 
 # Advisory grype scan, the same as CI's (ADR 0019); reports go to ./grype-report
 scan-grype: build

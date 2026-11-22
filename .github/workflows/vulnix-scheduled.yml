@@ -43,15 +43,21 @@ jobs:
             --no-link --print-out-paths)
           echo "closure=$CLOSURE" >> "$GITHUB_OUTPUT"
 
+      # Fails the job if a triage statement breaks the SHACL rules (ADR 0024).
+      - name: Compile vulnerability triage
+        id: triage
+        run: echo "dir=$(nix build .#vuln-triage --no-link --print-out-paths)" >> "$GITHUB_OUTPUT"
+
       - name: Run vulnix against closure
         id: vulnix
         env:
           CLOSURE: ${{ steps.build.outputs.closure }}
+          WHITELIST: ${{ steps.triage.outputs.dir }}/vulnix.toml
         run: |
           set +e
           nix build --inputs-from . nixpkgs#vulnix --no-link
           # Same mirror as build.yml and the justfile.
-          nix run --inputs-from . nixpkgs#vulnix -- --mirror https://vig-os.github.io/nvd-mirror/ --closure "$CLOSURE" --whitelist vulnix.toml > vulnix-report.txt 2>&1
+          nix run --inputs-from . nixpkgs#vulnix -- --mirror https://vig-os.github.io/nvd-mirror/ --closure "$CLOSURE" --whitelist "$WHITELIST" > vulnix-report.txt 2>&1
           echo "exit-code=$?" >> "$GITHUB_OUTPUT"
 
       - name: Open, update or close the findings issue
@@ -96,7 +102,7 @@ jobs:
               '',
               `[Scan run](${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId})`,
               '',
-              'Assess each finding and add a justified entry to `vulnix.toml`, or update the package. This issue closes itself when a scan comes back clean.',
+              'Assess each finding and add a justified statement to `triage/vulnerabilities.ttl`, or update the package. This issue closes itself when a scan comes back clean.',
             ].join('\n');
 
             if (existing) {

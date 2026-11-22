@@ -6,13 +6,13 @@
 #
 # ci/grype-scan.sh calls this after grype. Run it from the repository root:
 # it reads <output-dir>/grype.json and <output-dir>/patches.openvex.json
-# from that script, plus vulnix.toml and openvex.json.
+# from that script, plus the compiled vulnix whitelist and openvex.json.
 #
 # A CVE in KEV is being exploited in the wild. The check flags:
 #   - open grype findings in KEV
-#   - triage entries (vulnix.toml, openvex.json) for a CVE in KEV whose
+#   - triage entries (the vulnix whitelist, openvex.json) for a CVE in KEV whose
 #     justification does not mention KEV, so the decision predates it
-#   - accepted risks (vulnix.toml entries with `until`) in KEV that have
+#   - accepted risks (whitelist entries with `until`) in KEV that have
 #     not been reviewed against it, or whose `until` runs past KEV's due date
 # Triage that mentions KEV, and CVEs that Nixpkgs patches, are listed as
 # already reviewed.
@@ -38,9 +38,11 @@ if ! curl -sSfL --retry 3 -o "$out/kev.json" "$url"; then
   exit 0
 fi
 
-# vulnix.toml is TOML, which jq cannot read; Nix can.
+# The vulnix whitelist is compiled from triage/vulnerabilities.ttl (ADR 0024).
+# It is TOML, which jq cannot read; Nix can.
+whitelist="$(nix build .#vuln-triage --no-link --print-out-paths)/vulnix.toml"
 nix eval --impure --json \
-  --expr 'builtins.fromTOML (builtins.readFile ./vulnix.toml)' \
+  --expr "builtins.fromTOML (builtins.readFile $whitelist)" \
   > "$out/vulnix-whitelist.json"
 
 jq -n \
@@ -82,8 +84,8 @@ jq -n \
             elif $e.until != null and ($ack | not)
               then "accepted risk, not reviewed against KEV"
             elif ($ack | not)
-              then "whitelisted in vulnix.toml, comment does not mention KEV"
-            else "whitelisted in vulnix.toml, reviewed against KEV" end) })
+              then "triaged in vulnerabilities.ttl, assessment does not mention KEV"
+            else "triaged in vulnerabilities.ttl, reviewed against KEV" end) })
   ]
   | map(select($k[.cve]) + { added: $k[.cve].dateAdded, due: $k[.cve].dueDate })
   | unique_by([.package, .cve, .reason])
