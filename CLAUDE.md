@@ -18,8 +18,10 @@ Agents help most by teaching, not by doing the work for the maintainer.
 
 - Work on a branch, open a pull request, and merge it with a merge commit.
   Squash merges are not used, and neither is "rebase and merge", which breaks commit signatures.
-- Commits and pushes are signed through Bitwarden, which asks the maintainer to approve each one.
-  Warn the maintainer before committing or pushing.
+- Commit unsigned and without a sign-off, with the attribution trailers from [0016](docs/decisions/0016-ai-attribution-trailers.md): `git -c commit.gpgsign=false commit`, and no `-s`.
+  Push the branch and open a draft pull request.
+  The maintainer runs `git sign-off` to sign, sign off and mark it ready ([0022](docs/decisions/0022-sign-off-agent-commits-with-git-sign-off.md)), so don't sign off, force-push over their signed commits or merge pull requests unless they ask.
+- Pushes authenticate through Bitwarden, which asks the maintainer to approve them, so warn the maintainer before pushing.
 - `main` requires a pull request and passing checks, and blocks force-pushes.
 - Don't base a new branch on `main` while another branch that hasn't merged yet is applied to the running system, because applying from `main` would undo that branch.
   Stack the branches, or wait for the merge.
