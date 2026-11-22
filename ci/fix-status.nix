@@ -6,7 +6,9 @@
 # `grype` is grype's JSON report for the pinned closure. `head` is a
 # CycloneDX SBOM, from sbomnix, of the same host evaluated against the
 # nixos-unstable head. `accepted` is the accepted risks compiled from the
-# triage graph, and `commits` the fix commits from ci/evidence/commits.py.
+# triage graph, `commits` the fix commits from ci/evidence/commits.py, and
+# `debian` Debian's verdicts from ci/evidence/debian.py, which each finding
+# carries as evidence without changing its bucket.
 # Each finding gets one bucket, in this order:
 #
 #   accepted    the triage accepts it as a risk, with an expiry
@@ -30,6 +32,7 @@
   head,
   accepted ? null,
   commits ? null,
+  debian ? null,
 }:
 let
   inherit (builtins)
@@ -49,6 +52,8 @@ let
   inherit (import ./fix-status/accepted.nix accepted) isAccepted;
 
   inherit (import ./fix-status/commits.nix commits) isFixedAfter;
+
+  debianVerdict = (import ./fix-status/debian.nix debian).verdict;
 
   components = groupBy (c: c.name) (sbom.components or [ ]);
   ofName = name: components.${name} or [ ];
@@ -99,6 +104,7 @@ let
     in
     {
       package = name;
+      debian = debianVerdict (match.artifact.purl or "") cve;
       inherit
         version
         cve
