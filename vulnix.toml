@@ -250,6 +250,14 @@ comment = [
   "Mitigation: do not feed JSON Patch documents or JSON for comparison from untrusted sources to tools built on cJSON.",
 ]
 
+["cfitsio-4.7.0"]
+cve = [ "CVE-2026-111124", "CVE-2026-111125" ]
+until = "2026-12-20"
+comment = [
+  "Real and unpatched: heap out-of-bounds reads on a crafted FITS (astronomy image) file, one through a zero or negative ZDITHER0 seed in the imcompress.c unquantize helpers and one in the HCOMPRESS tile decoder (fits_hdecompress.c). A crash or a small heap leak at worst (CVSS 6.1, local, needs a user to open the file). NVD lists 4.7.0, the latest release, as affected. Upstream master has HCOMPRESS bounds checking (commit b07f2e4c, 2026-11-02), which looks like the fix for CVE-2026-111125, but there is no release yet; nixpkgs ships 4.7.0 with a patch only for CVE-2026-115504. cfitsio joined the closure on 2026-11-22 with appstream 1.2.3, through vips: the only file in appstream that references vips is lib/ascompose/asc-mediaworker, the helper `appstreamcli compose` uses to process icons and screenshots when building catalogue metadata for a software repository. libappstream, which GNOME apps use to read metadata, does not link vips, and nothing here runs `appstreamcli compose`. Accepted as low risk. Re-check for a cfitsio release after 4.7.0 before this expires.",
+  "Mitigation: do not run `appstreamcli compose` or the vips command-line tools on FITS files or software metadata from untrusted sources.",
+]
+
 ["dhcpcd-10.3.2"]
 cve = [ "CVE-2026-56113", "CVE-2026-56114", "CVE-2026-56116", "CVE-2026-56117" ]
 until = "2026-12-20"
