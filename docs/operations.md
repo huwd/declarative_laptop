@@ -224,7 +224,7 @@ nix run nixpkgs#vulnix -- \
   --closure "$(cat /tmp/old-closure)"
 ```
 
-Leave out `--whitelist` to see every finding, including the ones that `vulnix.toml` accepts today.
+Leave out `--whitelist` to see every finding, including the ones that [`triage/vulnerabilities.ttl`](vulnerability-triage.md) accepts today.
 [OPSEC.md](../OPSEC.md) explains what vulnix can and can't see.
 
 ## Bring the Dell up to date before using it
