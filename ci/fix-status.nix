@@ -19,6 +19,9 @@
 # minor versions. Each finding is compared with the closest version at or
 # above the pinned one, so a fix in an unrelated major version doesn't count.
 # Versions are compared with builtins.compareVersions, as Nixpkgs does.
+#
+# Each source of evidence has its own module in ci/fix-status/, so this
+# file only decides the bucket.
 {
   grype,
   head,
@@ -34,19 +37,12 @@ let
     groupBy
     readFile
     sort
-    substring
-    stringLength
     ;
 
   report = fromJSON (readFile grype);
   sbom = fromJSON (readFile head);
 
-  risks = if accepted == null then [ ] else fromJSON (readFile accepted);
-
-  # A purl without a version covers every version of the package.
-  coversPurl =
-    product: purl: product == purl || substring 0 (stringLength product + 1) purl == "${product}@";
-  isAccepted = purl: cve: any (r: elem cve r.cves && any (p: coversPurl p purl) r.products) risks;
+  inherit (import ./fix-status/accepted.nix accepted) isAccepted;
 
   components = groupBy (c: c.name) (sbom.components or [ ]);
   ofName = name: components.${name} or [ ];
