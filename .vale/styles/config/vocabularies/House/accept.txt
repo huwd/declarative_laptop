@@ -1,3 +1,4 @@
+(?i)adaptors?
 ADRs
 (?i)agenix
 agnoster
@@ -54,6 +55,7 @@ Guix
 (?i)hotplug
 immurok
 (?i)installer
+IRIs?
 (?i)justfile
 KEV
 (?i)keyrings?

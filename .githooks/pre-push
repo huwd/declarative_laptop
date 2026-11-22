@@ -18,8 +18,8 @@ if [ -z "$base" ]; then
   exit 0
 fi
 
-if ! git diff --name-only "$base" HEAD | grep -q -E '\.nix$|^flake\.lock$|^vulnix\.toml$'; then
-  echo "pre-push: no Nix, flake.lock or vulnix.toml changes; skipping vulnix scan"
+if ! git diff --name-only "$base" HEAD | grep -q -E '\.nix$|^flake\.lock$|^triage/|^packages/vuln-triage/'; then
+  echo "pre-push: no Nix, flake.lock or triage changes; skipping vulnix scan"
   exit 0
 fi
 

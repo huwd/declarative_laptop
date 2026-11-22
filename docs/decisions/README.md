@@ -82,3 +82,4 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0021](0021-build-and-scan-only-the-framework-in-ci.md) | Build and scan only the Framework in CI, and check the Dell on demand | Accepted |
 | [0022](0022-sign-off-agent-commits-with-git-sign-off.md) | Sign off and sign an agent's commits with one `git sign-off` command | Accepted |
 | [0023](0023-check-for-dependabot-updates-daily.md) | Check for Dependabot updates daily, not weekly | Accepted |
+| [0024](0024-keep-vulnerability-triage-in-one-rdf-graph.md) | Keep vulnerability triage in one RDF graph, and compile each scanner's format from it | Accepted |
