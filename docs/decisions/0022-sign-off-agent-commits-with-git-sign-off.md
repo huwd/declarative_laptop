@@ -1,10 +1,10 @@
 # 0022. Sign off and sign an agent's commits with one `git sign-off` command
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Decided by:** @huwd
 - **Decided:** 2026-11-21
 - **Recorded:** 2026-11-21
-- **Discussion:** first built in [huwd/solid-oidc#27](https://github.com/huwd/solid-oidc/pull/27)
+- **Discussion:** first built in [huwd/solid-oidc#27](https://github.com/huwd/solid-oidc/pull/27); reviewed and merged in [#135](https://github.com/huwd/declarative_laptop/pull/135)
 
 ## Summary
 
