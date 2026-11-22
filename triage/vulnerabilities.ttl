@@ -182,6 +182,24 @@ triage:zlib-1.3.2
         """ .
 
 
+triage:firefox-other-products
+    a triage:Statement ;
+    vex:product <pkg:nix/firefox> ;
+    vex:vulnerability nvd:CVE-2007-3670 , nvd:CVE-2007-4013 , nvd:CVE-2009-1597 , nvd:CVE-2009-4102 , nvd:CVE-2014-6492 ;
+    vex:status "not_affected" ;
+    vex:justification "component_not_present" ;
+    vex:statusNotes """
+        Found only by grype, because each NVD record lists mozilla:firefox with no version bound, so it matches every Firefox release.
+        Each is a bug in another product that runs alongside Firefox, none of which is in this closure.
+        CVE-2007-3670 is an argument injection in Internet Explorer on Windows when it launches firefox.exe.
+        CVE-2007-4013 is in Citrix Access Gateway DLLs installed in a Firefox plugin directory.
+        CVE-2009-1597 bypasses Adobe Acrobat's JavaScript restrictions through an inline PDF, and CVE-2014-6492 is in Oracle's Java SE browser plugin: Firefox has not loaded NPAPI plugins such as these since version 52.
+        CVE-2009-4102 is in the Sage 1.4.3 RSS extension, which is not installed.
+        Re-checked against NVD on 2026-11-22.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/145> .
+
+
 # ── Not affected: the vulnerable code is absent or never runs here ────────────
 
 triage:avahi
@@ -413,6 +431,91 @@ triage:unzip-6.0
         Already patched in nixpkgs: unzip.patches includes CVE-2021-4217.patch and 28-cve-2022-0529-and-cve-2022-0530.patch.
         Upstream Info-ZIP never released a fixed version (last release ~2009), so the version string still reads 6.0 and vulnix's version-based matching can't see the applied patches.
         """ .
+
+
+triage:dnsmasq-2.93
+    a triage:Statement ;
+    vex:product <pkg:nix/dnsmasq@2.93> ;
+    vex:vulnerability nvd:CVE-2026-6507 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        grype gives the fix as 2.93test9, a test release before 2.93, and doesn't order the final 2.93 after it.
+        2.93 is the release that followed the test series, so it contains the fix for this BOOTREPLY out-of-bounds write.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/145> .
+
+triage:firefox-bundled-harfbuzz
+    a triage:Statement ;
+    vex:product <pkg:nix/firefox> ;
+    vex:vulnerability nvd:CVE-2011-0064 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        Found only by grype, because the NVD record lists mozilla:firefox with no version bound.
+        The bug is a missing allocation check in hb_buffer_ensure in HarfBuzz, as Pango 1.28.3 and Firefox shipped it in 2011, and HarfBuzz fixed it that year.
+        Firefox bundles a current HarfBuzz, and the system harfbuzz is 14.5.1.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/145> .
+
+triage:firefox-old-unbounded-records
+    a triage:Statement ;
+    vex:product <pkg:nix/firefox> ;
+    vex:vulnerability nvd:CVE-2003-1492 , nvd:CVE-2007-1970 , nvd:CVE-2007-2176 , nvd:CVE-2007-3827 , nvd:CVE-2007-5967 , nvd:CVE-2007-6715 , nvd:CVE-2009-4129 , nvd:CVE-2009-4130 , nvd:CVE-2009-4630 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        Found only by grype, because each NVD record lists Firefox with no version bound, so it matches every release.
+        They are Firefox and Mozilla bugs from 2003 to 2009: a cookie domain with a trailing dot, mixed-content warnings for dynamically written elements, an unspecified JavaScript-error bug, domainless cookies, embedded certificate installation, a crash on a crafted GIF, two script-dialog origin spoofs, and DNS prefetching from local HTML, which Mozilla disputed.
+        Firefox 160 is about 13 to 23 years and over 150 major releases later.
+        This rests on that age and the unbounded records, not on a fix traced for each CVE: none of the records names a fixed version.
+        Re-checked against NVD on 2026-11-22.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/145> .
+
+triage:glibc-2.44-57-release
+    a triage:Statement ;
+    vex:product <pkg:nix/glibc@2.44-57> ;
+    vex:vulnerability nvd:CVE-2026-6791 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        grype gives the fix as glibc 2.44, the release this package is built from: 2.44-57 is 2.44 with 57 commits from the release branch.
+        grype reads 2.44-57 as earlier than 2.44, so it reports the tilde-expansion bug in parse_tilde as open.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/145> .
+
+triage:imagemagick-7.1.2-35
+    a triage:Statement ;
+    vex:product <pkg:nix/imagemagick@7.1.2-35> ;
+    vex:vulnerability nvd:CVE-2023-5341 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        NVD lists ImageMagick as affected before 7.1.2, and this is 7.1.2-35, the 35th patch release of 7.1.2.
+        grype reads 7.1.2-35 as earlier than 7.1.2, so it reports this 2023 use-after-free in coders/bmp.c as open.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/145> .
+
+triage:libtpms-0.10.2-unstable-2026-05-06
+    a triage:Statement ;
+    vex:product <pkg:nix/libtpms@0.10.2-unstable-2026-05-06> ;
+    vex:vulnerability nvd:CVE-2026-21444 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        The bug affects 0.10.0 and 0.10.1, and 0.10.2 fixes it with commit 33c9ff0 on the stable branch.
+        Nixpkgs builds a snapshot of the main branch (521c510, 6 May 2026), which diverged from 0.10.2, so that commit isn't in its history.
+        The same fix ("tpm2: Fix retrieval of updated IV when using OpenSSL >= 3.0") landed on the main branch as ee31b0b on 29 December 2025, which the snapshot contains.
+        """ ;
+    rdfs:seeAlso <https://github.com/stefanberger/libtpms/security/advisories/GHSA-7jxr-4j3g-p34f> ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/145> .
+
+triage:linux-jfs-2020
+    a triage:Statement ;
+    vex:product <pkg:nix/linux> ;
+    vex:vulnerability nvd:CVE-2020-27815 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        A JFS bug from 2020, fixed in mainline Linux 5.11 and backported to the 4.9 to 5.10 long-term kernels.
+        grype lists only those backports as fixed versions, so it reports every later kernel line as open.
+        Every kernel this repository builds is newer than 5.11, so the statement covers every version.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/145> .
 
 
 # ── Affected: real, unpatched and accepted as low risk until a fix lands ──────
