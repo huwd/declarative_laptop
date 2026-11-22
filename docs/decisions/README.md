@@ -85,3 +85,4 @@ Editorial improvements can include clearer wording, typo corrections and link fi
 | [0024](0024-keep-vulnerability-triage-in-one-rdf-graph.md) | Keep vulnerability triage in one RDF graph, and compile each scanner's format from it | Accepted |
 | [0025](0025-keep-accepted-risks-visible-in-the-grype-scan.md) | Keep accepted risks visible in the grype scan, and compile its OpenVEX from the triage graph | Accepted |
 | [0026](0026-split-the-grype-comment-into-pinned-and-upstream.md) | Split the grype comment into Pinned and Upstream sections, and classify each finding by where a fix exists | Accepted |
+| [0027](0027-add-evidence-to-the-grype-scan.md) | Give grype the package identities it needs, and add evidence that settles findings with no fix information | Accepted |

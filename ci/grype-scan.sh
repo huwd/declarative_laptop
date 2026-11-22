@@ -107,7 +107,7 @@ upstream() {
   pinned=$(jq -r '.nodes[.nodes.root.inputs.nixpkgs].locked.rev' flake.lock)
   sbomnix "$drv" --buildtime --cdx "$out/upstream.cdx.json" --spdx /dev/null --csv /dev/null > /dev/null 2>&1 || return 1
   nix eval --impure --json --expr \
-    "import $PWD/ci/fix-status.nix { grype = $(realpath "$out/grype.json"); head = $(realpath "$out/upstream.cdx.json"); }" \
+    "import $PWD/ci/fix-status.nix { grype = $(realpath "$out/grype.json"); head = $(realpath "$out/upstream.cdx.json"); accepted = $(realpath "$out/accepted.json"); }" \
     > "$out/fix-status.json" || return 1
 
   # One row for each package, CVE and version, as grype can match a CVE twice.
@@ -126,6 +126,7 @@ upstream() {
     "",
     "| Fix status | Findings | What to do |",
     "| --- | --- | --- |",
+    "| Accepted | \(n("accepted")) | accepted in the triage until a date: see the accepted risks above |",
     "| Actionable | \(n("actionable")) | Nixpkgs has the fix: run `just update` |",
     "| Pending Nixpkgs | \(n("pending")) | fixed upstream, not yet in Nixpkgs: wait, or look for a Nixpkgs pull request |",
     "| No fix upstream | \(n("no-fix")) | triage it: accept it with a mitigation, or remove the package |",
