@@ -3,7 +3,7 @@
 #
 # Usage: ci/grype-scan.sh <closure> <output-dir> <host>
 #
-# Run it from the repository root, so it finds openvex.json and the triage,
+# Run it from the repository root, so it can build the triage (ADR 0024),
 # with sbomnix, grype, jq, curl and nix on PATH:
 #
 #   nix shell --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq \
@@ -15,6 +15,9 @@
 # Writes to <output-dir>:
 #   sbom.cdx.json, sbom.spdx.json, sbom.csv   SBOM of the closure, from sbomnix
 #   patches.openvex.json   "fixed" statements for the CVEs Nixpkgs patches
+#   triage.openvex.json    the permanent triage statements, compiled from
+#                          triage/vulnerabilities.ttl
+#   accepted.json          the accepted risks from the same graph
 #   grype.json             full report, including the matches VEX removed
 #   grype.txt              the same findings as a table
 #   kev.json, kev-hits.json, kev.md   CISA KEV cross-check, from ci/kev-check.sh
@@ -27,6 +30,15 @@ closure=$1
 out=$2
 host=$3
 mkdir -p "$out"
+
+# 0. Triage: compile triage/vulnerabilities.ttl (ADR 0024). Its OpenVEX
+# document holds only permanent statements (not_affected and fixed), so
+# grype drops those findings; accepted risks stay in the report, and
+# accepted.json labels them with their expiry in the comment.
+triage=$(nix build .#vuln-triage --no-link --print-out-paths)
+cp "$triage/openvex.json" "$out/triage.openvex.json"
+cp "$triage/accepted.json" "$out/accepted.json"
+chmod u+w "$out/triage.openvex.json" "$out/accepted.json"
 
 # 1. Inventory: every package in the closure, with a CPE and a purl.
 sbomnix "$closure" \
@@ -59,12 +71,13 @@ jq '{
   ] | unique_by(.vulnerability.name + .products[0]["@id"])
 }' "$out/sbom.cdx.json" > "$out/patches.openvex.json"
 
-# 3. Match. Both VEX documents remove findings; grype keeps them under
-# ignoredMatches in the JSON report, so nothing disappears silently.
+# 3. Match. Both VEX documents remove findings: the Nixpkgs patches, and
+# the permanent triage. grype keeps them under ignoredMatches in the JSON
+# report, so nothing disappears silently.
 # --quiet keeps grype's warnings about the SBOM's CPEs out of the log.
 grype "sbom:$out/sbom.cdx.json" \
   --vex "$out/patches.openvex.json" \
-  --vex openvex.json \
+  --vex "$out/triage.openvex.json" \
   --quiet \
   -o "json=$out/grype.json" \
   -o "table=$out/grype.txt"
@@ -78,6 +91,7 @@ ci/kev-check.sh "$out"
 matches=$(jq '.matches | length' "$out/grype.json")
 ignored=$(jq '[.ignoredMatches[]?] | length' "$out/grype.json")
 patched=$(jq '.statements | length' "$out/patches.openvex.json")
+permanent=$(jq '.statements | length' "$out/triage.openvex.json")
 severities=$(jq -r '
   [.matches[].vulnerability.severity]
   | group_by(.) | map("\(length) \(.[0] | ascii_downcase)") | join(", ")
@@ -86,6 +100,31 @@ by_package=$(jq -r '
   [.matches[].artifact | "\(.name) \(.version)"]
   | group_by(.) | map({ pkg: .[0], n: length }) | sort_by(-.n) | .[:15][]
   | "| `\(.pkg)` | \(.n) |"
+' "$out/grype.json")
+
+# Findings that the triage accepts as real, low-risk and unpatched, with
+# their expiry. A purl without a version covers every version.
+# shellcheck disable=SC2016
+accepted_rows=$(jq -r --slurpfile risks "$out/accepted.json" '
+  .matches as $m
+  | (now | strftime("%Y-%m-%d")) as $today
+  | $risks[0][]
+  | . as $r
+  | [ $m[]
+      | select(.vulnerability.id as $id | $r.cves | index($id))
+      | select(.artifact.purl as $p | $r.products | any(. == $p or ($p | startswith(. + "@"))))
+    ] as $hits
+  | select($hits | length > 0)
+  | ($r.id | sub("^.*#"; "")) as $name
+  | "| `\($hits[0].artifact.name) \($hits[0].artifact.version)` | \($hits | map(.vulnerability.id) | unique | length) | "
+    + (if $r.until < $today then "**expired** \($r.until)" else $r.until end)
+    + " | [`\($name)`](https://github.com/huwd/declarative_laptop/blob/main/triage/vulnerabilities.ttl) |"
+' "$out/grype.json")
+accepted_count=$(jq -r --slurpfile risks "$out/accepted.json" '
+  [ .matches[] as $x | $risks[0][]
+    | select(.cves | index($x.vulnerability.id))
+    | select(.products | any(. == $x.artifact.purl or ($x.artifact.purl | startswith(. + "@"))))
+    | $x.vulnerability.id + " " + $x.artifact.purl ] | unique | length
 ' "$out/grype.json")
 
 table=$(cat "$out/grype.txt")
@@ -104,7 +143,15 @@ fi
   cat "$out/kev.md"
   echo
   echo "**$matches findings** (${severities:-none})."
-  echo "VEX removed $ignored more: Nixpkgs patches $patched CVEs, and \`openvex.json\` holds the hand-written triage."
+  echo "VEX removed $ignored more: Nixpkgs patches $patched CVEs, and [the triage](https://github.com/huwd/declarative_laptop/blob/main/docs/vulnerability-triage.md) holds $permanent permanent statements."
+  if [ -n "$accepted_rows" ]; then
+    echo
+    echo "**$accepted_count of these findings are accepted risks** in the triage: real, unpatched and accepted until the date shown. Each statement gives the mitigation."
+    echo
+    echo "| Package | CVEs | Accepted until | Statement |"
+    echo "| --- | --- | --- | --- |"
+    echo "$accepted_rows"
+  fi
   if [ "$matches" -gt 0 ]; then
     echo
     echo "| Package | Findings |"
