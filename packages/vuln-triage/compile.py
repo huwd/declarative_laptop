@@ -1,11 +1,18 @@
 """Compile the vulnerability triage graph into each scanner's own format.
 
-Usage: compile.py <vulnerabilities.ttl> <shapes.ttl> <output-dir>
+Usage: compile.py <vulnerabilities.ttl> <shapes.ttl> <output-dir> <timestamp>
 
 The triage lives in one RDF graph, written in Turtle (ADR 0024). This
 script validates it against the SHACL shapes, then writes:
 
-  vulnix.toml   the whitelist vulnix reads (`vulnix --whitelist`)
+  vulnix.toml     the whitelist vulnix reads (`vulnix --whitelist`)
+  openvex.json    an OpenVEX document of the permanent statements, for any
+                  VEX-aware scanner such as grype (`grype --vex`)
+  accepted.json   the accepted risks (status "affected"), so a scanner's
+                  report can label those findings with their expiry
+
+<timestamp> is the OpenVEX document's timestamp, in seconds since the
+epoch; the flake passes the commit's time, so the build stays reproducible.
 
 Validation failures are printed and exit non-zero, so `nix build
 .#vuln-triage` fails on a statement that breaks the triage rules.
@@ -15,6 +22,7 @@ import json
 import re
 import sys
 from collections import OrderedDict
+from datetime import datetime, timezone
 from pathlib import Path
 
 from pyshacl import validate
@@ -72,6 +80,7 @@ def statements(graph):
             "products": products,
             "cves": sorted(cves),
             "status": str(graph.value(subject, VEX.status)),
+            "justification": str(graph.value(subject, VEX.justification) or ""),
             "notes": text(graph.value(subject, VEX.statusNotes)),
             "action": text(action) if action is not None else None,
             "until": str(until) if until is not None else None,
@@ -134,12 +143,73 @@ def vulnix_toml(graph_statements):
     return "\n".join(lines) + "\n"
 
 
+def purl(product):
+    if product["version"] is None:
+        return f'pkg:nix/{product["name"]}'
+    return f'pkg:nix/{product["name"]}@{product["version"]}'
+
+
+def openvex(graph_statements, timestamp):
+    """The permanent statements, one OpenVEX statement for each CVE.
+
+    Only not_affected and fixed statements go in: the shapes make those
+    permanent, so this document needs no expiry. Accepted risks stay out,
+    so a VEX-aware scanner keeps reporting them; accepted.json labels them.
+    A purl without a version matches every version of the package in grype.
+    """
+    vex_statements = []
+    for statement in graph_statements:
+        if statement["status"] not in ("not_affected", "fixed"):
+            continue
+        for cve in statement["cves"]:
+            entry = {
+                "@id": f'{statement["id"]}/{cve}',
+                "vulnerability": {"@id": NVD + cve, "name": cve},
+                "products": [{"@id": purl(p)} for p in statement["products"]],
+                "status": statement["status"],
+            }
+            if statement["status"] == "not_affected":
+                entry["justification"] = statement["justification"]
+            entry["status_notes"] = statement["notes"]
+            vex_statements.append(entry)
+    document = {
+        "@context": "https://openvex.dev/ns/v0.2.0",
+        "@id": "https://github.com/huwd/declarative_laptop/blob/main/triage/vulnerabilities.ttl",
+        "author": "https://huwdiprose.co.uk/profile#me",
+        "tooling": "packages/vuln-triage/compile.py",
+        "timestamp": timestamp,
+        "version": 1,
+        "statements": vex_statements,
+    }
+    return json.dumps(document, indent=2, ensure_ascii=False) + "\n"
+
+
+def accepted(graph_statements):
+    risks = [
+        {
+            "id": s["id"],
+            "products": [purl(p) for p in s["products"]],
+            "cves": s["cves"],
+            "until": s["until"],
+            "mitigation": s["action"],
+            "notes": s["notes"],
+        }
+        for s in graph_statements
+        if s["status"] == "affected"
+    ]
+    return json.dumps(risks, indent=2, ensure_ascii=False) + "\n"
+
+
 def main():
-    data_path, shapes_path, out = sys.argv[1:4]
+    data_path, shapes_path, out, epoch = sys.argv[1:5]
     graph = load(data_path, shapes_path)
     out_dir = Path(out)
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "vulnix.toml").write_text(vulnix_toml(list(statements(graph))))
+    found = list(statements(graph))
+    timestamp = datetime.fromtimestamp(int(epoch), timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    (out_dir / "vulnix.toml").write_text(vulnix_toml(found))
+    (out_dir / "openvex.json").write_text(openvex(found, timestamp))
+    (out_dir / "accepted.json").write_text(accepted(found))
 
 
 if __name__ == "__main__":

@@ -6,11 +6,11 @@
 #
 # ci/grype-scan.sh calls this after grype. Run it from the repository root:
 # it reads <output-dir>/grype.json and <output-dir>/patches.openvex.json
-# from that script, plus the compiled vulnix whitelist and openvex.json.
+# from that script, plus the vulnix whitelist compiled from the triage.
 #
 # A CVE in KEV is being exploited in the wild. The check flags:
 #   - open grype findings in KEV
-#   - triage entries (the vulnix whitelist, openvex.json) for a CVE in KEV whose
+#   - triage statements for a CVE in KEV whose
 #     justification does not mention KEV, so the decision predates it
 #   - accepted risks (whitelist entries with `until`) in KEV that have
 #     not been reviewed against it, or whose `until` runs past KEV's due date
@@ -49,7 +49,6 @@ jq -n \
   --slurpfile kev "$out/kev.json" \
   --slurpfile grype "$out/grype.json" \
   --slurpfile patches "$out/patches.openvex.json" \
-  --slurpfile vex openvex.json \
   --slurpfile wl "$out/vulnix-whitelist.json" '
   ($kev[0].vulnerabilities | map({ key: .cveID, value: . }) | from_entries) as $k
   | def text: if type == "array" then join(" ") else (. // "") end;
@@ -63,13 +62,6 @@ jq -n \
     ($patches[0].statements[]
       | { package: .products[0]["@id"], cve: .vulnerability.name,
           attention: false, reason: "patched in Nixpkgs" }),
-
-    ($vex[0].statements[]
-      | ([.status_notes, .impact_statement, .action_statement] | map(text) | join(" ") | mentions_kev) as $ack
-      | { package: (.products | map(.["@id"]) | join(", ")), cve: .vulnerability.name,
-          attention: ($ack | not),
-          reason: (if $ack then "openvex.json \(.status), reviewed against KEV"
-                   else "openvex.json \(.status), justification does not mention KEV" end) }),
 
     ($wl[0] | to_entries[]
       | .key as $pkg | .value as $e | ($e.comment | mentions_kev) as $ack

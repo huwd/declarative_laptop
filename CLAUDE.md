@@ -31,9 +31,8 @@ Agents help most by teaching, not by doing the work for the maintainer.
 - Triage lives in `triage/vulnerabilities.ttl`, which compiles to the vulnix whitelist ([0024](docs/decisions/0024-keep-vulnerability-triage-in-one-rdf-graph.md)).
   Every statement needs a specific justification, and an accepted real vulnerability also needs an `until` date and a mitigation.
   `just triage` checks the rules; [docs/vulnerability-triage.md](docs/vulnerability-triage.md) explains how to write a statement.
-- Every statement in `openvex.json` needs a specific justification and a link to its assessment ([0019](docs/decisions/0019-add-advisory-grype-scan.md)).
-  An `affected` statement also needs an action statement giving the mitigation.
-- A triage statement or `openvex.json` statement for a CVE in CISA's KEV catalogue must mention KEV in its justification, or the KEV check flags it.
+- The same statements also compile to the OpenVEX document grype reads, so a CVE only grype reports gets a statement there too.
+- A triage statement for a CVE in CISA's KEV catalogue must mention KEV in its assessment, or the KEV check flags it.
 
 ## Documentation
 
