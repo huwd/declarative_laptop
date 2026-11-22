@@ -27,6 +27,8 @@
 #   grype.pass1.json       grype's first pass, which the evidence checks read
 #   commits.json, commits.openvex.json   fix commits checked against each
 #                          release tag, and the findings they prove fixed
+#   ffmpeg-config.json, ffmpeg-config.openvex.json   ffmpeg findings in code
+#                          our build doesn't compile, and their VEX
 #   grype.json             full report, including the matches VEX removed
 #   grype.txt              the same findings as a table
 #   kev.json, kev-hits.json, kev.md   CISA KEV cross-check, from ci/kev-check.sh
@@ -111,10 +113,20 @@ if ! python3 -I ci/evidence/commits.py "$out/grype.pass1.json" ci/evidence/repos
   commits_note="The fix-commit check was skipped: GitHub's API couldn't be reached."
 fi
 
+# ffmpeg build configuration: prove absent the findings in wrappers around
+# external libraries that our ffmpeg builds disable.
+ffmpeg_note=""
+if ! python3 -I ci/evidence/ffmpeg_config.py "$out/grype.pass1.json" "$out/sbom.cdx.json" "$out"; then
+  echo '[]' > "$out/ffmpeg-config.json"
+  echo "$empty_vex" > "$out/ffmpeg-config.openvex.json"
+  ffmpeg_note="The ffmpeg build-configuration check was skipped."
+fi
+
 grype "sbom:$out/sbom.cdx.json" \
   --vex "$out/patches.openvex.json" \
   --vex "$out/triage.openvex.json" \
   --vex "$out/commits.openvex.json" \
+  --vex "$out/ffmpeg-config.openvex.json" \
   --quiet \
   -o "json=$out/grype.json" \
   -o "table=$out/grype.txt"
@@ -189,6 +201,7 @@ ignored=$(jq '[.ignoredMatches[]?] | length' "$out/grype.json")
 patched=$(jq '.statements | length' "$out/patches.openvex.json")
 permanent=$(jq '.statements | length' "$out/triage.openvex.json")
 proved_commits=$(jq '.statements | length' "$out/commits.openvex.json")
+proved_ffmpeg=$(jq '.statements | length' "$out/ffmpeg-config.openvex.json")
 severities=$(jq -r '
   [.matches[].vulnerability.severity]
   | group_by(.) | map("\(length) \(.[0] | ascii_downcase)") | join(", ")
@@ -244,8 +257,8 @@ fi
   cat "$out/kev.md"
   echo
   echo "**$matches findings** (${severities:-none})."
-  echo "VEX removed $ignored more: Nixpkgs patches $patched CVEs, [the triage](https://github.com/huwd/declarative_laptop/blob/main/docs/vulnerability-triage.md) holds $permanent permanent statements, and [fix commits]($docs#fix-commits) prove $proved_commits findings fixed."
-  if [ -n "$commits_note" ]; then echo "$commits_note"; fi
+  echo "VEX removed $ignored more: Nixpkgs patches $patched CVEs, [the triage](https://github.com/huwd/declarative_laptop/blob/main/docs/vulnerability-triage.md) holds $permanent permanent statements, [fix commits]($docs#fix-commits) prove $proved_commits findings fixed, and [ffmpeg's build configuration]($docs#ffmpeg-build-configuration) proves $proved_ffmpeg absent."
+  if [ -n "$commits_note$ffmpeg_note" ]; then echo "$commits_note $ffmpeg_note"; fi
   if [ -n "$accepted_rows" ]; then
     echo
     echo "**$accepted_count of these findings are accepted risks** in the triage: real, unpatched and accepted until the date shown. Each statement gives the mitigation."
