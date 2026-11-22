@@ -195,6 +195,11 @@ jobs:
           path: ${{ runner.temp }}/nix-pkgs
           key: ${{ steps.pkgs.outputs.key }}
 
+      # Fails the job if a triage statement breaks the SHACL rules (ADR 0024).
+      - name: Compile vulnerability triage
+        id: triage
+        run: echo "dir=$(nix build .#vuln-triage --no-link --print-out-paths)" >> "$GITHUB_OUTPUT"
+
       - name: Run vulnix against closure
         id: vulnix
         run: |
@@ -206,7 +211,7 @@ jobs:
           # NVD retired the legacy bulk feeds vulnix relies on; --mirror points
           # at a community-run re-host of the same nvdcve-2.0-<year>.json.gz
           # layout. See https://github.com/nix-community/vulnix/issues/171
-          nix run --inputs-from . nixpkgs#vulnix -- --mirror https://vig-os.github.io/nvd-mirror/ --closure ${{ steps.build.outputs.closure }} --whitelist vulnix.toml > vulnix-report.txt 2>&1
+          nix run --inputs-from . nixpkgs#vulnix -- --mirror https://vig-os.github.io/nvd-mirror/ --closure ${{ steps.build.outputs.closure }} --whitelist "${{ steps.triage.outputs.dir }}/vulnix.toml" > vulnix-report.txt 2>&1
           echo "exit-code=$?" >> "$GITHUB_OUTPUT"
 
       - name: Post vulnix findings as PR comment

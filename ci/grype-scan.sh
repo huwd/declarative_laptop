@@ -3,7 +3,7 @@
 #
 # Usage: ci/grype-scan.sh <closure> <output-dir> <host>
 #
-# Run it from the repository root, so it finds openvex.json and vulnix.toml,
+# Run it from the repository root, so it finds openvex.json and the triage,
 # with sbomnix, grype, jq, curl and nix on PATH:
 #
 #   nix shell --inputs-from . nixpkgs#sbomnix nixpkgs#grype nixpkgs#jq \

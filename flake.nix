@@ -97,6 +97,9 @@
 
         # nix build .#git-sign-off  — sign off and sign an agent's commits, then push
         git-sign-off = import ./packages/git-sign-off.nix { inherit pkgs; };
+
+        # nix build .#vuln-triage  — validate the vulnerability triage and compile result/vulnix.toml
+        vuln-triage = import ./packages/vuln-triage.nix { inherit pkgs; };
       };
     };
 }

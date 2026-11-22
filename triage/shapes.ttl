@@ -1,0 +1,120 @@
+# SHACL shapes for triage/vulnerabilities.ttl (ADR 0024).
+#
+# `nix build .#vuln-triage` validates the triage graph against these
+# shapes and fails on any violation. They encode the triage rules that
+# CLAUDE.md and the old vulnix.toml header stated in prose.
+
+@prefix sh:     <http://www.w3.org/ns/shacl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix vex:    <https://openvex.dev/ns/v0.2.0#> .
+@prefix triage: <https://huwd.github.io/declarative_laptop/ns/triage#> .
+
+triage:StatementShape
+    a sh:NodeShape ;
+    sh:targetClass triage:Statement ;
+
+    # What the statement is about: one or more Nix packages, as purls.
+    # A purl without @version covers every version of the package.
+    sh:property [
+        sh:path vex:product ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:pattern "^pkg:nix/[^@/]+(@.+)?$" ;
+        sh:message "Each statement names at least one product as a pkg:nix purl." ;
+    ] ;
+
+    # Which vulnerabilities, as their NVD pages.
+    sh:property [
+        sh:path vex:vulnerability ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:pattern "^https://nvd\\.nist\\.gov/vuln/detail/CVE-[0-9]{4}-[0-9]+$" ;
+        sh:message "Each statement names at least one CVE by its NVD URL." ;
+    ] ;
+
+    # OpenVEX's status vocabulary.
+    sh:property [
+        sh:path vex:status ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in ( "not_affected" "affected" "fixed" "under_investigation" ) ;
+        sh:message "Each statement has exactly one OpenVEX status." ;
+    ] ;
+
+    # Every statement needs a specific justification, not a one-liner.
+    sh:property [
+        sh:path vex:statusNotes ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 40 ;
+        sh:message "Each statement has one assessment (vex:statusNotes) of at least 40 characters." ;
+    ] ;
+
+    # OpenVEX's justification codes for not_affected.
+    sh:property [
+        sh:path vex:justification ;
+        sh:maxCount 1 ;
+        sh:in (
+            "component_not_present"
+            "vulnerable_code_not_present"
+            "vulnerable_code_not_in_execute_path"
+            "vulnerable_code_cannot_be_controlled_by_adversary"
+            "inline_mitigations_already_exist"
+        ) ;
+        sh:message "A justification is one of OpenVEX's five codes." ;
+    ] ;
+
+    sh:property [
+        sh:path triage:until ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:message "An expiry is a single xsd:date." ;
+    ] ;
+
+    sh:property [
+        sh:path vex:actionStatement ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:minLength 20 ;
+        sh:message "A mitigation (vex:actionStatement) is one string of at least 20 characters." ;
+    ] ;
+
+    sh:property [
+        sh:path rdfs:seeAlso ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Links to assessments are IRIs." ;
+    ] ;
+
+    # The rules that depend on the status.
+    sh:sparql [
+        sh:message "A not_affected statement needs a vex:justification code." ;
+        sh:select """
+            SELECT $this WHERE {
+                $this <https://openvex.dev/ns/v0.2.0#status> "not_affected" .
+                FILTER NOT EXISTS { $this <https://openvex.dev/ns/v0.2.0#justification> ?j }
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "An affected statement is an accepted risk: it needs a triage:until date and a mitigation (vex:actionStatement)." ;
+        sh:select """
+            SELECT $this WHERE {
+                $this <https://openvex.dev/ns/v0.2.0#status> "affected" .
+                FILTER (
+                    NOT EXISTS { $this <https://huwd.github.io/declarative_laptop/ns/triage#until> ?u }
+                    || NOT EXISTS { $this <https://openvex.dev/ns/v0.2.0#actionStatement> ?a }
+                )
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Only an affected statement expires. A false positive or a fix is permanent, so it has no triage:until." ;
+        sh:select """
+            SELECT $this WHERE {
+                $this <https://huwd.github.io/declarative_laptop/ns/triage#until> ?u .
+                FILTER NOT EXISTS { $this <https://openvex.dev/ns/v0.2.0#status> "affected" }
+            }
+        """ ;
+    ] .
