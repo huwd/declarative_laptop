@@ -275,6 +275,20 @@ triage:samba-4.23.10
         """ .
 
 
+triage:binutils-2.46-no-xcoff
+    a triage:Statement ;
+    vex:product <pkg:nix/binutils@2.46> ;
+    vex:vulnerability nvd:CVE-2026-6846 ;
+    vex:status "not_affected" ;
+    vex:justification "vulnerable_code_not_present" ;
+    vex:statusNotes """
+        The overflow is in bfd/xcofflink.c, when linking a crafted XCOFF (AIX) object, and is fixed in 2.47.
+        binutils compiles xcofflink.c only into builds configured for an XCOFF target, and Nixpkgs builds this one for x86-64 only.
+        Checked on 22 November 2026, on the only binutils in the closure: ld.bfd lists ELF, PE and raw formats as its targets and no XCOFF one, objdump -i lists no XCOFF target, and libbfd-2.46.so has a full symbol table (2,350 entries, 82 of them x86-64 ELF functions) with none of xcofflink.c's functions.
+        Re-check if this host gains a cross-compiling binutils, which NixOS/nixpkgs#575360 would also patch.
+        """ ;
+    rdfs:seeAlso <https://github.com/NixOS/nixpkgs/pull/575360> .
+
 # ── Fixed in the version we run, or patched by Nixpkgs without a version change ───
 
 triage:brotli-1.2.1
@@ -521,6 +535,21 @@ triage:linux-jfs-2020
     rdfs:seeAlso <https://github.com/huwd/declarative_laptop/pull/145> .
 
 
+triage:binutils-2.46-fixed
+    a triage:Statement ;
+    vex:product <pkg:nix/binutils@2.46> ;
+    vex:vulnerability nvd:CVE-2025-69649 , nvd:CVE-2025-69650 , nvd:CVE-2025-69651 , nvd:CVE-2025-69652 ;
+    vex:status "fixed" ;
+    vex:statusNotes """
+        NVD lists these readelf crashes as affecting binutils "thru 2.46", but the 2.46 release already contains their fixes, all committed on 8 December 2025.
+        CVE-2025-69649 is fixed by 66a3492 (PR 33697), CVE-2025-69650 and CVE-2025-69651 by ea4bc02 (PR 33698 and PR 33700), and CVE-2025-69652 by 44b79ab (PR 33701).
+        Checked on 22 November 2026 against the source Nix builds, binutils-with-gold-2.46.tar.bz2: each fix reverse-applies cleanly and doesn't apply forwards, so its changes are already there.
+        None of the Nixpkgs binutils patches touches readelf, and Debian's tracker records all four as fixed in 2.46-1.
+        """ ;
+    rdfs:seeAlso <https://sourceware.org/git/?p=binutils-gdb.git;a=commit;h=66a3492ce68e1ae45b2489bd9a815c39ea5d7f66> ,
+        <https://sourceware.org/git/?p=binutils-gdb.git;a=commit;h=ea4bc025abdba85a90e26e13f551c16a44bfa921> ,
+        <https://sourceware.org/git/?p=binutils-gdb.git;a=commit;h=44b79abd0fa12e7947252eb4c6e5d16ed6033e01> .
+
 # ── Affected: real, unpatched and accepted as low risk until a fix lands ──────
 
 triage:avahi-0.8
@@ -541,24 +570,6 @@ triage:avahi-0.8
         do not give untrusted users a local account or run untrusted code on this machine; if mDNS (.local) lookups stop working, restart avahi-daemon.
         """ ;
     rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
-
-triage:binutils-2.46
-    a triage:Statement ;
-    vex:product <pkg:nix/binutils@2.46> ;
-    vex:vulnerability nvd:CVE-2026-6846 , nvd:CVE-2025-69649 , nvd:CVE-2025-69650 , nvd:CVE-2025-69651 , nvd:CVE-2025-69652 ;
-    vex:status "affected" ;
-    triage:until "2026-11-26"^^xsd:date ;
-    vex:statusNotes """
-        Pulled in via gcc, which LazyVim's nvim-treesitter uses to compile parsers from source fetched by lazy.nvim.
-        CVE-2026-6846 needs linking a crafted XCOFF (AIX) object file; nothing here links XCOFF.
-        It is confirmed unfixed in 2.46 (bfd/xcofflink.c still sizes reloc_info by section_count + 1) and fixed in 2.47.
-        CVE-2025-69649/69650/69651/69652 are readelf crashes (DoS only) on crafted ELF input; readelf is never run on untrusted binaries.
-        Debian's tracker lists fix commits for these tagged binutils-2_46, but each description says affected 'thru 2.46', so whether the nixpkgs 2.46 tarball already contains them is unverified.
-        Accepted risk; drop this entry once nixpkgs ships binutils 2.47, and re-check before it expires.
-        """ ;
-    vex:actionStatement """
-        Do not run readelf or objdump on untrusted binaries, and do not link object files from untrusted sources, until nixpkgs ships binutils 2.47.
-        """ .
 
 triage:cfitsio-4.7.0
     a triage:Statement ;
