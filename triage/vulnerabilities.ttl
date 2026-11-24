@@ -642,22 +642,43 @@ triage:dhcpcd-10.3.2
 triage:ffmpeg-9.0.2-unpatched
     a triage:Statement ;
     vex:product <pkg:nix/ffmpeg@9.0.2> ;
-    vex:vulnerability nvd:CVE-2026-107675 , nvd:CVE-2026-107676 , nvd:CVE-2026-107677 , nvd:CVE-2026-107678 , nvd:CVE-2026-107696 , nvd:CVE-2026-125064 , nvd:CVE-2026-125065 , nvd:CVE-2026-125066 , nvd:CVE-2026-125067 , nvd:CVE-2026-125068 ;
+    vex:vulnerability nvd:CVE-2026-107675 , nvd:CVE-2026-107676 , nvd:CVE-2026-107677 , nvd:CVE-2026-107678 , nvd:CVE-2026-107696 , nvd:CVE-2026-125064 , nvd:CVE-2026-125065 , nvd:CVE-2026-125066 , nvd:CVE-2026-125067 , nvd:CVE-2026-125068 ,
+        nvd:CVE-2026-125069 , nvd:CVE-2026-125070 , nvd:CVE-2026-125071 , nvd:CVE-2026-125072 , nvd:CVE-2026-125073 ,
+        nvd:CVE-2026-125095 , nvd:CVE-2026-125096 , nvd:CVE-2026-125097 , nvd:CVE-2026-125098 , nvd:CVE-2026-125099 , nvd:CVE-2026-125100 , nvd:CVE-2026-125101 , nvd:CVE-2026-125102 ,
+        nvd:CVE-2026-125175 , nvd:CVE-2026-125176 , nvd:CVE-2026-125177 , nvd:CVE-2026-125178 , nvd:CVE-2026-125179 ,
+        nvd:CVE-2026-135722 , nvd:CVE-2026-135723 , nvd:CVE-2026-135725 , nvd:CVE-2026-135726 , nvd:CVE-2026-135727 , nvd:CVE-2026-135728 , nvd:CVE-2026-135729 ,
+        nvd:CVE-2026-135732 , nvd:CVE-2026-135734 , nvd:CVE-2026-135735 , nvd:CVE-2026-135737 , nvd:CVE-2026-135738 , nvd:CVE-2026-135740 , nvd:CVE-2026-135741 , nvd:CVE-2026-135744 , nvd:CVE-2026-135745 ;
     vex:status "affected" ;
     triage:until "2026-12-06"^^xsd:date ;
     vex:statusNotes """
-        CVE-2026-107675/107676/107677/107678/107696 (SFTP host-key check, uninitialised metadata bytes, DASH and RTSP infinite loops, stack exhaustion on a crafted MP4) are described by NVD as affecting releases through 9.0.2, though its CPE range stops before 9.0.2, so whether 9.0.2 is really affected is unclear; there is no later release and nixos-unstable ships 9.0.2.
+        CVE-2026-107675/107676/107677/107678/107696 (SFTP host-key check, uninitialised metadata bytes, DASH and RTSP infinite loops, stack exhaustion on a crafted MP4) are described by NVD as affecting releases through 9.0.2, though its CPE range stops before 9.0.2, so whether 9.0.2 is really affected is unclear.
+        FFmpeg 9.1 was tagged on 2026-11-20, but nixos-unstable still ships 9.0.2.
         CVE-2026-107660, which the 9.0.1 entry covered, is fixed in 9.0.2.
         CVE-2026-125064 (added 2026-11-22) is a NULL pointer dereference in the G.726 decoder (libavcodec/g726.c ignores an init_get_bits() failure) on a crafted AVI with an oversized G.726 audio chunk: a crash only.
         NVD lists it as affecting releases through 9.0.2, the fix (commit ec887b1) is on master only, and nixpkgs carries no patch for it.
         CVE-2026-125065/125066/125067/125068 (added 2026-11-24) are the same class in the EA TGV, CLJR, VBLE and Bink decoders: each ignores an init_get_bits() failure on a crafted file with a frame of about 2^28 bytes, so a crash only.
         Their fixes (commits 9691e4f, d40c1b1, 1206df6, 5195d6f) are on master only, and nixpkgs carries no patch for them.
+        Added on 2026-11-24, all listed by NVD as affecting releases through 9.0.2 and reached by decoding crafted media:
+        CVE-2026-125069/125070/125071/125072 are the same init_get_bits() NULL pointer dereference in the Motion Pixels, EA TQI, JV and mp3adu decoders, a crash only.
+        CVE-2026-125073 is an infinite loop in the IMC/IAC audio decoder, a hang only.
+        CVE-2026-125095 to 125102 and 125175/125176/125177/125179 leak uninitialised or stale memory into decoded frames or audio (C93, Tiertex SEQ, rawvideo, WebP alpha, GEM, OpenEXR, VMnc, TAK, Flash Screen Video 1 and 2, MSCC/SRGC, VQA), which matters only if the decoded output goes back to the attacker.
+        CVE-2026-125178 is an out-of-bounds heap read in the TDSC decoder's cursor handling, a crash or a leak into frames.
+        Also added on 2026-11-24, all listed by NVD as fixed in 9.1:
+        CVE-2026-135725 (CVSS 7.8) is a stack overflow in the native RTMP client when publishing to a hostile server (librtmp is disabled, so the native client is built).
+        CVE-2026-135726/135727/135728 are a NULL pointer dereference in RDT over RTSP, a heap leak in RFC 4175 RTP video and an integer overflow in the DASH manifest parser, each reached by connecting to a hostile server.
+        CVE-2026-135723 is a double free in the IMF Composition Playlist demuxer (built, because libxml2 is enabled) on a crafted playlist under memory pressure.
+        CVE-2026-135734/135735/135737/135738/135740/135741/135744/135745 are heap out-of-bounds reads and writes in the deflicker, an RGBA planar, tmidequalizer, signalstats, readeia608, lut2, lut1d and curves filters on high bit depth samples, up to CVSS 7.8 with possible code execution.
+        CVE-2026-135722/135732/135729 are a heap overflow in WAV output with the peak envelope enabled, an out-of-bounds read in D-10 MXF output and XML injection into WebM DASH manifests.
+        These filters and muxers run only when a filtergraph or output format names them, which desktop playback does not do, but nothing stops them being chosen on hostile media, so they are recorded as affected.
+        The fix for the 9.1 group is FFmpeg 9.1; the nixpkgs bump (NixOS/nixpkgs#590840) is open against staging and not yet reviewed.
         All real or presumed real, and accepted as low risk: each needs ffmpeg to process hostile media or connect to a hostile server, and ffmpeg is only in the closure as a library dependency of desktop apps; no scripts or services here feed it untrusted URLs.
         Renewed on 2026-11-22 for two weeks, because nixos-unstable still ships 9.0.2 and the highest CVSS is 8.8.
+        On 2026-11-24 the expiry was kept rather than extended, so the progress of the 9.1 bump gets checked.
         Re-check for an ffmpeg bump in nixpkgs before this expires.
         """ ;
     vex:actionStatement """
-        until nixpkgs ships a fixed ffmpeg, do not play, transcode or thumbnail media from untrusted sources with ffmpeg or apps built on it (especially RTSP, DASH or sftp URLs, and MP4 or MKV files from unknown senders).
+        until nixpkgs ships a fixed ffmpeg, do not play, transcode or thumbnail media from untrusted sources with ffmpeg or apps built on it (especially RTSP, RTMP, DASH or sftp URLs, and MP4 or MKV files from unknown senders).
+        Do not run ffmpeg filters or write WAV, MXF or WebM DASH output on media from unknown senders, and do not publish to RTMP servers you do not trust.
         Stick to media you trust.
         """ ;
     rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
@@ -671,6 +692,31 @@ triage:ffmpeg-9.0.2-libxevd
     vex:statusNotes """
         Out-of-bounds read and memory leak in libavcodec/libxevd.c, the wrapper for the external libxevd EVC decoder.
         nixpkgs builds ffmpeg with --disable-libxevd, so the wrapper is not compiled in.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:ffmpeg-9.0.2-libzmq
+    a triage:Statement ;
+    vex:product <pkg:nix/ffmpeg@9.0.2> ;
+    vex:vulnerability nvd:CVE-2026-135733 , nvd:CVE-2026-135742 ;
+    vex:status "not_affected" ;
+    vex:justification "vulnerable_code_not_present" ;
+    vex:statusNotes """
+        An unauthenticated command socket on TCP port 5555 and a heap overflow in its recv_msg(), both in the zmq and azmq filters in libavfilter/f_zmq.c.
+        nixpkgs builds ffmpeg with --disable-libzmq, so those filters are not compiled in.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:ffmpeg-9.0.2-runtime-commands
+    a triage:Statement ;
+    vex:product <pkg:nix/ffmpeg@9.0.2> ;
+    vex:vulnerability nvd:CVE-2026-135736 , nvd:CVE-2026-135739 , nvd:CVE-2026-135743 ;
+    vex:status "not_affected" ;
+    vex:justification "vulnerable_code_cannot_be_controlled_by_adversary" ;
+    vex:statusNotes """
+        Heap out-of-bounds reads and writes in the deband, scale and dynaudnorm filters (up to CVSS 8.1), triggered only by runtime filter commands such as deband coupling, scale width or height with ref variables, and dynaudnorm gausssize.
+        NVD's network vector assumes the commands arrive through the zmq or azmq filter, which is not built here (--disable-libzmq).
+        The only other route is a sendcmd or asendcmd script in the filtergraph, which whoever runs ffmpeg writes, not the sender of the media.
         """ ;
     rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
 
