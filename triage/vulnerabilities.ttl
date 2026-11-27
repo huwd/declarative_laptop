@@ -611,11 +611,13 @@ triage:cups-2.4.19-unpatched
     vex:product <pkg:nix/cups@2.4.19> ;
     vex:vulnerability nvd:CVE-2026-55480 , nvd:CVE-2026-61702 , nvd:CVE-2026-107888 , nvd:CVE-2026-55453 , nvd:CVE-2026-107885 , nvd:CVE-2026-107890 , nvd:CVE-2026-55467 , nvd:CVE-2026-107886 ;
     vex:status "affected" ;
-    triage:until "2026-11-27"^^xsd:date ;
+    triage:until "2026-12-11"^^xsd:date ;
     vex:statusNotes """
         These eight are real but are all in the cupsd scheduler or the IPP backend (CVE-2026-55480 symlink race, 61702 path traversal, 55453 and 55467 option injection, 107888, 107885, 107890 and 107886 denial of service); they are fixed in CUPS 2.4.20 (CVE-2026-107885 needs 2.4.21), but nixpkgs still ships 2.4.19. services.printing is disabled, so cupsd never runs; only the libcups client library stays in the closure, pulled in by GTK, Qt and similar.
         None of these bugs are in libcups.
         Accepted as low risk.
+        Re-checked on 2026-11-27: the 2.4.20 bump (NixOS/nixpkgs#583991) is on master but not yet in nixos-unstable, and CUPS 2.4.21 has not been released.
+        Renewed for two weeks, because cupsd still never runs.
         Re-check for a CUPS 2.4.21 bump in nixpkgs before this expires.
         """ ;
     vex:actionStatement """
@@ -720,6 +722,71 @@ triage:ffmpeg-9.0.2-runtime-commands
         """ ;
     rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
 
+triage:ffmpeg-9.0.2-not-built
+    a triage:Statement ;
+    vex:product <pkg:nix/ffmpeg@9.0.2> ;
+    vex:vulnerability nvd:CVE-2026-125181 , nvd:CVE-2026-125198 , nvd:CVE-2026-125262 , nvd:CVE-2026-125263 , nvd:CVE-2026-135706 ;
+    vex:status "not_affected" ;
+    vex:justification "vulnerable_code_not_present" ;
+    vex:statusNotes """
+        Each bug is in code that this x86_64 build does not compile, checked against the derivation's configure flags and the 9.0.2 makefiles on 2026-11-27.
+        CVE-2026-125181 (FLIC out-of-bounds write) affects big-endian builds only; the code is inside #if HAVE_BIGENDIAN in libavcodec/flicvideo.c.
+        CVE-2026-125198 (memory leak in mediacodec_wrapper.c) is in the Android MediaCodec wrapper, which configure only enables on Android.
+        CVE-2026-125262 (heap overflow in lcevcdec.c) and CVE-2026-125263 (oversized LCEVC allocations) need liblcevc_dec, and nixpkgs builds with --disable-liblcevc-dec.
+        CVE-2026-135706 (heap overflow in libavformat/libmodplug.c) is in the libmodplug demuxer, and nixpkgs builds with --disable-libmodplug.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:ffmpeg-9.0.2-hardware-absent
+    a triage:Statement ;
+    vex:product <pkg:nix/ffmpeg@9.0.2> ;
+    vex:vulnerability nvd:CVE-2026-125191 , nvd:CVE-2026-125265 , nvd:CVE-2026-125270 ;
+    vex:status "not_affected" ;
+    vex:justification "vulnerable_code_not_in_execute_path" ;
+    vex:statusNotes """
+        CVE-2026-125265 is a use-after-free in the NVDEC hardware decoder (libavcodec/nvdec.c), which runs only on an NVIDIA GPU.
+        CVE-2026-125191 (deadlock) and CVE-2026-125270 (heap out-of-bounds read) are in the V4L2 memory-to-memory codec wrapper (libavcodec/v4l2_buffers.c), which runs only with a V4L2 hardware codec device.
+        Both are compiled in (--enable-nvdec, --enable-v4l2-m2m), but neither host has that hardware.
+        On 2026-11-27 the framework-13 had only an AMD GPU and two uvcvideo webcam nodes as its V4L2 devices.
+        The dell-xps-13-9343 has Intel Broadwell graphics and no NVIDIA GPU or V4L2 codec; that comes from the model, not from checking the machine.
+        Revisit this if either host gains an NVIDIA GPU or a V4L2 codec device.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
+triage:ffmpeg-9.0.2-unpatched-november
+    a triage:Statement ;
+    vex:product <pkg:nix/ffmpeg@9.0.2> ;
+    vex:vulnerability nvd:CVE-2026-125103 , nvd:CVE-2026-125104 , nvd:CVE-2026-125170 , nvd:CVE-2026-125171 , nvd:CVE-2026-125180 , nvd:CVE-2026-125182 , nvd:CVE-2026-125183 , nvd:CVE-2026-125184 ,
+        nvd:CVE-2026-125185 , nvd:CVE-2026-125190 , nvd:CVE-2026-125192 , nvd:CVE-2026-125193 , nvd:CVE-2026-125197 , nvd:CVE-2026-125264 , nvd:CVE-2026-125266 , nvd:CVE-2026-125268 ,
+        nvd:CVE-2026-135704 , nvd:CVE-2026-135707 , nvd:CVE-2026-135710 , nvd:CVE-2026-135718 , nvd:CVE-2026-135719 , nvd:CVE-2026-135724 , nvd:CVE-2026-135730 ,
+        nvd:CVE-2026-135703 , nvd:CVE-2026-135708 , nvd:CVE-2026-135717 ,
+        nvd:CVE-2026-125186 , nvd:CVE-2026-125187 , nvd:CVE-2026-125188 , nvd:CVE-2026-125189 , nvd:CVE-2026-125194 , nvd:CVE-2026-125195 , nvd:CVE-2026-125196 , nvd:CVE-2026-125258 ,
+        nvd:CVE-2026-125259 , nvd:CVE-2026-125260 , nvd:CVE-2026-125261 , nvd:CVE-2026-125269 , nvd:CVE-2026-135709 , nvd:CVE-2026-135711 , nvd:CVE-2026-135712 , nvd:CVE-2026-135716 , nvd:CVE-2026-135731 ;
+    vex:status "affected" ;
+    triage:until "2026-12-06"^^xsd:date ;
+    vex:statusNotes """
+        These 43 first appeared in the vulnix scan on 2026-11-27, and NVD lists all of them as affecting 9.0.2.
+        The 1251xx and 1252xx group is listed as affecting releases through 9.0.2, and the 1357xx group as fixed in 9.1.
+        Decoding crafted media reaches 23 of them, all in the decoders and demuxers built here:
+        CVE-2026-125103/125170/125184/125190/125192/125266/125268 and 135704/135707/135710/135719/135730 leak uninitialised heap or stack memory into decoded or demuxed output (MPEG-4 ALS, TGA, CamStudio, MVC2, DXA, SANM, CineForm HD, MXG, NIST SPHERE, Sierra VMD, VPK), which matters only if that output goes back to the attacker.
+        CVE-2026-125171/125182/125193/125197 and 135718 are out-of-bounds reads (Musepack SV7, Cook, bitpacked UYVY, LCL, DVD-Video menu audio), up to CVSS 6.1, so a crash or a heap leak.
+        CVE-2026-125104/125180/125183/125264 exhaust memory or CPU (APE, EXIF, HEVC PPS, JPEG XL), and CVE-2026-125185 and 135724 crash on a division by zero or a NULL pointer (AFGS1 film grain, HEIF tile grids): denial of service only.
+        Connecting to a hostile server reaches 3 of them: CVE-2026-135703 and 135717 leak stale memory through the RTP ASF and Opus parsers, and CVE-2026-135708 lets a hostile WHIP server truncate local files through a file: URL in its Location header (the WHIP muxer is built, with DTLS from GnuTLS).
+        The other 17 run only when the person running ffmpeg chooses that encoder, muxer or bitstream filter, not when the media is played:
+        CVE-2026-125259 (prores_ks, CVSS 7.8), 125260 (OpenEXR RLE), 125196 (APV through liboapv, which is enabled), 125269 (h264_metadata with display_orientation=insert) and 135709 (Ogg) are heap overflows or a double free, up to CVSS 7.8.
+        CVE-2026-125186/125187/125188/125189/125194/125195/125258/125261 and 135711/135712/135716/135731 are crashes, assertion failures, heap leaks or XML injection in the dts2pts, lcevc_metadata and dovi_rpu filters, the TTA, prores_aw, PCM DVD, ADPCM MS and SGI encoders, and the TTML, image2, NUT and VC-2 RTP muxers.
+        The fix is FFmpeg 9.1, whose nixpkgs bump (NixOS/nixpkgs#590840) merged into staging on 2026-11-26 but has not reached nixos-unstable.
+        All accepted as low risk, for the same reasons as triage:ffmpeg-9.0.2-unpatched: ffmpeg is only in the closure as a library dependency of desktop apps, and no scripts or services here feed it untrusted media or URLs.
+        The expiry matches that statement's, so both get re-checked together.
+        Re-check whether ffmpeg 9.1 has reached nixos-unstable before this expires.
+        """ ;
+    vex:actionStatement """
+        until nixpkgs ships ffmpeg 9.1, do not play, transcode or thumbnail media from untrusted sources with ffmpeg or apps built on it, and do not connect it to RTSP or RTP sources you do not trust.
+        Do not publish to WHIP endpoints you do not trust.
+        Do not transcode media from unknown senders to ProRes, OpenEXR, SGI, APV, TTA, PCM DVD, ADPCM, Ogg, NUT, TTML, image sequences or RTP, and do not run bitstream filters on it.
+        """ ;
+    rdfs:seeAlso <https://github.com/huwd/declarative_laptop/issues/17> .
+
 triage:libsndfile-1.2.2-unpatched
     a triage:Statement ;
     vex:product <pkg:nix/libsndfile@1.2.2> ;
@@ -761,14 +828,16 @@ triage:sqlite-3.54.0
     vex:product <pkg:nix/sqlite@3.54.0> ;
     vex:vulnerability nvd:CVE-2026-119586 ;
     vex:status "affected" ;
-    triage:until "2026-11-27"^^xsd:date ;
+    triage:until "2026-12-11"^^xsd:date ;
     vex:statusNotes """
         Real and unpatched: the sqlite3 shell's .recover command prints attacker-planted dot-commands from a database's schema verbatim, so a crafted database can run shell commands when the output of .recover is piped back into sqlite3 (CVSS 7.8, local, needs a user to run it).
         NVD says it affects SQLite through 3.54.1, the newest release, so no fixed version exists, and nixpkgs ships 3.54.0 on nixos-unstable and master.
         The other ten CVEs accepted under sqlite-3.53.3 are fixed in 3.54.0.
         Library use isn't affected, the sqlite3 shell isn't in the system profile (user profiles weren't checked), and we do not open untrusted databases.
         Accepted as low risk.
-        Re-check for a release after 3.54.1 before this expires.
+        Re-checked on 2026-11-27: nixpkgs patches this CVE (NixOS/nixpkgs#591125), and bumps SQLite to 3.54.1 (NixOS/nixpkgs#585237), but both are only on staging, so nixos-unstable still ships an unpatched 3.54.0.
+        Renewed for two weeks.
+        Re-check whether the patch has reached nixos-unstable before this expires.
         """ ;
     vex:actionStatement """
         never run .recover on a database you did not create, and never pipe its output into sqlite3 or a shell.
